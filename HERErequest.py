@@ -121,8 +121,11 @@ def checkTileFromCache(tile:tuple, layer:str, session:requests.Session=None):
             tile_data = json.load(json_file)
     except:
         print(f"request data from {layer}-{tile[2]}-{tile[0]}-{tile[1]}.json")
-        tile_data = getTileRequest(tile, layer, session)['Rows']
-        tileToFile(tile_data, tile, layer)
+        try:
+            tile_data = getTileRequest(tile, layer, session)['Rows']
+            tileToFile(tile_data, tile, layer)
+        except:
+            print("Empty layer")
     return tile_data
 
 #This function request the lane layer tile data and fills the link attribute dictionary
