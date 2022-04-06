@@ -2,13 +2,11 @@ import time
 import paho.mqtt.client as paho
 from paho import mqtt
 
-SERVER = 3
+SERVER = 0
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
     port=1883
-    userName = "testuser2022"
-    password = "Testuser123"
 elif(SERVER == 1):
     host = "fcf1be1bbd2a44cf9bb7bd7c50f89a7d.s1.eu.hivemq.cloud"
     port = 8883    
@@ -25,8 +23,8 @@ elif(SERVER == 3):
     port = 8883
     password = "~m8Y[CgKnB"
 
-topic = "fevvf_route_tool"
-clientID = "clientId-xLODDl4VwO-002-s"
+topic = "fev/route_tool_user_00"
+clientID = "clientId-xLODDl4VwO-000-s"
 file_path = f"./request_input.txt"
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -56,6 +54,6 @@ if __name__ == '__main__':
     client.connect(host, port)
 
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=0)
+    client.subscribe(topic, qos=2)
     client.on_message = on_message
     client.loop_forever()

@@ -4,13 +4,11 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 3
+SERVER = 0
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
     port=1883
-    userName = "testuser2022"
-    password = "Testuser123"
 elif(SERVER == 1):
     host = "fcf1be1bbd2a44cf9bb7bd7c50f89a7d.s1.eu.hivemq.cloud"
     port = 8883    
@@ -27,8 +25,8 @@ elif(SERVER == 3):
     port = 8883
     password = "~m8Y[CgKnB"
 
-topic = "fevvf_route_tool"
-clientID = "clientId-xMODDl4VwR-002-p"
+topic = "fev/route_tool_user_00"
+clientID = "clientId-xMODDl4VwR-000-p"
 file_path = f'./config.ini'
 
 
@@ -54,7 +52,7 @@ if __name__ == '__main__':
         client.username_pw_set(userName, password)
     client.connect(host, port, keepalive=60)
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=0)
+    client.subscribe(topic, qos=2)
     client.on_publish = on_publish
     
     n_files = 0
@@ -66,10 +64,10 @@ if __name__ == '__main__':
     for name in output_files:
         print(name)
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=0)
+        client.publish(topic, payload=f"{name}", qos=2)
         f = open(file_name_path, "r")
         content = f.read()
-        client.publish(topic, payload=content, qos=0)
+        client.publish(topic, payload=content, qos=2)
         f.close()
         time.sleep(1)
         
