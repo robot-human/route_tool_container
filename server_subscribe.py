@@ -3,6 +3,9 @@ import paho.mqtt.client as paho
 from paho import mqtt
 
 SERVER = 0
+topic = "fev/route_tool_user_00"
+clientID = "clientId-xLODDl4VwO-000-s"
+file_path = f"./request_input.txt"
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -22,10 +25,6 @@ elif(SERVER == 3):
     userName = "fev_vf"
     port = 8883
     password = "~m8Y[CgKnB"
-
-topic = "fev/route_tool_user_00"
-clientID = "clientId-xLODDl4VwO-000-s"
-file_path = f"./request_input.txt"
 
 def on_connect(client, userdata, flags, rc, properties=None):
     print("on connect %s." % rc)

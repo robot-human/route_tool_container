@@ -5,6 +5,9 @@ from paho import mqtt
 import paho.mqtt.publish as publish
 
 SERVER = 0
+topic = "fev/route_tool_user_00"
+clientID = "clientId-xMODDl4VwR-000-p"
+file_path = f'./config.ini'
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -24,11 +27,6 @@ elif(SERVER == 3):
     userName = "fev_vf"
     port = 8883
     password = "~m8Y[CgKnB"
-
-topic = "fev/route_tool_user_00"
-clientID = "clientId-xMODDl4VwR-000-p"
-file_path = f'./config.ini'
-
 
 output_files_path = f'./gpx/'
 output_files = os.listdir(output_files_path)
