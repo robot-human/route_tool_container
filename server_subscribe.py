@@ -19,7 +19,12 @@ elif(SERVER == 2):
     userName = "beth"
     password = "~m8Y[CgKnB"
     port = 1883
-
+elif(SERVER == 3):
+    host = "e6238d8846024198be84bfb8255304bd.s1.eu.hivemq.cloud"
+    userName = "fev_vf"
+    topic = "fevvf_route_tool"
+    port = 8883
+    password = "~m8Y[CgKnB"
 topic = "fevvf_route_tool"
 clientID = "clientId-xLODDl4VwO"
 file_path = f"./request_input.txt"
