@@ -4,7 +4,7 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 0
+SERVER = 3
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -27,7 +27,7 @@ elif(SERVER == 3):
     topic = "fevvf_route_tool"
     port = 8883
     password = "~m8Y[CgKnB"
-    
+
 topic = "fevvf_route_tool"
 clientID = "clientId-xLODDl4VwR"
 file_path = f'./config.ini'

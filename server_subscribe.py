@@ -2,7 +2,7 @@ import time
 import paho.mqtt.client as paho
 from paho import mqtt
 
-SERVER = 0
+SERVER = 3
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
