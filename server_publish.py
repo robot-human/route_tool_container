@@ -24,12 +24,11 @@ elif(SERVER == 2):
 elif(SERVER == 3):
     host = "e6238d8846024198be84bfb8255304bd.s1.eu.hivemq.cloud"
     userName = "fev_vf"
-    topic = "fevvf_route_tool"
     port = 8883
     password = "~m8Y[CgKnB"
 
 topic = "fevvf_route_tool"
-clientID = "clientId-xLODDl4VwR"
+clientID = "clientId-xMODDl4VwR-002-p"
 file_path = f'./config.ini'
 
 
@@ -52,7 +51,7 @@ if __name__ == '__main__':
     client.on_connect = on_connect
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
-        client.username_pw_set(userName, "Testuser123")
+        client.username_pw_set(userName, password)
     client.connect(host, port, keepalive=60)
     client.on_subscribe = on_subscribe
     client.subscribe(topic, qos=0)

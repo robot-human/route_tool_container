@@ -22,11 +22,11 @@ elif(SERVER == 2):
 elif(SERVER == 3):
     host = "e6238d8846024198be84bfb8255304bd.s1.eu.hivemq.cloud"
     userName = "fev_vf"
-    topic = "fevvf_route_tool"
     port = 8883
     password = "~m8Y[CgKnB"
+
 topic = "fevvf_route_tool"
-clientID = "clientId-xLODDl4VwO"
+clientID = "clientId-xLODDl4VwO-002-s"
 file_path = f"./request_input.txt"
 
 def on_connect(client, userdata, flags, rc, properties=None):
