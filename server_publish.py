@@ -5,7 +5,7 @@ from paho import mqtt
 import paho.mqtt.publish as publish
 
 SERVER = 0
-topic = "fev/route_tool_user_00"
+topic = "fevvf/route_tool_user_00"
 clientID = "clientId-xMODDl4VwR-000-p"
 file_path = f'./config.ini'
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         client.username_pw_set(userName, password)
     client.connect(host, port, keepalive=60)
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=2)
+    client.subscribe(topic, qos=0)
     client.on_publish = on_publish
     
     n_files = 0
@@ -62,10 +62,10 @@ if __name__ == '__main__':
     for name in output_files:
         print(name)
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=2)
+        client.publish(topic, payload=f"{name}", qos=0)
         f = open(file_name_path, "r")
         content = f.read()
-        client.publish(topic, payload=content, qos=2)
+        client.publish(topic, payload=content, qos=0)
         f.close()
         time.sleep(1)
         

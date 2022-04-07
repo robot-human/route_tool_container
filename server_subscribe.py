@@ -3,7 +3,7 @@ import paho.mqtt.client as paho
 from paho import mqtt
 
 SERVER = 0
-topic = "fev/route_tool_user_00"
+topic = "fevvf/route_tool_user_00"
 clientID = "clientId-xLODDl4VwO-000-s"
 file_path = f"./request_input.txt"
 
@@ -53,6 +53,6 @@ if __name__ == '__main__':
     client.connect(host, port)
 
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=2)
+    client.subscribe(topic, qos=0)
     client.on_message = on_message
     client.loop_forever()
