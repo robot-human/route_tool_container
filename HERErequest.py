@@ -241,7 +241,19 @@ def requestSpeedLimitTile(links_dict: dict,  tile: tuple, features_query: dict, 
             links_dict[link_id]['SPEED_LIMIT'] = int(limit['FROM_REF_SPEED_LIMIT'])
             links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['FROM_REF_SPEED_LIMIT']), features_query)
     return links_dict
-
+"""
+def requestADASTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
+    links_speed_limit = checkTileFromCache(tile, f'SPEED_LIMITS_FC{level_layerID_map[tile[2]]}', session)
+    for limit in links_speed_limit:
+        link_id = limit['LINK_ID']
+        if(links_dict[link_id]['TRAVEL_DIRECTION'] == 'T'):   
+            links_dict[link_id]['SPEED_LIMIT'] = int(limit['TO_REF_SPEED_LIMIT'])
+            links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['TO_REF_SPEED_LIMIT']), features_query)
+        else:
+            links_dict[link_id]['SPEED_LIMIT'] = int(limit['FROM_REF_SPEED_LIMIT'])
+            links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['FROM_REF_SPEED_LIMIT']), features_query)
+    return links_dict
+"""
 #This function request the charge stations layer tiles data and fills the link attribute dictionary
 #   Input: link attributes dictionary, tile coordinate, session
 #   Output: link attributes dictionary with speed limits data   
@@ -273,6 +285,9 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         
     for attr in links_basic_attributes:
         link_id = attr['LINK_ID']
+        links_dict[link_id]['HPX'] = None
+        links_dict[link_id]['HPY'] = None
+        links_dict[link_id]['HPZ'] = None
         links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
         links_dict[link_id]['RAMP'] = setAttribute(query['attr_features']['RAMP'], attr['RAMP'])
@@ -310,6 +325,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         links_dict[link_id]['WEIGHT'] += setAttrWeight(attr, query['attr_features'])
         
         
+    links_dict = requestADASTile(links_dict, tile, session)
     links_dict = requestLaneTile(links_dict, tile, session)
     links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
     links_dict = requestSpeedLimitTile(links_dict, tile, query['speed_features'], session)
@@ -317,6 +333,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
     links_dict = setWeights(links_dict,query)
     return links_dict
+
 def setWeights(links_dict,query):
     for link_id in links_dict:
         links_dict[link_id]['WEIGHT'] += setRoadGeomWeight(links_dict[link_id], query['geom_features'], increment = INCREMENT_)
