@@ -294,11 +294,11 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         
     for attr in links_basic_attributes:
         link_id = attr['LINK_ID']
-        links_dict[link_id]['HPX'] = None
-        links_dict[link_id]['HPY'] = None
-        links_dict[link_id]['HPZ'] = None
-        links_dict[link_id]['BUMP_F'] = None
-        links_dict[link_id]['BUMP_T'] = None
+        #links_dict[link_id]['HPX'] = None
+        #links_dict[link_id]['HPY'] = None
+        #links_dict[link_id]['HPZ'] = None
+        #links_dict[link_id]['BUMP_F'] = None
+        #links_dict[link_id]['BUMP_T'] = None
         links_dict[link_id]['SPEED_BUMPS'] = None
         links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
@@ -337,12 +337,12 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         links_dict[link_id]['WEIGHT'] += setAttrWeight(attr, query['attr_features'])
         
         
-    links_dict = requestADASTile(links_dict, tile, session)
+    #links_dict = requestADASTile(links_dict, tile, session)
     links_dict = requestLaneTile(links_dict, tile, session)
     links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
     links_dict = requestSpeedLimitTile(links_dict, tile, query['speed_features'], session)
     links_dict = requestRoadGeomTile(links_dict, tile, query['geom_features'], session)
-    links_dict = requestRoadRoughnessTile(links_dict, tile, query['geom_features'], session)
+    #links_dict = requestRoadRoughnessTile(links_dict, tile, query['geom_features'], session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
     links_dict = setWeights(links_dict,query)
     return links_dict

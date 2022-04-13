@@ -64,6 +64,7 @@ class Route:
         self.n_features = 0
         self.rank_points = 0
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
+        self.createCSVFile()
         return None
     
     def auxRoute(self, G, start_loc, end_loc):
@@ -142,6 +143,7 @@ class Route:
             return route     
         else:
             return self.midPointPath(G, start_node, start_node, end_node)
+
     def pointToAnywhereRoute(self, G, start_node):
         if(self.visit_charging_stationt):
             startLoc = G.nodes[start_node]['LOC']
@@ -155,6 +157,7 @@ class Route:
             endLocation = getRandomLocation(startLoc, self.search_radius)
             end_node, _ = G.findNodeFromCoord(endLocation)
             return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+
     def pointToChargeStationRoute(self, G, start_node):
         route_found = False
         non_route_available = []
@@ -192,6 +195,7 @@ class Route:
         for s in self.charging_stations:
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
         return None
+
     def routeRankPoints(self):
         self.rank_points = (self.desired_length - abs(self.desired_length - self.route_length)) + self.n_features
         print(f"Desired distance difference {self.desired_length - abs(self.desired_length - self.route_length)}")
@@ -227,7 +231,27 @@ class Route:
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
                 start = False
         return start
-        
+
+    def createCSVFile(self):
+        self.features_file_name = f"./gpx/features.csv"
+        head = "Route_name,LAT,LON,Link_length,Avg_speed,Time\n"
+        features_file = open(self.features_file_name, "w")
+        features_file.write(head)
+        features_file.close()
+
+    def setCSVFeatures(self, G, route_num: int):
+        features_file = open(self.features_file_name, "a")
+        for i in range(1,len((self.route))):
+            str_line = str(route_num)
+            link_data = G.get_edge_data(self.route[i-1],self.route[i])
+            link_attributes = link_data[list(link_data.keys())[0]]
+            lat = str(link_attributes['LAT'].split(",")[0])
+            lon = str(link_attributes['LON'].split(",")[0])
+            time = str(1/(float(link_attributes['AVG_SPEED'])*float(link_attributes['LINK_LENGTH'])))
+            str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+","+time+"\n"
+            features_file.write(str_line)
+        features_file.close()
+
     def setGPXFile(self, G, route_num: int, path_directory: str, cfg: dict):
         gpx_file_name = f'./{path_directory}/route{route_num}_staticfeaturesfile.gpx'
         static_features_file_name = f"./{path_directory}/route{route_num}_staticfeaturesfile.csv"

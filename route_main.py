@@ -56,6 +56,7 @@ if __name__ == '__main__':
         print(f"Route number {i}")
         route = Route(cfg.get('route_type'), cfg.get('desired_route_length_km'), float(cfg.get('search_radius_km')),chargingStations, int(cfg.get('visit_charge_station')))
         route.setRoute(g, start_node, end_node)
+        route.setCSVFeatures(g, i)
         route.setGPXFile(g, i, "./gpx", cfg)
         rank_points = route.getRankPoints()
         routes_list.append(route)
