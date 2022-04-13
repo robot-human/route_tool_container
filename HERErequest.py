@@ -169,31 +169,29 @@ def requestSignsTile(links_dict: dict, tile: tuple, features_query: dict, sessio
         else:
             link_id = link_ids[0:]
             sign_dir = 'F'
-        if((attr['CONDITION_TYPE'] != None) and (features_query['display_condition'])):            
-            if(int(attr['CONDITION_TYPE']) in features_query['CONDITION_TYPE']):
-                try:
-                    if(sign_dir == 'F'):
-                        links_dict[link_id]['TRAFFIC_CONDITION_F'].append(int(attr['CONDITION_TYPE']))
-                    elif(sign_dir == 'T'):
-                        links_dict[link_id]['TRAFFIC_CONDITION_T'].append(int(attr['CONDITION_TYPE']))
-                    else:
-                        links_dict[link_id]['TRAFFIC_CONDITION_F'].append(int(attr['CONDITION_TYPE']))
-                        links_dict[link_id]['TRAFFIC_CONDITION_T'].append(int(attr['CONDITION_TYPE']))
-                except:
-                    print("Link id not found")
+        if(attr['CONDITION_TYPE'] != None):            
+            try:
+                if(sign_dir == 'F'):
+                    links_dict[link_id]['TRAFFIC_CONDITION_F'].append(int(attr['CONDITION_TYPE']))
+                elif(sign_dir == 'T'):
+                    links_dict[link_id]['TRAFFIC_CONDITION_T'].append(int(attr['CONDITION_TYPE']))
+                else:
+                    links_dict[link_id]['TRAFFIC_CONDITION_F'].append(int(attr['CONDITION_TYPE']))
+                    links_dict[link_id]['TRAFFIC_CONDITION_T'].append(int(attr['CONDITION_TYPE']))
+            except:
+                print("Link id not found")
                     
-        if((attr['TRAFFIC_SIGN_TYPE'] != None) and (features_query['display_signs'])):
-            if(int(attr['TRAFFIC_SIGN_TYPE']) in features_query['SIGN_TYPE']):
-                try:
-                    if(sign_dir == 'F'):
-                        links_dict[link_id]['TRAFFIC_SIGNS_F'].append(int(attr['TRAFFIC_SIGN_TYPE']))
-                    elif(sign_dir == 'T'):
-                        links_dict[link_id]['TRAFFIC_SIGNS_T'].append(int(attr['TRAFFIC_SIGN_TYPE']))
-                    else:
-                        links_dict[link_id]['TRAFFIC_SIGNS_F'].append(int(attr['TRAFFIC_SIGN_TYPE']))
-                        links_dict[link_id]['TRAFFIC_SIGNS_T'].append(int(attr['TRAFFIC_SIGN_TYPE']))
-                except:
-                    print("Link id not found")
+        if(attr['TRAFFIC_SIGN_TYPE'] != None):
+            try:
+                if(sign_dir == 'F'):
+                    links_dict[link_id]['TRAFFIC_SIGNS_F'].append(int(attr['TRAFFIC_SIGN_TYPE']))
+                elif(sign_dir == 'T'):
+                    links_dict[link_id]['TRAFFIC_SIGNS_T'].append(int(attr['TRAFFIC_SIGN_TYPE']))
+                else:
+                    links_dict[link_id]['TRAFFIC_SIGNS_F'].append(int(attr['TRAFFIC_SIGN_TYPE']))
+                    links_dict[link_id]['TRAFFIC_SIGNS_T'].append(int(attr['TRAFFIC_SIGN_TYPE']))
+            except:
+                print("Link id not found")
         try:
             if((sign_dir == 'F') or (sign_dir == 'T')):
                 links_dict[link_id]['WEIGHT'] += setSignsWeight(attr, features_query)
@@ -210,10 +208,8 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, se
     road_geom = checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
     for geom in road_geom:
         link_id = geom['LINK_ID']   
-        if('N' not in features_query['TUNNEL']):
-            links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
-        if('N' not in features_query['BRIDGE']):
-            links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
+        links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
+        links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
         links_dict[link_id]['WEIGHT'] += setRoadGeomWeight(geom, features_query)
     return links_dict
 
@@ -241,19 +237,32 @@ def requestSpeedLimitTile(links_dict: dict,  tile: tuple, features_query: dict, 
             links_dict[link_id]['SPEED_LIMIT'] = int(limit['FROM_REF_SPEED_LIMIT'])
             links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['FROM_REF_SPEED_LIMIT']), features_query)
     return links_dict
-"""
-def requestADASTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
-    links_speed_limit = checkTileFromCache(tile, f'SPEED_LIMITS_FC{level_layerID_map[tile[2]]}', session)
+
+def requestSpeedBumpsTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
+    links_speed_limit = checkTileFromCache(tile, f'SPEED_LIMITS_COND_FC{level_layerID_map[tile[2]]}', session)
     for limit in links_speed_limit:
         link_id = limit['LINK_ID']
-        if(links_dict[link_id]['TRAVEL_DIRECTION'] == 'T'):   
-            links_dict[link_id]['SPEED_LIMIT'] = int(limit['TO_REF_SPEED_LIMIT'])
-            links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['TO_REF_SPEED_LIMIT']), features_query)
-        else:
-            links_dict[link_id]['SPEED_LIMIT'] = int(limit['FROM_REF_SPEED_LIMIT'])
-            links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['FROM_REF_SPEED_LIMIT']), features_query)
+        links_dict[link_id]['SPEED_BUMPS'] = int(limit['SPEED_LIMIT_TYPE'])
+
     return links_dict
-"""
+
+def requestADASTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
+    links_speed_limit = checkTileFromCache(tile, f'ADAS_ATTRIB_FC{level_layerID_map[tile[2]]}', session)
+    for layer in links_speed_limit:
+        link_id = layer['LINK_ID']
+        links_dict[link_id]['HPX'] = layer['HPX']
+        links_dict[link_id]['HPY'] = layer['HPY']
+        links_dict[link_id]['HPZ'] = layer['HPZ']
+    return links_dict
+
+def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
+    road_layer = checkTileFromCache(tile, f'ROAD_ROUGHNESS_FC{level_layerID_map[tile[2]]}', session)
+    for layer in road_layer:
+        link_id = layer['LINK_ID']   
+        links_dict[link_id]['BUMP_F'] = layer['FROM_AVAILABLE_ROUGHN_TYP']
+        links_dict[link_id]['BUMP_T'] = layer['TO_AVAILABLE_ROUGHN_TYP']
+    return links_dict
+
 #This function request the charge stations layer tiles data and fills the link attribute dictionary
 #   Input: link attributes dictionary, tile coordinate, session
 #   Output: link attributes dictionary with speed limits data   
@@ -288,6 +297,9 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         links_dict[link_id]['HPX'] = None
         links_dict[link_id]['HPY'] = None
         links_dict[link_id]['HPZ'] = None
+        links_dict[link_id]['BUMP_F'] = None
+        links_dict[link_id]['BUMP_T'] = None
+        links_dict[link_id]['SPEED_BUMPS'] = None
         links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
         links_dict[link_id]['RAMP'] = setAttribute(query['attr_features']['RAMP'], attr['RAMP'])
@@ -330,6 +342,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
     links_dict = requestSpeedLimitTile(links_dict, tile, query['speed_features'], session)
     links_dict = requestRoadGeomTile(links_dict, tile, query['geom_features'], session)
+    links_dict = requestRoadRoughnessTile(links_dict, tile, query['geom_features'], session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
     links_dict = setWeights(links_dict,query)
     return links_dict

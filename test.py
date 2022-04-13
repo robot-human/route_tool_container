@@ -2,6 +2,7 @@ from Config import cfg
 import requests
 from HERErequest import  getTiles
 from HEREgraph2 import getLinksFromTile
+from HEREgraph2 import graphFromDict
 
 session = requests.Session() 
 
@@ -17,9 +18,12 @@ tiles = getTiles(cfg.get('gps_locations'),9, 13)
 
 
 links_dict = getLinksFromTile(tiles[0], cfg['query_features'], session)
-k = links_dict.keys()
 
-printDict(links_dict['1237622720'])
+for k in links_dict.keys():
+    #print(links_dict[k]['SPEED_BUMPS'])
+    #if(links_dict[k]['SPEED_BUMPS'] != None):
+    printDict(links_dict[k])
+
 
 
 
