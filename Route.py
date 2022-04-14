@@ -373,6 +373,7 @@ class Route:
         return None
     
     def fillFeaturesCSV(self,attributes):
+        print(attributes)
         edge_dir = attributes['EDGE_DIRECTION']
         if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[0] += 1
@@ -404,7 +405,42 @@ class Route:
             self.feat_count[13] += attributes['LINK_LENGTH']*0.001
         if(attributes[f'TRAVEL_DIRECTION'] == "B"):
             self.feat_count[14] += attributes['LINK_LENGTH']*0.001
-
+        if(47 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[15] += 1
+        if(str(attributes['LIMITED_ACCESS_ROAD']) != 'None'):
+            self.feat_count[16] += 1
+        if(str(attributes['PAVED']) != 'None'):
+            self.feat_count[17] += 1
+        if(str(attributes['RAMP']) != 'None'):
+            self.feat_count[18] += 1
+        if(str(attributes['INTERSECTION']) == '2'):
+            self.feat_count[19] += 1
+        if(str(attributes['INTERSECTION']) == '4'):
+            self.feat_count[20] += 1
+        if(str(attributes['LANE_CATEGORY']) == '1'):
+            self.feat_count[21] += 1
+        if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
+            self.feat_count[22] += 1
+        if(str(attributes['OVERPASS_UNDERPASS']) == '1'):
+            self.feat_count[23] += 1
+        if(str(attributes['OVERPASS_UNDERPASS']) == '2'):
+            self.feat_count[24] += 1
+        if(11 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+            self.feat_count[25] += 1
+        if(18 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+            self.feat_count[26] += 1
+        if(19 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+            self.feat_count[27] += 1
+        if(21 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+            self.feat_count[28] += 1
+        if(30 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[29] += 1
+        if((18 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (19 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (26 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
+            self.feat_count[30] += 1
+        if(attributes['TUNNEL'] == 'Y'):
+            self.feat_count[31] += 1
+        if(attributes['BRIDGE'] == 'Y'):
+            self.feat_count[32] += 1
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
                       12 : "SHARP CURVE LEFT 10 sharp curve", 13 : "SHARP CURVE RIGHT 10 sharp curve", 
@@ -437,4 +473,4 @@ lane_divider_dict = {0:"No Marker", 1:"Long dashed line", 2:"Double solid line",
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
-                "overtaking","falling_rocks","two_way","hills","tunnel","bridge",]
+                "overtaking","falling_rocks","hills","tunnel","bridge",]

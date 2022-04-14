@@ -259,10 +259,10 @@ def requestADASTile(links_dict: dict,  tile: tuple, features_query: dict, sessio
 
 def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     road_layer = checkTileFromCache(tile, f'ROAD_ROUGHNESS_FC{level_layerID_map[tile[2]]}', session)
-    for layer in road_layer:
-        link_id = layer['LINK_ID']   
-        links_dict[link_id]['BUMP_F'] = layer['FROM_AVAILABLE_ROUGHN_TYP']
-        links_dict[link_id]['BUMP_T'] = layer['TO_AVAILABLE_ROUGHN_TYP']
+    #for layer in road_layer:
+    #    link_id = layer['LINK_ID']   
+    #    links_dict[link_id]['BUMP_F'] = layer['FROM_AVAILABLE_ROUGHN_TYP']
+    #    links_dict[link_id]['BUMP_T'] = layer['TO_AVAILABLE_ROUGHN_TYP']
     return links_dict
 
 def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
