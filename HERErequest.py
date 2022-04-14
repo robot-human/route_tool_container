@@ -220,7 +220,9 @@ def requestTrafficPatternTile(links_dict: dict,  tile: tuple, session: requests.
     traffic_pattern = checkTileFromCache(tile, f'TRAFFIC_PATTERN_FC{level_layerID_map[tile[2]]}', session)
     for pattern in traffic_pattern:
         link_id = pattern['LINK_ID']   
-        links_dict[link_id]['AVG_SPEED'] = float(pattern['AVG_SPEED'])
+        #links_dict[link_id]['AVG_SPEED'] = float(pattern['AVG_SPEED'])
+        links_dict[link_id]['AVG_SPEED'] = float(pattern['FREE_FLOW_SPEED'])
+        #links_dict[link_id]['AVG_SPEED'] = 17.75
     return links_dict
 
 #This function request the speed limits layer tile data and fills the link attribute dictionary
@@ -263,6 +265,13 @@ def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dic
         links_dict[link_id]['BUMP_T'] = layer['TO_AVAILABLE_ROUGHN_TYP']
     return links_dict
 
+def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
+    toll_layer = checkTileFromCache(tile, f'TOLL_BOOTH_FC{level_layerID_map[tile[2]]}', session)
+    for layer in toll_layer:
+        link_id = layer['LINK_ID']   
+        links_dict[link_id]['TOOL_LOC'] = layer['LAT']+","*layer['LON']
+    return links_dict
+
 #This function request the charge stations layer tiles data and fills the link attribute dictionary
 #   Input: link attributes dictionary, tile coordinate, session
 #   Output: link attributes dictionary with speed limits data   
@@ -297,8 +306,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         #links_dict[link_id]['HPX'] = None
         #links_dict[link_id]['HPY'] = None
         #links_dict[link_id]['HPZ'] = None
-        #links_dict[link_id]['BUMP_F'] = None
-        #links_dict[link_id]['BUMP_T'] = None
+        links_dict[link_id]['BUMP_F'] = None
+        links_dict[link_id]['BUMP_T'] = None
         links_dict[link_id]['SPEED_BUMPS'] = None
         links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
@@ -333,7 +342,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         links_dict[link_id]['TRAFFIC_SIGNS_T'] = []
         links_dict[link_id]['TUNNEL'] = None
         links_dict[link_id]['BRIDGE'] = None
-        links_dict[link_id]['AVG_SPEED'] = 40
+        links_dict[link_id]['TOLL_BOOTH'] = None
+        links_dict[link_id]['AVG_SPEED'] = 60
         links_dict[link_id]['WEIGHT'] += setAttrWeight(attr, query['attr_features'])
         
         
@@ -342,8 +352,9 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
     links_dict = requestSpeedLimitTile(links_dict, tile, query['speed_features'], session)
     links_dict = requestRoadGeomTile(links_dict, tile, query['geom_features'], session)
-    #links_dict = requestRoadRoughnessTile(links_dict, tile, query['geom_features'], session)
+    links_dict = requestRoadRoughnessTile(links_dict, tile, query['geom_features'], session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
+    links_dict = requestTollBoothTile(links_dict, tile, session)
     links_dict = setWeights(links_dict,query)
     return links_dict
 

@@ -1,3 +1,4 @@
+from re import S
 from HEREgraph2 import HEREgraph
 import numpy as np
 import networkx as nx
@@ -64,7 +65,6 @@ class Route:
         self.n_features = 0
         self.rank_points = 0
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
-        self.createCSVFile()
         return None
     
     def auxRoute(self, G, start_loc, end_loc):
@@ -233,23 +233,51 @@ class Route:
         return start
 
     def createCSVFile(self):
-        self.features_file_name = f"./gpx/features.csv"
-        head = "Route_name,LAT,LON,Link_length,Avg_speed,Time\n"
+        self.features_file_name = f"./gpx/features_count.csv"
+        head = ",".join([str(item) for item in feature_list])
+        self.feat_count = []
+        for feat in feature_list:
+            self.feat_count.append(0)
         features_file = open(self.features_file_name, "w")
-        features_file.write(head)
+        features_file.write(head+"\n")
         features_file.close()
 
     def setCSVFeatures(self, G, route_num: int):
-        features_file = open(self.features_file_name, "a")
+        self.createCSVFile()
+        file_name = f"./gpx/route{route_num}_features.csv"
+        head = "Route_name,LAT,LON,Link_length,Avg_speed,Time,Accum_len,Accum_time\n"
+        features_file = open(file_name, "w")
+        features_file.write(head)
+        features_file.close()
+        features_file = open(file_name, "a")
+        len_accum = 0
+        time_accum = 0
         for i in range(1,len((self.route))):
             str_line = str(route_num)
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
+            self.fillFeaturesCSV(link_attributes)
             lat = str(link_attributes['LAT'].split(",")[0])
             lon = str(link_attributes['LON'].split(",")[0])
-            time = str(1/(float(link_attributes['AVG_SPEED'])*float(link_attributes['LINK_LENGTH'])))
-            str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+","+time+"\n"
+            link_length = 0.001*float(link_attributes['LINK_LENGTH'])
+            time = 1/(float(link_attributes['AVG_SPEED'])/link_length)
+            len_accum = len_accum + link_length
+            time_accum = time_accum + time
+            str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])
+            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "\n"
             features_file.write(str_line)
+
+        feat_line = ",".join([str(item) for item in self.feat_count])
+        features_file = open(self.features_file_name, "a")
+        features_file.write(feat_line)
+        features_file.close()
+
+        print(self.feat_count)
+        print("")
+        print("************  RESUME *************")
+        print("Length:   ",len_accum)
+        print("Time:     ",time_accum*1.4)
+        print("")
         features_file.close()
 
     def setGPXFile(self, G, route_num: int, path_directory: str, cfg: dict):
@@ -343,6 +371,40 @@ class Route:
         self.routeRankPoints()
         self.displayRouteInfo()
         return None
+    
+    def fillFeaturesCSV(self,attributes):
+        edge_dir = attributes['EDGE_DIRECTION']
+        if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[0] += 1
+        if(31 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[1] += 1
+        if(28 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[2] += 1
+        if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[3] += 1
+        if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[4] += 1
+        if((27 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (59 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
+            self.feat_count[5] += 1
+        if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+            self.feat_count[6] += 1
+        if(17 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+            self.feat_count[7] += 1
+        if(6 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[8] += 1
+        if(7 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[9] += 1
+        if(8 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[10] += 1
+        if(int(attributes[f'FUNCTIONAL_CLASS']) <= 3):
+            self.feat_count[11] += attributes['LINK_LENGTH']*0.001
+        if(int(attributes[f'FUNCTIONAL_CLASS']) >= 4):
+            self.feat_count[12] += attributes['LINK_LENGTH']*0.001
+        if(attributes[f'TRAVEL_DIRECTION'] != "B"):
+            self.feat_count[13] += attributes['LINK_LENGTH']*0.001
+        if(attributes[f'TRAVEL_DIRECTION'] == "B"):
+            self.feat_count[14] += attributes['LINK_LENGTH']*0.001
+
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
                       12 : "SHARP CURVE LEFT 10 sharp curve", 13 : "SHARP CURVE RIGHT 10 sharp curve", 
@@ -371,3 +433,8 @@ traffic_condition_dict ={11 : "VARIABLE SPEED", 16 : "TRAFFIC_SIGNAL", 17: "TRAF
 lane_divider_dict = {0:"No Marker", 1:"Long dashed line", 2:"Double solid line", 3:"Single solid line",
                      4:"Inner solid, outer dashed line", 5:"Inner dashed, outer solid line", 6:"Short dashed line", 7:"Shaded area marking",
                      8:"Dashed blocks",9:"Physical divider < 3m",10:"Double dashed line",11:"No divider",12:"Crossing alert line",13:"Center turn lane"}
+
+feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
+                "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
+                "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
+                "overtaking","falling_rocks","two_way","hills","tunnel","bridge",]
