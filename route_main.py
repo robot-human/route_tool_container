@@ -12,16 +12,26 @@ from Route import Route, getSigns
 session = requests.Session()
 #UPDATED_CODE_31012022
 
-N_ROUTES = 1
+N_ROUTES = 5
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
 
+feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
+                "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
+                "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing",
+                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge"]
+def createCSVFile():
+    features_file_name = f"./gpx/features_count.csv"
+    head = ",".join([str(item) for item in feature_list])
+    features_file = open(features_file_name, "w")
+    features_file.write("route_num,route_length,route_estimated_time,"+head+"\n")
+    features_file.close()
 
 if __name__ == '__main__':
     start_time = time.time()
     
     removeGPXFiles("./gpx/")
-
+    createCSVFile()
     session = requests.Session()
 
     start_time_01 = time.time()
@@ -37,10 +47,10 @@ if __name__ == '__main__':
     
     
     start_time_03 = time.time()
-    print("")
-    print(f"Minimum distance between start and end point = {Haversine(cfg.get('start_location'), cfg.get('end_location'))}")
-    print(f"Desired route length = {cfg.get('desired_route_length_km')}")
-    print("")
+    #print("")
+    #print(f"Minimum distance between start and end point = {Haversine(cfg.get('start_location'), cfg.get('end_location'))}")
+    #print(f"Desired route length = {cfg.get('desired_route_length_km')}")
+    #print("")
     start_node, _ = g.findNodeFromCoord(cfg.get('start_location'))
     end_node, _ = g.findNodeFromCoord(cfg.get('end_location'))
     routes_list = list()
@@ -76,9 +86,9 @@ if __name__ == '__main__':
     graph_time = end_time_02 - start_time_02
     route_time = end_time_03 - start_time_03
 
-    print("")
-    print(f'Total time {total_time}')
-    print(f'Tiles time {tiles_time}')
-    print(f'Graph time {graph_time}')
-    print(f'Route time {route_time}')
+    #print("")
+    #print(f'Total time {total_time}')
+    #print(f'Tiles time {tiles_time}')
+    #print(f'Graph time {graph_time}')
+    #print(f'Route time {route_time}')
     

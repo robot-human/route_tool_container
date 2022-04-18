@@ -220,9 +220,7 @@ def requestTrafficPatternTile(links_dict: dict,  tile: tuple, session: requests.
     traffic_pattern = checkTileFromCache(tile, f'TRAFFIC_PATTERN_FC{level_layerID_map[tile[2]]}', session)
     for pattern in traffic_pattern:
         link_id = pattern['LINK_ID']   
-        #links_dict[link_id]['AVG_SPEED'] = float(pattern['AVG_SPEED'])
         links_dict[link_id]['AVG_SPEED'] = float(pattern['FREE_FLOW_SPEED'])
-        #links_dict[link_id]['AVG_SPEED'] = 17.75
     return links_dict
 
 #This function request the speed limits layer tile data and fills the link attribute dictionary
@@ -259,17 +257,18 @@ def requestADASTile(links_dict: dict,  tile: tuple, features_query: dict, sessio
 
 def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     road_layer = checkTileFromCache(tile, f'ROAD_ROUGHNESS_FC{level_layerID_map[tile[2]]}', session)
-    #for layer in road_layer:
-    #    link_id = layer['LINK_ID']   
-    #    links_dict[link_id]['BUMP_F'] = layer['FROM_AVAILABLE_ROUGHN_TYP']
-    #    links_dict[link_id]['BUMP_T'] = layer['TO_AVAILABLE_ROUGHN_TYP']
+    for layer in road_layer:
+        link_id = layer['LINK_ID']   
+        links_dict[link_id]['BUMP_F'] = layer['FROM_AVAILABLE_ROUGHN_TYP']
+        links_dict[link_id]['BUMP_T'] = layer['TO_AVAILABLE_ROUGHN_TYP']
     return links_dict
 
 def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     toll_layer = checkTileFromCache(tile, f'TOLL_BOOTH_FC{level_layerID_map[tile[2]]}', session)
     for layer in toll_layer:
         link_id = layer['LINK_ID']   
-        links_dict[link_id]['TOOL_LOC'] = layer['LAT']+","*layer['LON']
+        links_dict[link_id]['TOLL_LOC'] = layer['LAT']+","+layer['LON']
+        links_dict[link_id]['TOLL_BOOTH'] = layer['NAME']
     return links_dict
 
 #This function request the charge stations layer tiles data and fills the link attribute dictionary
@@ -318,11 +317,14 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         links_dict[link_id]['INTERSECTION'] = None
         if(attr['INTERSECTION_CATEGORY'] != None): 
             if(int(attr['INTERSECTION_CATEGORY']) == 2): 
-                if(-2 not in query['attr_features']['INTERSECTION_CATEGORY']):
-                    links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
+                #if(-2 not in query['attr_features']['INTERSECTION_CATEGORY']):
+                links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
             if(int(attr['INTERSECTION_CATEGORY']) == 4): 
-                if(-4 not in query['attr_features']['INTERSECTION_CATEGORY']):
-                    links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
+                #print(attr['INTERSECTION_CATEGORY'])
+                #if(-4 not in query['attr_features']['INTERSECTION_CATEGORY']):
+                links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
+            #print(links_dict[link_id]['INTERSECTION'])
+
         links_dict[link_id]['VEHICLE_TYPES'] = attr['VEHICLE_TYPES']
         links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
         links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
@@ -331,7 +333,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
 
         links_dict[link_id]['SPEED_LIMIT'] = None        
         links_dict[link_id]['LANE_TYPE'] = None
-        links_dict[link_id]['LANE_DIVIDER_MARKER'] = None
+        links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
         links_dict[link_id]['VEHICLE_TYPES'] = None
         links_dict[link_id]['DIRECTION_CATEGORY'] = None
         links_dict[link_id]['WIDTH'] = None
@@ -343,6 +345,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
         links_dict[link_id]['TUNNEL'] = None
         links_dict[link_id]['BRIDGE'] = None
         links_dict[link_id]['TOLL_BOOTH'] = None
+        links_dict[link_id]['TOLL_LOC'] = None
         links_dict[link_id]['AVG_SPEED'] = 60
         links_dict[link_id]['WEIGHT'] += setAttrWeight(attr, query['attr_features'])
         

@@ -65,6 +65,7 @@ class Route:
         self.n_features = 0
         self.rank_points = 0
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
+        self.features_file_name = f"./gpx/features_count.csv"
         return None
     
     def auxRoute(self, G, start_loc, end_loc):
@@ -123,6 +124,7 @@ class Route:
         else:
             print("Invalid route type")
             return None
+
     def getRouteLength(self):
         return self.route_length
         
@@ -133,6 +135,7 @@ class Route:
             return self.midPointPath(G, start_node, end_node, mid_node)
         else:
             return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+
     def closedRoute(self, G, start_node, end_node):
         if(self.visit_charging_stationt):
             visit_point = self.closestChargingStation(G, start_node, end_node)
@@ -232,61 +235,52 @@ class Route:
                 start = False
         return start
 
-    def createCSVFile(self):
-        self.features_file_name = f"./gpx/features_count.csv"
-        head = ",".join([str(item) for item in feature_list])
-        self.feat_count = []
-        for feat in feature_list:
-            self.feat_count.append(0)
-        features_file = open(self.features_file_name, "w")
-        features_file.write(head+"\n")
-        features_file.close()
-
     def setCSVFeatures(self, G, route_num: int):
-        self.createCSVFile()
         file_name = f"./gpx/route{route_num}_features.csv"
-        head = "Route_name,LAT,LON,Link_length,Avg_speed,Time,Accum_len,Accum_time\n"
+        feat_line = ",".join([str(item) for item in feature_list])
+        head = "Route_name,LAT,LON,Link_length,Avg_speed,Time,Accum_len,Accum_time,"+feat_line+",Speed_limit,Lane_divider_marker,Toll_booth"+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
         features_file = open(file_name, "a")
         len_accum = 0
         time_accum = 0
+        self.feat_count = []
+        for feat in feature_list:
+            self.feat_count.append(0)
         for i in range(1,len((self.route))):
             str_line = str(route_num)
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
-            self.fillFeaturesCSV(link_attributes)
+            #print(link_attributes)
+            feat_list = self.fillFeaturesCSV(link_attributes)
             lat = str(link_attributes['LAT'].split(",")[0])
             lon = str(link_attributes['LON'].split(",")[0])
             link_length = 0.001*float(link_attributes['LINK_LENGTH'])
             time = 1/(float(link_attributes['AVG_SPEED'])/link_length)
             len_accum = len_accum + link_length
             time_accum = time_accum + time
+            feat_line = ",".join([str(item) for item in feat_list])
             str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])
-            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "\n"
+            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "," + str(link_attributes['SPEED_LIMIT'])+ "," + lane_divider_dict[int(link_attributes['LANE_DIVIDER_MARKER'])]+ "," + str(link_attributes['TOLL_BOOTH'])+ "\n"
             features_file.write(str_line)
 
-        feat_line = ",".join([str(item) for item in self.feat_count])
-        features_file = open(self.features_file_name, "a")
-        features_file.write(feat_line)
-        features_file.close()
+        feat_count_line = ",".join([str(item) for item in self.feat_count])
+        features_count_file = open(self.features_file_name, "a")
+        summary = str(route_num)+","+str(len_accum)+","+str(time_accum) 
+        features_count_file.write(summary+","+feat_count_line+"\n")
+        features_count_file.close()
 
-        print(self.feat_count)
-        print("")
-        print("************  RESUME *************")
-        print("Length:   ",len_accum)
-        print("Time:     ",time_accum*1.4)
-        print("")
+        #print(self.feat_count)
+        #print("")
+        #print("************  RESUME *************")
+        #print("Length:   ",len_accum)
+        #print("Time:     ",time_accum*1.4)
+        #print("")
         features_file.close()
 
     def setGPXFile(self, G, route_num: int, path_directory: str, cfg: dict):
         gpx_file_name = f'./{path_directory}/route{route_num}_staticfeaturesfile.gpx'
-        static_features_file_name = f"./{path_directory}/route{route_num}_staticfeaturesfile.csv"
-        features_file = open(static_features_file_name, "w")
-        features_file.write("Route_name,LAT,LON,feature_type_id,feature_type\n")
-        features_file.close()
-        features_file = open(static_features_file_name, "a")
         gpx = gpxpy.gpx.GPX()
         gpx_track = gpxpy.gpx.GPXTrack(name=gpx_file_name)
         gpx.tracks.append(gpx_track)
@@ -299,16 +293,15 @@ class Route:
             loc = G.nodes[self.route[i-1]]['LOC']
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
-            if(str(link_attributes['LANE_DIVIDER_MARKER']) != 'None'):
-                lane_divider = f"{lane_divider_dict[link_attributes['LANE_DIVIDER_MARKER']]}"
-            else:
-                lane_divider = None
-            speed_limit = link_attributes['SPEED_LIMIT']
-            if(speed_limit != None):
-                features_file.write(f"{gpx_file_name},{loc[0]},{loc[1]},{speed_limit},SPEED_LIMIT\n")
-            if(speed_limit != ref_speed_limit):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Speed limit: {speed_limit}"))
-                ref_speed_limit = speed_limit
+
+            #if(str(link_attributes['LANE_DIVIDER_MARKER']) != 'None'):
+            #    lane_divider = f"{lane_divider_dict[link_attributes['LANE_DIVIDER_MARKER']]}"
+            #else:
+            #    lane_divider = None
+            #speed_limit = link_attributes['SPEED_LIMIT']
+            #if(speed_limit != ref_speed_limit):
+            #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Speed limit: {speed_limit}"))
+            #    ref_speed_limit = speed_limit
               
             if(cfg['query_features']['boolean_features']['highway']):
                 start[0] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
@@ -342,29 +335,30 @@ class Route:
                         self.n_features += 1  
             if(cfg['query_features']['boolean_features']['roundabout']):
                 if(link_attributes['INTERSECTION'] != None):
-                    if(int(link_attributes['INTERSECTION']) == 4):
+                    if((int(link_attributes['INTERSECTION']) == 4) and (prev_link_roundabout == False)):
                         gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Roundabout"))
                         self.n_features += 1
+                        prev_link_roundabout = True
+                else:
+                    prev_link_roundabout = False
 
-
+            '''
             if(len(link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"]) > 0):
                 for sig in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"]:
                     tsignal = int(sig)
                     gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[tsignal]}"))
-                    features_file.write(f"{gpx_file_name},{loc[0]},{loc[1]},{tsignal},{traffic_condition_dict[tsignal]}\n")
                     self.n_features += 1
             if(len(link_attributes[f"TRAFFIC_SIGNS_{link_attributes['EDGE_DIRECTION']}"]) > 0):
                 for sign in link_attributes[f"TRAFFIC_SIGNS_{link_attributes['EDGE_DIRECTION']}"]:
                     tsign = int(sign)
                     gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[tsign]}"))  
-                    features_file.write(f"{gpx_file_name},{loc[0]},{loc[1]},{tsign},{traffics_sign_dict[tsign]}\n")
                     self.n_features += 1
-            
-            self.displayRoadGeom(gpx, link_attributes, loc)
-            
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
-        features_file.close()
-        self.displayChargeStations(gpx)
+            '''
+
+            #self.displayRoadGeom(gpx, link_attributes, loc)
+            #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
+            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
+        #self.displayChargeStations(gpx)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
@@ -373,74 +367,109 @@ class Route:
         return None
     
     def fillFeaturesCSV(self,attributes):
-        print(attributes)
+        #print(attributes)
+        feat_list = ['Not present' for i in range(len(feature_list))]
         edge_dir = attributes['EDGE_DIRECTION']
         if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[0] += 1
+            feat_list[0] = 'Present'
         if(31 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[1] += 1
+            feat_list[1] = 'Present'
         if(28 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[2] += 1
+            feat_list[2] = 'Present'
         if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[3] += 1
+            feat_list[3] = 'Present'
         if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[4] += 1
+            feat_list[4] = 'Present'
         if((27 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (59 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
             self.feat_count[5] += 1
+            feat_list[5] = 'Present'
         if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[6] += 1
+            feat_list[6] = 'Present'
         if(17 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[7] += 1
+            feat_list[7] = 'Present'
         if(6 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[8] += 1
+            feat_list[8] = 'Present'
         if(7 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[9] += 1
+            feat_list[9] = 'Present'
         if(8 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[10] += 1
+            feat_list[10] = 'Present'
         if(int(attributes[f'FUNCTIONAL_CLASS']) <= 3):
             self.feat_count[11] += attributes['LINK_LENGTH']*0.001
+            feat_list[11] = 'Present'
         if(int(attributes[f'FUNCTIONAL_CLASS']) >= 4):
             self.feat_count[12] += attributes['LINK_LENGTH']*0.001
+            feat_list[12] = 'Present'
         if(attributes[f'TRAVEL_DIRECTION'] != "B"):
             self.feat_count[13] += attributes['LINK_LENGTH']*0.001
+            feat_list[13] = 'Present'
         if(attributes[f'TRAVEL_DIRECTION'] == "B"):
             self.feat_count[14] += attributes['LINK_LENGTH']*0.001
+            feat_list[14] = 'Present'
         if(47 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[15] += 1
+            feat_list[15] = 'Present'
         if(str(attributes['LIMITED_ACCESS_ROAD']) != 'None'):
             self.feat_count[16] += 1
+            feat_list[16] = 'Present'
         if(str(attributes['PAVED']) != 'None'):
             self.feat_count[17] += 1
+            feat_list[17] = 'Present'
         if(str(attributes['RAMP']) != 'None'):
             self.feat_count[18] += 1
+            feat_list[18] = 'Present'
         if(str(attributes['INTERSECTION']) == '2'):
             self.feat_count[19] += 1
+            feat_list[19] = 'Present'
         if(str(attributes['INTERSECTION']) == '4'):
             self.feat_count[20] += 1
+            feat_list[20] = 'Present'
         if(str(attributes['LANE_CATEGORY']) == '1'):
-            self.feat_count[21] += 1
+            self.feat_count[21] += attributes['LINK_LENGTH']*0.001
+            feat_list[21] = 'Present'
         if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
-            self.feat_count[22] += 1
+            self.feat_count[22] += attributes['LINK_LENGTH']*0.001
+            feat_list[22] = 'Present'
         if(str(attributes['OVERPASS_UNDERPASS']) == '1'):
             self.feat_count[23] += 1
+            feat_list[23] = 'Present'
         if(str(attributes['OVERPASS_UNDERPASS']) == '2'):
             self.feat_count[24] += 1
+            feat_list[24] = 'Present'
         if(11 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[25] += 1
+            feat_list[25] = 'Present'
         if(18 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[26] += 1
+            feat_list[26] = 'Present'
         if(19 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[27] += 1
+            feat_list[27] = 'Present'
         if(21 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[28] += 1
+            feat_list[28] = 'Present'
         if(30 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[29] += 1
+            feat_list[29] = 'Present'
         if((18 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (19 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (26 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
             self.feat_count[30] += 1
+            feat_list[30] = 'Present'
         if(attributes['TUNNEL'] == 'Y'):
             self.feat_count[31] += 1
+            feat_list[31] = 'Present'
         if(attributes['BRIDGE'] == 'Y'):
             self.feat_count[32] += 1
+            feat_list[32] = 'Present'
+        return feat_list
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
                       12 : "SHARP CURVE LEFT 10 sharp curve", 13 : "SHARP CURVE RIGHT 10 sharp curve", 
@@ -467,10 +496,10 @@ traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPRO
 traffic_condition_dict ={11 : "VARIABLE SPEED", 16 : "TRAFFIC_SIGNAL", 17: "TRAFFIC_SIGN", 18: "RAILWAY CROSSING",
                          19: "NO OVERTAKING", 21: "PROTECTED OVERTAKING", 38: "BLACKSPOT", 22: "EVACUATION ROUTE"}
 lane_divider_dict = {0:"No Marker", 1:"Long dashed line", 2:"Double solid line", 3:"Single solid line",
-                     4:"Inner solid, outer dashed line", 5:"Inner dashed, outer solid line", 6:"Short dashed line", 7:"Shaded area marking",
-                     8:"Dashed blocks",9:"Physical divider < 3m",10:"Double dashed line",11:"No divider",12:"Crossing alert line",13:"Center turn lane"}
+                     4:"Inner solid - outer dashed line", 5:"Inner dashed - outer solid line", 6:"Short dashed line", 7:"Shaded area marking",
+                     8:"Dashed blocks",9:"Physical divider < 3m",10:"Double dashed line",11:"No divider",12:"Crossing alert line",13:"Center turn lane",14:"Unknown"}
 
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
-                "overtaking","falling_rocks","hills","tunnel","bridge",]
+                "overtaking","falling_rocks","hills","tunnel","bridge"]
