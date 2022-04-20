@@ -189,12 +189,12 @@ class Route:
         for i in range(1,len(self.route)):
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
-        #    self.route_length += link_attributes['LINK_LENGTH']
-        #    self.avg_speed += link_attributes['AVG_SPEED']
-        #    self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
+            self.route_length += link_attributes['LINK_LENGTH']
+            self.avg_speed += link_attributes['AVG_SPEED']
+            self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
-        #self.avg_speed /= len(self.route)
-        #self.route_length = self.route_length/1000
+        self.avg_speed /= len(self.route)
+        self.route_length = self.route_length/1000
         return None
      
     def displayChargeStations(self,gpx):
@@ -242,7 +242,7 @@ class Route:
     def setCSVFeatures(self, G, route_num: int):
         file_name = f"./gpx/route{route_num}_features.csv"
         feat_line = ",".join([str(item) for item in feature_list])
-        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time,"+feat_line+",Lane_divider_marker,Toll_booth"+"\n"
+        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time,"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth"+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
@@ -257,8 +257,8 @@ class Route:
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
             feat_list = self.fillFeaturesCSV(link_attributes)
-            lat = str(link_attributes['LAT'].split(",")[0])
-            lon = str(link_attributes['LON'].split(",")[0])
+            lat = str(int(link_attributes['LAT'].split(",")[0])/100000)
+            lon = str(int(link_attributes['LON'].split(",")[0])/100000)
             link_length = 0.001*float(link_attributes['LINK_LENGTH'])
             if(str(link_attributes['SPEED_LIMIT']) == 'None'):
                 time = link_length/float(link_attributes['AVG_SPEED'])
@@ -268,7 +268,7 @@ class Route:
             time_accum = time_accum + time
             feat_line = ",".join([str(item) for item in feat_list])
             str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+ "," + str(link_attributes['SPEED_LIMIT'])
-            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "," + lane_divider_dict[int(link_attributes['LANE_DIVIDER_MARKER'])]+ "," + str(link_attributes['TOLL_BOOTH'])+ "\n"
+            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "," + lane_divider_dict[int(link_attributes['LANE_DIVIDER_MARKER'])] + "," + str(link_attributes['TOLL_BOOTH'])+ "\n"
             features_file.write(str_line)
 
         feat_count_line = ",".join([str(item) for item in self.feat_count])
@@ -353,11 +353,10 @@ class Route:
                     gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[tsign]}"))  
                     self.n_features += 1
             '''
-
-            #self.displayRoadGeom(gpx, link_attributes, loc)
             #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
+            self.displayRoadGeom(gpx, link_attributes, loc)
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
-        #self.displayChargeStations(gpx)
+        self.displayChargeStations(gpx)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
@@ -366,7 +365,7 @@ class Route:
         return None
     
     def fillFeaturesCSV(self,attributes):
-        feat_list = ['Not present' for i in range(len(feature_list))]
+        feat_list = ['Not present' for i in range(len(feature_list)+1)]
         edge_dir = attributes['EDGE_DIRECTION']
         if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[0] += 1
@@ -473,6 +472,10 @@ class Route:
         if(2 in attributes[f'BUMP_{edge_dir}']):
             self.feat_count[34] += 1
             feat_list[34] = 'Present'
+        if(attributes[f'SPEED_BUMPS'] == 3):
+            self.feat_count[35] += 1
+            feat_list[35] = 'Present'
+        feat_list[36] = attributes[f'ROAD_ROUGHNESS_{edge_dir}']
         return feat_list
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
@@ -506,4 +509,4 @@ lane_divider_dict = {0:"No Marker", 1:"Long dashed line", 2:"Double solid line",
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
-                "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip"]
+                "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps"]

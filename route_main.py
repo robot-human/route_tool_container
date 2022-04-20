@@ -36,7 +36,7 @@ df.to_csv("/Users/humanrobot/Desktop/cs_filt_1.csv")
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing",
-                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip"]
+                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps"]
 def createCSVFile():
     features_file_name = f"./gpx/features_count.csv"
     head = ",".join([str(item) for item in feature_list])
