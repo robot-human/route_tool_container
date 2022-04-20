@@ -1,3 +1,4 @@
+import pandas as pd
 import requests 
 import time
 import os
@@ -16,10 +17,26 @@ N_ROUTES = 5
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
 
+"""
+id =[]
+type=[]
+lat=[]
+lon=[]
+for c in chargingStations:
+    id.append(c)
+    type.append(chargingStations[c]['CONNECTORTYPE'])
+    lat.append(chargingStations[c]['LAT'])
+    lon.append(chargingStations[c]['LON'])
+
+d = {'TYPE':type,'LAT':lat,'LON':lon}
+df=pd.DataFrame(data=d,index=id)
+df.to_csv("/Users/humanrobot/Desktop/cs_filt_1.csv")
+"""
+
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing",
-                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge"]
+                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip"]
 def createCSVFile():
     features_file_name = f"./gpx/features_count.csv"
     head = ",".join([str(item) for item in feature_list])
@@ -91,4 +108,3 @@ if __name__ == '__main__':
     #print(f'Tiles time {tiles_time}')
     #print(f'Graph time {graph_time}')
     #print(f'Route time {route_time}')
-    
