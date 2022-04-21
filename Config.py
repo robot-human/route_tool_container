@@ -221,11 +221,25 @@ else:
             max_speed = 200
             boolean_speed_max = False
             
-        boolean_features = {'highway':cfgParser.getint('config', 'highway'),'avoid_highway':cfgParser.getint('config', 'avoid_highway'),'tunnel':cfgParser.getint('config', 'tunnel'),'bridge':cfgParser.getint('config', 'bridge'),
-                            'ramp':cfgParser.getint('config', 'ramp'),'paved':cfgParser.getint('config', 'paved'),'access':cfgParser.getint('config', 'limited_access'),'both_ways':cfgParser.getint('config', 'both_ways'),
-                            'oneway':cfgParser.getint('config', 'oneway'),'urban':cfgParser.getint('config', 'urban'),'overpass':cfgParser.getint('config', 'overpass'),'underpass':cfgParser.getint('config', 'underpass'),
-                            'manoeuvre':cfgParser.getint('config', 'manoeuvre'),'roundabout':cfgParser.getint('config', 'roundabout'),'one_lane':cfgParser.getint('config', 'one_lane'),'multiple_lanes':cfgParser.getint('config', 'multiple_lanes')
-        }
+        boolean_features = {'stop_signs':cfgParser.getint('config', 'stop_signs'),'icy_road':cfgParser.getint('config', 'icy_road'),
+                            'falling_rocks':cfgParser.getint('config', 'falling_rocks'),'school_zone':cfgParser.getint('config', 'school_zone'),
+                            'pedestrian':cfgParser.getint('config', 'pedestrian'), 'crosswalk':cfgParser.getint('config', 'crosswalk'),
+                            'non_pedestrian':cfgParser.getint('config', 'non_pedestrian_crossing'),'two_way':cfgParser.getint('config', 'two_way'),
+                            'urban':cfgParser.getint('config', 'urban'),'lane_merge_r':cfgParser.getint('config', 'lane_merge_right'),
+                            'lane_merge_l':cfgParser.getint('config', 'lane_merge_left'),'lane_merge_c':cfgParser.getint('config', 'lane_merge_center'),
+                            'hills':cfgParser.getint('config', 'hills'),'traffic_signs':cfgParser.getint('config', 'traffic_signs'),
+                            'highway':cfgParser.getint('config', 'highway'),'avoid_highway':cfgParser.getint('config', 'avoid_highway'),
+                            'tunnel':cfgParser.getint('config', 'tunnel'),'bridge':cfgParser.getint('config', 'bridge'),
+                            'variable_speed':cfgParser.getint('config', 'variable_speed'),'traffic_lights':cfgParser.getint('config', 'traffic_lights'),
+                            'railway_crossing':cfgParser.getint('config', 'railway_crossing'),'no_overtaking':cfgParser.getint('config', 'no_overtaking'),
+                            'overtaking':cfgParser.getint('config', 'overtaking'),    
+                            'ramp':cfgParser.getint('config', 'ramp'),'paved':cfgParser.getint('config', 'paved'),
+                            'access':cfgParser.getint('config', 'limited_access'),'both_ways':cfgParser.getint('config', 'both_ways'),
+                            'oneway':cfgParser.getint('config', 'oneway'),'urban':cfgParser.getint('config', 'urban'),'overpass':cfgParser.getint('config', 'overpass'),
+                            'underpass':cfgParser.getint('config', 'underpass'),'manoeuvre':cfgParser.getint('config', 'manoeuvre'),
+                            'roundabout':cfgParser.getint('config', 'roundabout'),'one_lane':cfgParser.getint('config', 'one_lane'),
+                            'multiple_lanes':cfgParser.getint('config', 'multiple_lanes')}
+
         attr_features = {'FUNCTIONAL_CLASS':functional_class_list, 'SPEED_CATEGORY':speed_category_list, 'TRAVEL_DIRECTION':direction_list,  'URBAN':urban_list, 'LIMITED_ACCESS_ROAD':limited_access_list, 'PAVED':paved_list, 'RAMP':ramp_list, 
                         'INTERSECTION_CATEGORY':intersection_list, 'LANE_CATEGORY':lane_list, 'OVERPASS_UNDERPASS':overpass_list}
         sign_features = {'CONDITION_TYPE':traffic_condition_list,'SIGN_TYPE':traffic_signs_list,'display_condition':display_condition,'display_signs':display_signs}
@@ -236,7 +250,7 @@ else:
         speed_features = {'SPEED_MIN' : min_speed,'SPEED_MAX' : max_speed, 'boolean_speed_min':boolean_speed_min,'boolean_speed_max':boolean_speed_max}
             
         query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 'speed_features':speed_features}
-        
+
         cfg = { 'route_type': route_type,
                 'start_location': start_gps,
                 'end_location': end_gps,

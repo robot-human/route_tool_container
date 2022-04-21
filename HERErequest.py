@@ -273,7 +273,6 @@ def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dic
     for layer in road_layer:
         try:
             link_id = layer['LINK_ID']
-
             if(layer['FROM_AVAILABLE_ROUGHN_TYP'] != None):
                 l = layer['FROM_AVAILABLE_ROUGHN_TYP'].split(",")
                 links_dict[link_id]['BUMP_F'] = [int(i) for i in l]

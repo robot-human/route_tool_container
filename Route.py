@@ -219,26 +219,6 @@ class Route:
         print(f"Query points = {self.rank_points}")
         return None
 
-    def displayRoadGeom(self, gpx, link_attributes, loc):
-        if(link_attributes["TUNNEL"] == 'Y'):
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Tunnel"))
-            self.n_features += 1
-        if(link_attributes["BRIDGE"] == 'Y'):
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Bridge"))
-            self.n_features += 1
-        return None
-
-    def displayFeature(self, gpx, loc, link_attributes, values, start, feat_name):
-        if(link_attributes != None):
-            if(start==False and (link_attributes in values)):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
-                start = True
-                self.n_features += 1
-            elif(start==True and (link_attributes not in values)):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
-                start = False
-        return start
-
     def setCSVFeatures(self, G, route_num: int):
         file_name = f"./gpx/route{route_num}_features.csv"
         feat_line = ",".join([str(item) for item in feature_list])
@@ -278,6 +258,26 @@ class Route:
         features_count_file.close()
         features_file.close()
 
+    def displayFeature(self, gpx, loc, link_attributes, next_link_attributes, values, start, feat_name):
+        if(link_attributes != None):
+            if((start==False) and (link_attributes in values) and (next_link_attributes in values)):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
+                start = True
+                self.n_features += 1
+            elif((start==True) and (link_attributes not in values) and (next_link_attributes not in values)):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
+                start = False
+        return start
+
+    def displayRoadGeom(self, gpx, link_attributes, loc):
+        if(link_attributes["TUNNEL"] == 'Y'):
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Tunnel"))
+            self.n_features += 1
+        if(link_attributes["BRIDGE"] == 'Y'):
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Bridge"))
+            self.n_features += 1
+        return None
+           
     def setGPXFile(self, G, route_num: int, path_directory: str, cfg: dict):
         gpx_file_name = f'./{path_directory}/route{route_num}_staticfeaturesfile.gpx'
         gpx = gpxpy.gpx.GPX()
@@ -288,11 +288,17 @@ class Route:
         start = [False,False,False,False,False,False,False,False,False,False,False,False]
         ref_speed_limit = None
         
-        for i in range(1,len((self.route))):
+        for i in range(1,len(self.route)):
             loc = G.nodes[self.route[i-1]]['LOC']
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
+            if(i < len(self.route)-1):
+                next_link_data = G.get_edge_data(self.route[i],self.route[i+1])
+                next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
+            else:
+                next_link_attributes = link_data[list(link_data.keys())[0]]
 
+            edge_dir = link_attributes['EDGE_DIRECTION']
             #if(str(link_attributes['LANE_DIVIDER_MARKER']) != 'None'):
             #    lane_divider = f"{lane_divider_dict[link_attributes['LANE_DIVIDER_MARKER']]}"
             #else:
@@ -302,36 +308,40 @@ class Route:
             #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Speed limit: {speed_limit}"))
             #    ref_speed_limit = speed_limit
               
+            
             if(cfg['query_features']['boolean_features']['highway']):
-                start[0] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
+                start[0] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
             if(cfg['query_features']['boolean_features']['avoid_highway']):
-                start[1] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
+                start[1] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
             if(cfg['query_features']['boolean_features']['ramp']):
-                start[2] = self.displayFeature(gpx, loc, link_attributes['RAMP'], ['Y'], start[2], "Ramp")
+                start[2] = self.displayFeature(gpx, loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[2], "Ramp")
             if(cfg['query_features']['boolean_features']['paved']):
-                start[3] = self.displayFeature(gpx, loc, link_attributes['PAVED'], ['Y'], start[3], "Paved")
+                start[3] = self.displayFeature(gpx, loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[3], "Paved")
             if(cfg['query_features']['boolean_features']['access']):
-                start[4] = self.displayFeature(gpx, loc, link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[4], "Limited access")
+                start[4] = self.displayFeature(gpx, loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[4], "Limited access")
             if(cfg['query_features']['boolean_features']['both_ways']):
-                start[5] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], ['B'], start[5], "Bothways")
+                start[5] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[5], "Bothways")
             if(cfg['query_features']['boolean_features']['oneway']):
-                start[6] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[6], "One way")
+                start[6] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[6], "One way")
             if(cfg['query_features']['boolean_features']['urban']):
-                start[7] = self.displayFeature(gpx, loc, link_attributes['URBAN'], ['Y'], start[7], "Urban")
+                start[7] = self.displayFeature(gpx, loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[7], "Urban")
             if(cfg['query_features']['boolean_features']['overpass']):
-                start[8] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], ['1'], start[8], "Overpass")
+                start[8] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['1'], start[8], "Overpass")
             if(cfg['query_features']['boolean_features']['underpass']):
-                start[9] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], ['2'], start[9], "Underpass")
+                start[9] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['2'], start[9], "Underpass")
             if(cfg['query_features']['boolean_features']['one_lane']):
-                start[10] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
+                start[10] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
             if(cfg['query_features']['boolean_features']['multiple_lanes']):
-                start[11] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
+                start[11] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
 
             if(cfg['query_features']['boolean_features']['manoeuvre']):
                 if(link_attributes['INTERSECTION'] != None):
-                    if(int(link_attributes['INTERSECTION']) == 2):
+                    if((int(link_attributes['INTERSECTION']) == 2) and (prev_link_manoeuvre == False)):
                         gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Manoeuvre"))
                         self.n_features += 1  
+                        prev_link_manoeuvre = True
+                else:
+                    prev_link_manoeuvre = False
             if(cfg['query_features']['boolean_features']['roundabout']):
                 if(link_attributes['INTERSECTION'] != None):
                     if((int(link_attributes['INTERSECTION']) == 4) and (prev_link_roundabout == False)):
@@ -340,21 +350,63 @@ class Route:
                         prev_link_roundabout = True
                 else:
                     prev_link_roundabout = False
-
-            '''
-            if(len(link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"]) > 0):
-                for sig in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"]:
-                    tsignal = int(sig)
-                    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[tsignal]}"))
+            
+            if(cfg['query_features']['boolean_features']['tunnel']):
+                if((link_attributes["TUNNEL"] == 'Y') and (prev_link_tunnel == False)):
+                    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Tunnel"))
                     self.n_features += 1
-            if(len(link_attributes[f"TRAFFIC_SIGNS_{link_attributes['EDGE_DIRECTION']}"]) > 0):
-                for sign in link_attributes[f"TRAFFIC_SIGNS_{link_attributes['EDGE_DIRECTION']}"]:
+                    prev_link_tunnel = True
+                else:
+                    prev_link_tunnel = False
+
+            if(cfg['query_features']['boolean_features']['bridge']):
+                if((link_attributes["BRIDGE"] == 'Y') and (prev_link_bridge == False)):
+                    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Bridge"))
+                    self.n_features += 1
+                    prev_link_bridge = True
+                else:
+                    prev_link_bridge = False
+
+            if(cfg['query_features']['boolean_features']['traffic_signs'] == 0):
+                self.addSignWayPoint(gpx,loc,link_attributes,'stop_signs',20,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'school_zone',31,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'icy_road',28,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'falling_rocks',30,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'pedestrian',41,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'crosswalk',41,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'non_pedestrian',27,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'non_pedestrian',59,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'two_way',46,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'urban',47,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'lane_merge_r',6,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'lane_merge_l',7,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'lane_merge_c',8,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'hills',18,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'hills',19,edge_dir,cfg)
+                self.addSignWayPoint(gpx,loc,link_attributes,'hills',26,edge_dir,cfg)
+            if(cfg['query_features']['boolean_features']['traffic_signs']) and (len(link_attributes[f"TRAFFIC_SIGNS_{link_attributes['EDGE_DIRECTION']}"]) > 0):
+                for sign in link_attributes[f"TRAFFIC_SIGNS_{edge_dir}"]:
                     tsign = int(sign)
                     gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[tsign]}"))  
                     self.n_features += 1
-            '''
+
+            if((cfg['query_features']['boolean_features']['variable_speed']) and (11 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[11]}")) 
+                self.n_features += 1
+            if((cfg['query_features']['boolean_features']['traffic_lights']) and (16 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[16]}")) 
+                self.n_features += 1
+            if((cfg['query_features']['boolean_features']['railway_crossing']) and (18 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[18]}")) 
+                self.n_features += 1
+            if((cfg['query_features']['boolean_features']['no_overtaking']) and (19 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[19]}")) 
+                self.n_features += 1
+            if((cfg['query_features']['boolean_features']['overtaking']) and (21 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[21]}")) 
+                self.n_features += 1
+
             #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
-            self.displayRoadGeom(gpx, link_attributes, loc)
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
         self.displayChargeStations(gpx)
         with open(gpx_file_name, "w") as f:
@@ -364,6 +416,11 @@ class Route:
         self.displayRouteInfo()
         return None
     
+    def addSignWayPoint(self,gpx,loc,attr,signName,signNumber,edgeDirection,cfg):
+        if((cfg['query_features']['boolean_features'][signName]) and (signNumber in attr[f'TRAFFIC_SIGNS_{edgeDirection}'])):
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[signNumber]}")) 
+            self.n_features += 1
+
     def fillFeaturesCSV(self,attributes):
         feat_list = ['Not present' for i in range(len(feature_list)+1)]
         edge_dir = attributes['EDGE_DIRECTION']
