@@ -86,7 +86,7 @@ class Route:
     def closestChargingStation(self, G, start_node, end_node):
         s_loc = G.nodes[start_node]['LOC']
         e_loc = G.nodes[end_node]['LOC']
-        ref_dist = 10000
+        ref_dist = 100000
         for cs in self.charging_stations:
             loc = (int(self.charging_stations[cs]['LAT'])/100000, int(self.charging_stations[cs]['LON'])/100000)
             dist = distance(s_loc,loc) + distance(e_loc,loc)
@@ -130,9 +130,12 @@ class Route:
         
     def pointToPointRoute(self, G, start_node, end_node):
         if(self.visit_charging_stationt):
-            visit_point = self.closestChargingStation(G, start_node, end_node)
-            mid_node, _ = G.findNodeFromCoord(visit_point)
-            return self.midPointPath(G, start_node, end_node, mid_node)
+            try:
+                visit_point = self.closestChargingStation(G, start_node, end_node)
+                mid_node, _ = G.findNodeFromCoord(visit_point)
+                return self.midPointPath(G, start_node, end_node, mid_node)
+            except:
+                return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
         else:
             return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
 
