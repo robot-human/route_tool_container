@@ -3,8 +3,8 @@ import paho.mqtt.client as paho
 from paho import mqtt
 
 SERVER = 0
-topic = "fevvf/route_tool_prakash"
-clientID = "clientId-xLODDl4VwO-prakash-s"
+topic = "fevvf/route_tool_karthik"
+clientID = "clientId-xLODDl4VwO-karthik-s"
 file_path = f"./request_input.txt"
 
 if(SERVER == 0):
