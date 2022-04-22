@@ -4,9 +4,9 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 0
-topic = "fevvf/route_tool_prakash"
-clientID = "clientId-xMODDl4VwR-prakash-p"
+SERVER = 3
+topic = "fevvf/route_tool_private"
+clientID = "clientId-xMODDl4VwR-private-p"
 file_path = f'./config.ini'
 
 if(SERVER == 0):
