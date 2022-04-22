@@ -65,13 +65,13 @@ class Route:
         self.n_features = 0
         self.rank_points = 0
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
-        self.features_file_name = f"./gpx/features_count.csv"
+        self.features_file_name = f"./gpx/summary.csv"
         return None
     
     def auxRoute(self, G, start_loc, end_loc):
         start_node_distances = []
         end_node_distances = []
-        signs = getSigns(G)
+        #signs = getSigns(G)
         for s in signs:
             d1 = Haversine(s[1],start_loc)
             d2 = Haversine(s[2],end_loc)
@@ -220,7 +220,7 @@ class Route:
         return None
 
     def setCSVFeatures(self, G, route_num: int):
-        file_name = f"./gpx/route{route_num}_features.csv"
+        file_name = f"./gpx/route{route_num}_staticfeaturesfile.csv"
         feat_line = ",".join([str(item) for item in feature_list])
         head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time,"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth"+"\n"
         features_file = open(file_name, "w")

@@ -38,7 +38,7 @@ feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing",
                 "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps"]
 def createCSVFile():
-    features_file_name = f"./gpx/features_count.csv"
+    features_file_name = f"./gpx/summary.csv"
     head = ",".join([str(item) for item in feature_list])
     features_file = open(features_file_name, "w")
     features_file.write("route_num,route_length,route_estimated_time,"+head+"\n")
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     routes_list = list()
     i = 0
     
-    getSigns(g, cfg)
+    #getSigns(g, cfg)
     #route = Route(cfg.get('route_type'), cfg.get('desired_route_length_km'), float(cfg.get('search_radius_km')),chargingStations, int(cfg.get('visit_charge_station')))
     #route.auxRoute(g, cfg.get('start_location'),cfg.get('end_location'))
     
