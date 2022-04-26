@@ -202,7 +202,8 @@ class Route:
         return None
      
     def displayChargeStations(self,gpx):
-        gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[self.c_station]['LAT'])/100000,int(self.charging_stations[self.c_station]['LON'])/100000, name=self.charging_stations[self.c_station]['CONNECTORTYPE'])) 
+        if(str(self.c_station) != "None"):
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[self.c_station]['LAT'])/100000,int(self.charging_stations[self.c_station]['LON'])/100000, name=self.charging_stations[self.c_station]['CONNECTORTYPE'])) 
         #for s in self.charging_stations:
         #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
         return None
