@@ -64,6 +64,7 @@ class Route:
         self.driving_time = 0
         self.n_features = 0
         self.rank_points = 0
+        self.c_station = None
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
         self.features_file_name = f"./gpx/summary.csv"
         return None
@@ -414,7 +415,8 @@ class Route:
 
             #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
-        self.displayChargeStations(gpx)
+        if((int(cfg['visit_charge_station']) == 1) and (cfg['route_type'] == "point_to_charge_station")):
+            self.displayChargeStations(gpx)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
