@@ -120,6 +120,7 @@ class Route:
         elif(self.route_type == 'closed_route'):
             return self.closedRoute(G, start_node, end_node)
         elif(self.route_type == 'point_to_anywhere'):
+            endLocation = getRandomLocation(startLoc, self.search_radius)
             return self.pointToAnywhereRoute(G, start_node)
         elif(self.route_type == 'point_to_charge_station'):
             return self.pointToChargeStationRoute(G, start_node)
@@ -152,19 +153,19 @@ class Route:
         else:
             return self.midPointPath(G, start_node, start_node, end_node)
 
-    def pointToAnywhereRoute(self, G, start_node):
-        if(self.visit_charging_stationt):
-            startLoc = G.nodes[start_node]['LOC']
-            endLocation = getRandomLocation(startLoc, self.search_radius)
-            end_node, _ = G.findNodeFromCoord(endLocation)
-            visit_point = self.closestChargingStation(G, start_node, end_node)
-            mid_node, _ = G.findNodeFromCoord(visit_point)
-            return self.midPointPath(G, start_node, end_node, mid_node)
-        else:
-            startLoc = G.nodes[start_node]['LOC']
-            endLocation = getRandomLocation(startLoc, self.search_radius)
-            end_node, _ = G.findNodeFromCoord(endLocation)
-            return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+    #def pointToAnywhereRoute(self, G, start_node):
+    #    if(self.visit_charging_stationt):
+    #        startLoc = G.nodes[start_node]['LOC']
+    #        endLocation = getRandomLocation(startLoc, self.search_radius)
+    #        end_node, _ = G.findNodeFromCoord(endLocation)
+    #        visit_point = self.closestChargingStation(G, start_node, end_node)
+    #        mid_node, _ = G.findNodeFromCoord(visit_point)
+    #        return self.midPointPath(G, start_node, end_node, mid_node)
+    #    else:
+    #        startLoc = G.nodes[start_node]['LOC']
+    #        endLocation = getRandomLocation(startLoc, self.search_radius)
+    #        end_node, _ = G.findNodeFromCoord(endLocation)
+    #        return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
 
     def pointToChargeStationRoute(self, G, start_node):
         route_found = False
