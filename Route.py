@@ -93,6 +93,7 @@ class Route:
             if(dist < ref_dist):
                 ref_dist = dist
                 nearest_cs = loc
+                self.c_station = cs
         return nearest_cs   
     
     def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
@@ -201,8 +202,9 @@ class Route:
         return None
      
     def displayChargeStations(self,gpx):
-        for s in self.charging_stations:
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
+        gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[self.c_station]['LAT'])/100000,int(self.charging_stations[self.c_station]['LON'])/100000, name=self.charging_stations[self.c_station]['CONNECTORTYPE'])) 
+        #for s in self.charging_stations:
+        #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
         return None
 
     def routeRankPoints(self):
@@ -476,12 +478,12 @@ class Route:
             self.feat_count[15] += 1
             feat_list[15] = 'Present'
         if(str(attributes['LIMITED_ACCESS_ROAD']) != 'None'):
-            self.feat_count[16] += 1
+            self.feat_count[16] += attributes['LINK_LENGTH']*0.001
             feat_list[16] = 'Present'
         if(str(attributes['PAVED']) != 'None'):
-            self.feat_count[17] += 1
+            self.feat_count[17] += attributes['LINK_LENGTH']*0.001
             feat_list[17] = 'Present'
-        if(str(attributes['RAMP']) != 'None'):
+        if(str(attributes['RAMP']) == 'Y'):
             self.feat_count[18] += 1
             feat_list[18] = 'Present'
         if(str(attributes['INTERSECTION']) == '2'):
