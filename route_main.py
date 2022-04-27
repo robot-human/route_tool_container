@@ -69,11 +69,11 @@ if __name__ == '__main__':
     #print(f"Desired route length = {cfg.get('desired_route_length_km')}")
     #print("")
     start_node, _ = g.findNodeFromCoord(cfg.get('start_location'))
-    if(cfg.get('route_type') == 'point_to_point'):
-        end_node, _ = g.findNodeFromCoord(cfg.get('end_location'))
-    elif(cfg.get('route_type') == 'point_to_anywhere'):
-        end_loc = getRandomLocation(startLoc, cfg.get('search_radius_km'))
+    if(cfg.get('route_type') == 'point_to_anywhere'):
+        end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
         end_node, _ = g.findNodeFromCoord(end_loc)
+    else:
+        end_node, _ = g.findNodeFromCoord(cfg.get('end_location'))
     routes_list = list()
     i = 0
     

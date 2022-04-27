@@ -120,8 +120,9 @@ class Route:
         elif(self.route_type == 'closed_route'):
             return self.closedRoute(G, start_node, end_node)
         elif(self.route_type == 'point_to_anywhere'):
-            endLocation = getRandomLocation(startLoc, self.search_radius)
-            return self.pointToAnywhereRoute(G, start_node)
+            #endLocation = getRandomLocation(startLoc, self.search_radius)
+            #return self.pointToAnywhereRoute(G, start_node)
+            return self.pointToPointRoute(G, start_node, end_node)
         elif(self.route_type == 'point_to_charge_station'):
             return self.pointToChargeStationRoute(G, start_node)
         else:
@@ -204,7 +205,8 @@ class Route:
         return None
      
     def displayChargeStations(self,gpx):
-        if(str(self.c_station) != "None"):
+        c_station = self.closestChargingStation(G, start_node, end_node)
+        if(str(c_station) != "None"):
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[self.c_station]['LAT'])/100000,int(self.charging_stations[self.c_station]['LON'])/100000, name=self.charging_stations[self.c_station]['CONNECTORTYPE'])) 
         #for s in self.charging_stations:
         #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
@@ -416,8 +418,8 @@ class Route:
 
             #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
-        if((int(cfg['visit_charge_station']) == 1) and (cfg['route_type'] == "point_to_charge_station")):
-            self.displayChargeStations(gpx)
+        #if((int(cfg['visit_charge_station']) == 1) and (cfg['route_type'] == "point_to_charge_station")):
+        self.displayChargeStations(gpx)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
