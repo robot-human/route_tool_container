@@ -64,7 +64,6 @@ class Route:
         self.driving_time = 0
         self.n_features = 0
         self.rank_points = 0
-        self.c_station = None
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
         self.features_file_name = f"./gpx/summary.csv"
         return None
@@ -204,10 +203,9 @@ class Route:
         self.route_length = self.route_length/1000
         return None
      
-    def displayChargeStations(self,gpx):
-        c_station = self.closestChargingStation(G, start_node, end_node)
-        if(str(c_station) != "None"):
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[self.c_station]['LAT'])/100000,int(self.charging_stations[self.c_station]['LON'])/100000, name=self.charging_stations[self.c_station]['CONNECTORTYPE'])) 
+    def displayChargeStations(self, gpx, station):
+        if(str(station) != "None"):
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[station]['LAT'])/100000,int(self.charging_stations[station]['LON'])/100000, name=self.charging_stations[station]['CONNECTORTYPE'])) 
         #for s in self.charging_stations:
         #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
         return None
@@ -419,7 +417,8 @@ class Route:
             #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
         #if((int(cfg['visit_charge_station']) == 1) and (cfg['route_type'] == "point_to_charge_station")):
-        self.displayChargeStations(gpx)
+        station = self.closestChargingStation(G, start_node, end_node)
+        self.displayChargeStations(gpx, station)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
