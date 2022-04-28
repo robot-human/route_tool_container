@@ -315,15 +315,17 @@ def getChargingStationsList(tiles: tuple, session):
     for tile in tiles:
         stations = checkTileFromCache(tile, f'EVCHARGING_POI', session)
         for s in stations:
+            #print(s['NAMES'],s['CONNECTORTYPE'])
             if(str(s['CONNECTORTYPE']) != str(None)):
                 string = s['CONNECTORTYPE'].split("                   ")
-                if(len(string) == 1):
-                    alt_string = string[0].split(";")
-                    cs_type = alt_string[len(alt_string) - 1]
-                else:
-                    cs_type = string[7]
-                if((cs_type == "ChargePoint") or (cs_type == "Electrify America")):
-                    stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
+                if('combo' in string[0]):
+                    if(len(string) == 1):
+                        alt_string = string[0].split(";")
+                        cs_type = alt_string[len(alt_string) - 1]
+                    else:
+                        cs_type = string[7]
+                    if((cs_type == "ChargePoint") or (cs_type == "Electrify America")):
+                        stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
     return stations_dict
 
 #This function request the link layer and link attributes layer tile data and creates the link attribute dictionary

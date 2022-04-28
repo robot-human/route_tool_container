@@ -119,8 +119,6 @@ class Route:
         elif(self.route_type == 'closed_route'):
             return self.closedRoute(G, start_node, end_node)
         elif(self.route_type == 'point_to_anywhere'):
-            #endLocation = getRandomLocation(startLoc, self.search_radius)
-            #return self.pointToAnywhereRoute(G, start_node)
             return self.pointToPointRoute(G, start_node, end_node)
         elif(self.route_type == 'point_to_charge_station'):
             return self.pointToChargeStationRoute(G, start_node)
@@ -152,21 +150,7 @@ class Route:
             return route     
         else:
             return self.midPointPath(G, start_node, start_node, end_node)
-
-    #def pointToAnywhereRoute(self, G, start_node):
-    #    if(self.visit_charging_stationt):
-    #        startLoc = G.nodes[start_node]['LOC']
-    #        endLocation = getRandomLocation(startLoc, self.search_radius)
-    #        end_node, _ = G.findNodeFromCoord(endLocation)
-    #        visit_point = self.closestChargingStation(G, start_node, end_node)
-    #        mid_node, _ = G.findNodeFromCoord(visit_point)
-    #        return self.midPointPath(G, start_node, end_node, mid_node)
-    #    else:
-    #        startLoc = G.nodes[start_node]['LOC']
-    #        endLocation = getRandomLocation(startLoc, self.search_radius)
-    #        end_node, _ = G.findNodeFromCoord(endLocation)
-    #        return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
-
+            
     def pointToChargeStationRoute(self, G, start_node):
         route_found = False
         non_route_available = []
@@ -204,10 +188,9 @@ class Route:
         return None
      
     def displayChargeStations(self, gpx, station):
+        #for s in self.charging_stations:
         if(str(station) != "None"):
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[station]['LAT'])/100000,int(self.charging_stations[station]['LON'])/100000, name=self.charging_stations[station]['CONNECTORTYPE'])) 
-        #for s in self.charging_stations:
-        #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[s]['LAT'])/100000,int(self.charging_stations[s]['LON'])/100000, name=self.charging_stations[s]['CONNECTORTYPE'])) 
         return None
 
     def routeRankPoints(self):
@@ -307,16 +290,6 @@ class Route:
                 next_link_attributes = link_data[list(link_data.keys())[0]]
 
             edge_dir = link_attributes['EDGE_DIRECTION']
-            #if(str(link_attributes['LANE_DIVIDER_MARKER']) != 'None'):
-            #    lane_divider = f"{lane_divider_dict[link_attributes['LANE_DIVIDER_MARKER']]}"
-            #else:
-            #    lane_divider = None
-            #speed_limit = link_attributes['SPEED_LIMIT']
-            #if(speed_limit != ref_speed_limit):
-            #    gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Speed limit: {speed_limit}"))
-            #    ref_speed_limit = speed_limit
-              
-            
             if(cfg['query_features']['boolean_features']['highway']):
                 start[0] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
             if(cfg['query_features']['boolean_features']['avoid_highway']):
@@ -414,11 +387,14 @@ class Route:
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[21]}")) 
                 self.n_features += 1
 
-            #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1], name=f"Lane divider marker: {lane_divider}, Speed limit: {speed_limit}")) 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
-        #if((int(cfg['visit_charge_station']) == 1) and (cfg['route_type'] == "point_to_charge_station")):
-        station = self.closestChargingStation(G, start_node, end_node)
-        self.displayChargeStations(gpx, station)
+        if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
+            lat = int(self.charging_stations[self.c_station]['LAT'])/100000
+            lon = int(self.charging_stations[self.c_station]['LON'])/100000
+            CONNECTOR = self.charging_stations[self.c_station]["CONNECTORTYPE"]
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=CONNECTOR))
+        #    station = self.closestChargingStation(G, cfg['start_location'],cfg['end_location'])
+        #self.displayChargeStations(gpx, station)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
