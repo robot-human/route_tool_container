@@ -13,7 +13,7 @@ from Route import Route, getSigns
 session = requests.Session()
 #UPDATED_CODE_31012022
 
-N_ROUTES = 5
+N_ROUTES = 8
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
 

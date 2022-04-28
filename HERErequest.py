@@ -348,9 +348,6 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
             link_id = attr['LINK_ID']
-            #links_dict[link_id]['HPX'] = None
-            #links_dict[link_id]['HPY'] = None
-            #links_dict[link_id]['HPZ'] = None
             links_dict[link_id]['BUMP_F'] = []
             links_dict[link_id]['BUMP_T'] = []
             links_dict[link_id]['ROAD_ROUGHNESS_F'] = "Unkown"
@@ -374,7 +371,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
             links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
             links_dict[link_id]['PHYSICAL_NUM_LANES'] = attr['PHYSICAL_NUM_LANES']
-            links_dict[link_id]['OVERPASS_UNDERPASS'] = str(attr['OVERPASS_UNDERPASS'])
+            links_dict[link_id]['OVERPASS_UNDERPASS'] = attr['OVERPASS_UNDERPASS']
 
             links_dict[link_id]['SPEED_LIMIT'] = None        
             links_dict[link_id]['LANE_TYPE'] = None
