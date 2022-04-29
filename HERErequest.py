@@ -373,6 +373,10 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['PHYSICAL_NUM_LANES'] = attr['PHYSICAL_NUM_LANES']
             links_dict[link_id]['OVERPASS_UNDERPASS'] = attr['OVERPASS_UNDERPASS']
 
+            links_dict[link_id]['HPX'] = None
+            links_dict[link_id]['HPY'] = None
+            links_dict[link_id]['HPZ'] = None
+
             links_dict[link_id]['SPEED_LIMIT'] = None        
             links_dict[link_id]['LANE_TYPE'] = None
             links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
@@ -392,7 +396,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['WEIGHT'] += setAttrWeight(attr, query['attr_features'])
         
         
-        #links_dict = requestADASTile(links_dict, tile, session)
+    links_dict = requestADASTile(links_dict, tile, session)
     links_dict = requestLaneTile(links_dict, tile, session)
     links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
     links_dict = requestSpeedLimitTile(links_dict, tile, query['speed_features'], session)

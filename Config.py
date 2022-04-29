@@ -25,7 +25,9 @@ else:
         end_gps = (float(temp[0]), float(temp[1]))
         search_radius_km = float(cfgParser.get('config', 'search_radius_km'))
         desired_route_length_km = float(cfgParser.get('config', 'desired_route_length_km'))
-        
+    if(start_gps == end_gps):
+        route_type = "point_to_anywhere"
+
         if((route_type == 'point_to_anywhere') or (route_type == 'point_to_charge_station')):
             margin = max(search_radius_km,desired_route_length_km)/100
             lat_max = start_gps[0] + margin
