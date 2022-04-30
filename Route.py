@@ -1,4 +1,4 @@
-from re import S
+#from re import S
 from HEREgraph2 import HEREgraph
 import numpy as np
 import networkx as nx
@@ -58,6 +58,7 @@ class Route:
         self.desired_length = desired_length
         self.search_radius = search_radius
         self.charging_stations = charging_stations
+        self.c_station = None
         self.visit_charging_stationt = visit_charging_station
         self.route = []
         self.route_length = 0
@@ -84,6 +85,7 @@ class Route:
         print(df)
     
     def closestChargingStation(self, G, start_node, end_node):
+        nearest_cs = None
         s_loc = G.nodes[start_node]['LOC']
         e_loc = G.nodes[end_node]['LOC']
         ref_dist = 100000
@@ -135,11 +137,11 @@ class Route:
         
     def pointToPointRoute(self, G, start_node, end_node):
         if(self.visit_charging_stationt):
-            try:
-                visit_point = self.closestChargingStation(G, start_node, end_node)
+            visit_point = self.closestChargingStation(G, start_node, end_node)
+            if(visit_point != None):
                 mid_node, _ = G.findNodeFromCoord(visit_point)
                 return self.midPointPath(G, start_node, end_node, mid_node)
-            except:
+            else:
                 return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
         else:
             return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
@@ -147,11 +149,14 @@ class Route:
     def closedRoute(self, G, start_node, end_node):
         if(self.visit_charging_stationt):
             visit_point = self.closestChargingStation(G, start_node, end_node)
-            mid_node, _ = G.findNodeFromCoord(visit_point)
-            route = self.midPointPath(G, start_node, mid_node, end_node)
-            route.pop(len(route)-1)
-            route.extend(nx.shortest_path(G, mid_node, start_node, weight='WEIGHT'))
-            return route     
+            if(visit_point != None):
+                mid_node, _ = G.findNodeFromCoord(visit_point)
+                route = self.midPointPath(G, start_node, mid_node, end_node)
+                route.pop(len(route)-1)
+                route.extend(nx.shortest_path(G, mid_node, start_node, weight='WEIGHT'))
+                return route
+            else:
+                return self.midPointPath(G, start_node, start_node, end_node)
         else:
             return self.midPointPath(G, start_node, start_node, end_node)
             
@@ -393,10 +398,11 @@ class Route:
 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
-            lat = int(self.charging_stations[self.c_station]['LAT'])/100000
-            lon = int(self.charging_stations[self.c_station]['LON'])/100000
-            CONNECTOR = self.charging_stations[self.c_station]["CONNECTORTYPE"]
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=CONNECTOR))
+            if(self.c_station != None):
+                lat = int(self.charging_stations[self.c_station]['LAT'])/100000
+                lon = int(self.charging_stations[self.c_station]['LON'])/100000
+                CONNECTOR = self.charging_stations[self.c_station]["CONNECTORTYPE"]
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=CONNECTOR))
         #    station = self.closestChargingStation(G, cfg['start_location'],cfg['end_location'])
         #self.displayChargeStations(gpx, station)
         with open(gpx_file_name, "w") as f:

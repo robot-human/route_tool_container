@@ -1,7 +1,7 @@
 from os.path import isfile
 import os
 from configparser import ConfigParser
-from Tools import Haversine
+from Tools import Haversine, getRandomLocation
 
 sample_separation = 0.001
 margin = 0.02
@@ -25,20 +25,20 @@ else:
         end_gps = (float(temp[0]), float(temp[1]))
         search_radius_km = float(cfgParser.get('config', 'search_radius_km'))
         desired_route_length_km = float(cfgParser.get('config', 'desired_route_length_km'))
-    if(start_gps == end_gps):
-        route_type = "point_to_anywhere"
 
-        if((route_type == 'point_to_anywhere') or (route_type == 'point_to_charge_station')):
-            margin = max(search_radius_km,desired_route_length_km)/100
-            lat_max = start_gps[0] + margin
-            lon_max = start_gps[1] + margin
-            lat_min = start_gps[0] - margin
-            lon_min = start_gps[1] - margin
-        else:
-            lat_max = max(start_gps[0],end_gps[0]) + margin
-            lon_max = max(start_gps[1],end_gps[1]) + margin
-            lat_min = min(start_gps[0],end_gps[0]) - margin
-            lon_min = min(start_gps[1],end_gps[1]) - margin
+        distance = Haversine(start_gps,end_gps)
+        if(distance < 0.5):
+            route_type = "closed_route"
+
+        if(route_type == 'point_to_anywhere'):
+            end_gps = getRandomLocation(start_gps, desired_route_length_km)
+        elif(route_type == 'closed_route'):
+            end_gps = getRandomLocation(start_gps, desired_route_length_km/4.0)
+
+        lat_max = max(start_gps[0],end_gps[0]) + margin
+        lon_max = max(start_gps[1],end_gps[1]) + margin
+        lat_min = min(start_gps[0],end_gps[0]) - margin
+        lon_min = min(start_gps[1],end_gps[1]) - margin
                     
         lat_interval = lat_max - lat_min
         lon_interval = lon_max - lon_min

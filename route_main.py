@@ -13,7 +13,7 @@ from Route import Route, getSigns
 session = requests.Session()
 #UPDATED_CODE_31012022
 
-N_ROUTES = 8
+N_ROUTES = 5
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
 
@@ -82,7 +82,11 @@ if __name__ == '__main__':
     while(i < N_ROUTES):
         print(f"Route number {i}")
         route = Route(cfg.get('route_type'), cfg.get('desired_route_length_km'), float(cfg.get('search_radius_km')),chargingStations, int(cfg.get('visit_charge_station')))
-        route.setRoute(g, start_node, end_node)
+        try:
+            route.setRoute(g, start_node, end_node)
+        except:
+            end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
+            end_node, _ = g.findNodeFromCoord(end_loc)
         route.setCSVFeatures(g, i)
         route.setGPXFile(g, i, "./gpx", cfg)
         rank_points = route.getRankPoints()
