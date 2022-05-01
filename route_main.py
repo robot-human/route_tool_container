@@ -79,14 +79,17 @@ if __name__ == '__main__':
     
     best_route = 0
     ref_rank_points = 0
+    route_bool = False
     while(i < N_ROUTES):
         print(f"Route number {i}")
         route = Route(cfg.get('route_type'), cfg.get('desired_route_length_km'), float(cfg.get('search_radius_km')),chargingStations, int(cfg.get('visit_charge_station')))
-        try:
-            route.setRoute(g, start_node, end_node)
-        except:
-            end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
-            end_node, _ = g.findNodeFromCoord(end_loc)
+        while(route_bool == False):
+            try:
+                route.setRoute(g, start_node, end_node)
+                route_bool = True
+            except:
+                end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
+                end_node, _ = g.findNodeFromCoord(end_loc)
         route.setCSVFeatures(g, i)
         route.setGPXFile(g, i, "./gpx", cfg)
         rank_points = route.getRankPoints()
