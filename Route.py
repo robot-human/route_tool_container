@@ -127,7 +127,8 @@ class Route:
             except:
                 print("couldn't find route")
         elif(self.route_type == 'point_to_charge_station'):
-            return self.pointToChargeStationRoute(G, start_node)
+            print("Charge station")
+            return self.pointToChargeStationRoute(G, start_node, end_node)
         else:
             print("Invalid route type")
             return None
@@ -160,7 +161,7 @@ class Route:
         else:
             return self.midPointPath(G, start_node, start_node, end_node)
             
-    def pointToChargeStationRoute(self, G, start_node):
+    def pointToChargeStationRoute(self, G, start_node, end_node):
         route_found = False
         non_route_available = []
         while(not route_found):
@@ -172,9 +173,10 @@ class Route:
                 if((diff < ref) and (loc not in non_route_available)):
                     ref = diff
                     charging_st = loc
+                    self.c_station = cs
             mid_node, _ = G.findNodeFromCoord(charging_st)
             try:
-                route = self.midPointPath(G, start_node, start_node, mid_node)
+                route = self.midPointPath(G, start_node, end_node, mid_node)
                 route_found = True
             except:
                 non_route_available.append(charging_st)
