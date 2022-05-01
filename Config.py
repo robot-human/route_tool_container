@@ -28,12 +28,11 @@ else:
 
         distance = Haversine(start_gps,end_gps)
         if(distance < 0.5):
+            end_gps = getRandomLocation(start_gps, desired_route_length_km/3.0)
             route_type = "closed_route"
 
         if(route_type == 'point_to_anywhere'):
             end_gps = getRandomLocation(start_gps, desired_route_length_km)
-        elif(route_type == 'closed_route'):
-            end_gps = getRandomLocation(start_gps, desired_route_length_km/4.0)
 
         lat_max = max(start_gps[0],end_gps[0]) + margin
         lon_max = max(start_gps[1],end_gps[1]) + margin
