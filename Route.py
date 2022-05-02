@@ -6,7 +6,7 @@ import gpxpy
 import os
 from Tools import Haversine, getRandomLocation, distance
 import pandas as pd
-
+"summary"
 #This function returns the full graph traffic signs list
 def getSigns(G, cfg):
     gpx = gpxpy.gpx.GPX()
@@ -189,6 +189,7 @@ class Route:
         self.route = self.findRoute(G, start_point, mid_point)
         for i in range(1,len(self.route)):
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
+            #print(link_data)
             link_attributes = link_data[list(link_data.keys())[0]]
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
@@ -224,7 +225,7 @@ class Route:
     def setCSVFeatures(self, G, route_num: int):
         file_name = f"./gpx/route{route_num}_staticfeaturesfile.csv"
         feat_line = ",".join([str(item) for item in feature_list])
-        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time,"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth"+"\n"
+        head = "Route_name,LAT,LON,Link_length (m),Avg_speed (km/h),Speed_limit (km/h),Time (h),Accum_len (km),Accum_time (h),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
@@ -232,13 +233,19 @@ class Route:
         len_accum = 0
         time_accum = 0
         self.feat_count = []
+        start = [False]
         for feat in feature_list:
             self.feat_count.append(0)
         for i in range(1,len((self.route))):
             str_line = str(route_num)
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
-            feat_list = self.fillFeaturesCSV(link_attributes)
+            if(i < len(self.route)-1):
+                next_link_data = G.get_edge_data(self.route[i],self.route[i+1])
+                next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
+            else:
+                next_link_attributes = link_data[list(link_data.keys())[0]]
+            feat_list = self.fillFeaturesCSV(link_attributes, next_link_attributes, start)
             lat = str(int(link_attributes['LAT'].split(",")[0])/100000)
             lon = str(int(link_attributes['LON'].split(",")[0])/100000)
             link_length = 0.001*float(link_attributes['LINK_LENGTH'])
@@ -250,7 +257,7 @@ class Route:
             time_accum = time_accum + time
             feat_line = ",".join([str(item) for item in feat_list])
             str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+ "," + str(link_attributes['SPEED_LIMIT'])
-            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "," + lane_divider_dict[int(link_attributes['LANE_DIVIDER_MARKER'])] + "," + str(link_attributes['TOLL_BOOTH'])+ "\n"
+            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "," + lane_divider_dict[int(link_attributes['LANE_DIVIDER_MARKER'])] + "," + str(link_attributes['TOLL_BOOTH'])+ "," +str(link_attributes['FUNCTIONAL_CLASS'])+ "\n"
             features_file.write(str_line)
 
         feat_count_line = ",".join([str(item) for item in self.feat_count])
@@ -419,7 +426,7 @@ class Route:
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[signNumber]}")) 
             self.n_features += 1
 
-    def fillFeaturesCSV(self,attributes):
+    def fillFeaturesCSV(self,attributes, next_attributes, start):
         feat_list = ['Not present' for i in range(len(feature_list)+1)]
         edge_dir = attributes['EDGE_DIRECTION']
         if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
@@ -477,8 +484,12 @@ class Route:
             self.feat_count[17] += attributes['LINK_LENGTH']*0.001
             feat_list[17] = 'Present'
         if(str(attributes['RAMP']) == 'Y'):
-            self.feat_count[18] += 1
-            feat_list[18] = 'Present'
+            if((str(next_attributes['RAMP']) == 'Y') and (start[0] == False)):
+                self.feat_count[18] += 1
+                feat_list[18] = 'Present'
+                start[0] = True
+            elif(str(next_attributes['RAMP']) == 'N'):
+                start[0] = False
         if(str(attributes['INTERSECTION']) == '2'):
             self.feat_count[19] += 1
             feat_list[19] = 'Present'
@@ -531,6 +542,21 @@ class Route:
             self.feat_count[35] += 1
             feat_list[35] = 'Present'
         feat_list[36] = attributes[f'ROAD_ROUGHNESS_{edge_dir}']
+        if(attributes[f'FUNCTIONAL_CLASS'] == 1):
+            self.feat_count[36] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[41] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 2):
+            self.feat_count[37] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[42] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 3):
+            self.feat_count[38] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[43] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 4):
+            self.feat_count[39] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[44] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 5):
+            self.feat_count[40] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[45] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
         return feat_list
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
@@ -569,4 +595,6 @@ lane_type = {1:"REGULAR",2:"HOV",4:"REVERSIBLE",6:"HOV + REVERSIBLE",8:"EXPRESS"
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
-                "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps"]
+                "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps",
+                "functional_class_1","functional_class_2","functional_class_3","functional_class_4","functional_class_5",
+                "functional_class_1 (h)","functional_class_2 (h)","functional_class_3 (h)","functional_class_4 (h)","functional_class_5 (h)"]

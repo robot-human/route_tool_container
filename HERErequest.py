@@ -22,7 +22,7 @@ APP_CODE = 'UUWISlzU8orDegoNz_Y9-Ht0iiHRZKk7jrcRLjMEoSE'
 
 level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 api_usage_count = 0
-INCREMENT_ = 5000
+INCREMENT_ = 100
 
 road_roughn_cat = {1:"Good",2:"Fair",3:"Poor"}
 
@@ -228,6 +228,7 @@ def requestTrafficPatternTile(links_dict: dict,  tile: tuple, session: requests.
             try:
                 link_id = pattern['LINK_ID']   
                 links_dict[link_id]['AVG_SPEED'] = float(pattern['FREE_FLOW_SPEED'])
+                links_dict[link_id]['AVG_SPEED (Mi/h)'] = 0.621371*float(pattern['FREE_FLOW_SPEED'])
             except:
                 print("Traffic Pattern layer empty")
     return links_dict
@@ -243,9 +244,11 @@ def requestSpeedLimitTile(links_dict: dict,  tile: tuple, features_query: dict, 
                 link_id = limit['LINK_ID']
                 if(links_dict[link_id]['TRAVEL_DIRECTION'] == 'T'):   
                     links_dict[link_id]['SPEED_LIMIT'] = int(limit['TO_REF_SPEED_LIMIT'])
+                    links_dict[link_id]['SPEED_LIMIT (Mi/h)'] = 0.621371*int(limit['TO_REF_SPEED_LIMIT'])
                     links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['TO_REF_SPEED_LIMIT']), features_query)
                 else:
                     links_dict[link_id]['SPEED_LIMIT'] = int(limit['FROM_REF_SPEED_LIMIT'])
+                    links_dict[link_id]['SPEED_LIMIT (Mi/h)'] = 0.621371*int(limit['FROM_REF_SPEED_LIMIT'])
                     links_dict[link_id]['WEIGHT'] += setSpeedWeight(int(limit['FROM_REF_SPEED_LIMIT']), features_query)
             except:
                 print("Speed Limit layer empty")
@@ -342,6 +345,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link['LINK_ID']] = {'REF_NODE_ID' : link['REF_NODE_ID'],
                                            'NONREF_NODE_ID' : link['NONREF_NODE_ID'],
                                            'LINK_LENGTH' : float(link['LINK_LENGTH']),
+                                           'LINK_LENGTH (ft)' : 3.28084*float(link['LINK_LENGTH']),
                                            'LAT': link['LAT'],
                                            'LON': link['LON'],
                                            'WEIGHT': 100*float(link['LINK_LENGTH'])}
@@ -377,7 +381,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['HPY'] = None
             links_dict[link_id]['HPZ'] = None
 
-            links_dict[link_id]['SPEED_LIMIT'] = None        
+            links_dict[link_id]['SPEED_LIMIT'] = None   
+            links_dict[link_id]['SPEED_LIMIT (Mi/h)'] = None        
             links_dict[link_id]['LANE_TYPE'] = None
             links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
             links_dict[link_id]['VEHICLE_TYPES'] = None
@@ -393,6 +398,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['TOLL_BOOTH'] = None
             links_dict[link_id]['TOLL_LOC'] = None
             links_dict[link_id]['AVG_SPEED'] = 80
+            links_dict[link_id]['AVG_SPEED (Mi/h)'] = 0.621371*80
             links_dict[link_id]['WEIGHT'] += setAttrWeight(attr, query['attr_features'])
         
         

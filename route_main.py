@@ -36,12 +36,14 @@ df.to_csv("/Users/humanrobot/Desktop/cs_filt_1.csv")
 feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing",
-                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps"]
+                "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps",
+                "functional_class_1 (km)","functional_class_2 (km)","functional_class_3 (km)","functional_class_4 (km)","functional_class_5 (km)",
+                "functional_class_1 (h)","functional_class_2 (h)","functional_class_3 (h)","functional_class_4 (h)","functional_class_5 (h)"]
 def createCSVFile():
     features_file_name = f"./gpx/summary.csv"
     head = ",".join([str(item) for item in feature_list])
     features_file = open(features_file_name, "w")
-    features_file.write("route_num,route_length,route_estimated_time,"+head+"\n")
+    features_file.write("route_num,route_length (km),route_estimated_time (h),"+head+"\n")
     features_file.close()
 
 if __name__ == '__main__':
@@ -90,8 +92,8 @@ if __name__ == '__main__':
             except:
                 end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
                 end_node, _ = g.findNodeFromCoord(end_loc)
+        route.setGPXFile(g, i, "./gpx", cfg)       
         route.setCSVFeatures(g, i)
-        route.setGPXFile(g, i, "./gpx", cfg)
         rank_points = route.getRankPoints()
         routes_list.append(route)
         if(rank_points > ref_rank_points):
@@ -101,7 +103,6 @@ if __name__ == '__main__':
         print("")
 
     print(f"Best route was route number: {best_route}")
-    #routes_list[best_route].setGPXFile(g, 0, "gpx")
     end_time_03 = time.time()
   
     end_time = time.time()
@@ -109,9 +110,3 @@ if __name__ == '__main__':
     tiles_time = end_time_01 - start_time_01
     graph_time = end_time_02 - start_time_02
     route_time = end_time_03 - start_time_03
-
-    #print("")
-    #print(f'Total time {total_time}')
-    #print(f'Tiles time {tiles_time}')
-    #print(f'Graph time {graph_time}')
-    #print(f'Route time {route_time}')
