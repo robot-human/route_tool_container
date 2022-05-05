@@ -17,17 +17,14 @@ else:
     if len(sections) == 0 or 'config' not in sections:
         print("config file doesn't include [config] section")
     else:
-        #route_type = cfgParser.get('config', 'route_type')
         route_type = 'point_to_point'
         routes_num = int(cfgParser.get('config', 'number_of_routes'))
         visit_cs = cfgParser.get('config', 'visit_charge_station')
         
         units = cfgParser.get('config', 'units')
         if(units == "mi"):
-            #search_radius = 1.60934*float(cfgParser.get('config', 'search_radius'))
             desired_route_length = 1.60934*float(cfgParser.get('config', 'desired_route_length'))
         else:
-            #search_radius = float(cfgParser.get('config', 'search_radius'))
             desired_route_length = float(cfgParser.get('config', 'desired_route_length'))
 
         if(cfgParser.get('config', 'start_gps') == ""):
@@ -40,45 +37,46 @@ else:
             else:
                 temp = cfgParser.get('config', 'start_gps').split(',')
                 start_gps = (float(temp[0]), float(temp[1]))
-        
+        mid_gps = []
         if(cfgParser.get('config', 'end_gps') == ""):
             end_gps = getRandomLocation(start_gps, desired_route_length*0.95)
+            lat_max = max(start_gps[0],end_gps[0]) + margin
+            lon_max = max(start_gps[1],end_gps[1]) + margin
+            lat_min = min(start_gps[0],end_gps[0]) - margin
+            lon_min = min(start_gps[1],end_gps[1]) - margin
         else:
             format = cfgParser.get('config', 'end_gps').find(".")
-        
-        format = cfgParser.get('config', 'end_gps').find(".")
-        if(format == -1):
-            temp = cfgParser.get('config', 'end_gps').split(',')
-            n_mid_points = int(len(temp)/4)
-            end_gps = (float(temp[4*(n_mid_points-1)]+"."+temp[4*(n_mid_points-1)+1]), float(temp[4*(n_mid_points-1)+2]+"."+temp[4*(n_mid_points-1)+3]))
-            mid_gps = []
-            lat_max = max(start_gps[0],end_gps[0]) + margin
-            lon_max = max(start_gps[1],end_gps[1]) + margin
-            lat_min = min(start_gps[0],end_gps[0]) - margin
-            lon_min = min(start_gps[1],end_gps[1]) - margin
-            for i in range(n_mid_points-1):
-                next_point = (float(temp[4*i]+"."+temp[(4*i) + 1]),float(temp[(4*i)+2]+"."+temp[(4*i)+3]))
-                lat_max = max(lat_max,next_point[0])
-                lon_max = max(lon_max,next_point[1])
-                lat_min = min(lat_min,next_point[0])
-                lon_min = min(lon_min,next_point[1])
-                mid_gps.append((next_point[0],next_point[1]))
-        else:
-            temp = cfgParser.get('config', 'end_gps').split(',')
-            n_mid_points = int(len(temp)/2)
-            end_gps = (float(temp[2*(n_mid_points-1)]), float(temp[2*(n_mid_points-1)+1]))
-            mid_gps = []
-            lat_max = max(start_gps[0],end_gps[0]) + margin
-            lon_max = max(start_gps[1],end_gps[1]) + margin
-            lat_min = min(start_gps[0],end_gps[0]) - margin
-            lon_min = min(start_gps[1],end_gps[1]) - margin
-            for i in range(n_mid_points-1):
-                next_point = (float(temp[2*i]),float(temp[(2*i)+1]))
-                lat_max = max(lat_max,next_point[0])
-                lon_max = max(lon_max,next_point[1])
-                lat_min = min(lat_min,next_point[0])
-                lon_min = min(lon_min,next_point[1])
-                mid_gps.append((next_point[0],next_point[1]))
+            if(format == -1):
+                temp = cfgParser.get('config', 'end_gps').split(',')
+                n_mid_points = int(len(temp)/4)
+                end_gps = (float(temp[4*(n_mid_points-1)]+"."+temp[4*(n_mid_points-1)+1]), float(temp[4*(n_mid_points-1)+2]+"."+temp[4*(n_mid_points-1)+3]))
+                mid_gps = []
+                lat_max = max(start_gps[0],end_gps[0]) + margin
+                lon_max = max(start_gps[1],end_gps[1]) + margin
+                lat_min = min(start_gps[0],end_gps[0]) - margin
+                lon_min = min(start_gps[1],end_gps[1]) - margin
+                for i in range(n_mid_points-1):
+                    next_point = (float(temp[4*i]+"."+temp[(4*i) + 1]),float(temp[(4*i)+2]+"."+temp[(4*i)+3]))
+                    lat_max = max(lat_max,next_point[0])
+                    lon_max = max(lon_max,next_point[1])
+                    lat_min = min(lat_min,next_point[0])
+                    lon_min = min(lon_min,next_point[1])
+                    mid_gps.append((next_point[0],next_point[1]))
+            else:
+                temp = cfgParser.get('config', 'end_gps').split(',')
+                n_mid_points = int(len(temp)/2)
+                end_gps = (float(temp[2*(n_mid_points-1)]), float(temp[2*(n_mid_points-1)+1]))
+                lat_max = max(start_gps[0],end_gps[0]) + margin
+                lon_max = max(start_gps[1],end_gps[1]) + margin
+                lat_min = min(start_gps[0],end_gps[0]) - margin
+                lon_min = min(start_gps[1],end_gps[1]) - margin
+                for i in range(n_mid_points-1):
+                    next_point = (float(temp[2*i]),float(temp[(2*i)+1]))
+                    lat_max = max(lat_max,next_point[0])
+                    lon_max = max(lon_max,next_point[1])
+                    lat_min = min(lat_min,next_point[0])
+                    lon_min = min(lon_min,next_point[1])
+                    mid_gps.append((next_point[0],next_point[1]))
         
         
         
