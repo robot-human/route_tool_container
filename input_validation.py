@@ -54,14 +54,14 @@ default_dict = {
     'hills': '0', 
     'tunnel': '0', 
     'bridge': '0',
-    'hov':'0'
-    'reversible':'0'
-    'express':'0'
-    'slow':'0'
-    'auxiliary':'0'
-    'shoulder':'0'
-    'passing':'0'
-    'turn':'0'
+    'hov':'0',
+    'reversible':'0',
+    'express':'0',
+    'slow':'0',
+    'auxiliary':'0',
+    'shoulder':'0',
+    'passing':'0',
+    'turn':'0',
     'parking':'0',
     'center_turn':'0',
     'bikelane':'0',
