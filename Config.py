@@ -251,16 +251,15 @@ else:
             icy = cfgParser.getint('config', 'icy_road')
             rocks = cfgParser.getint('config', 'falling_rocks')
             school = cfgParser.getint('config', 'school_zone')
-            pedestrian = cfgParser.getint('config', 'pedestrian')
             crosswalk = cfgParser.getint('config', 'crosswalk')
-            objects = cfgParser.getint('config', 'non_pedestrian_crossing')
+            animal_crossing = cfgParser.getint('config', 'animal_crossing')
             tway = cfgParser.getint('config', 'two_way')
             urban = cfgParser.getint('config', 'urban')
             merge_r = cfgParser.getint('config', 'lane_merge_right')
             merge_l = cfgParser.getint('config', 'lane_merge_left')
             merge_c = cfgParser.getint('config', 'lane_merge_center')
             hills = cfgParser.getint('config', 'hills')
-            if(stop==0 and icy==0 and rocks==0 and school==0 and pedestrian==0 and crosswalk==0 and objects==0 and tway==0 and urban==0 and merge_r==0 and merge_l==0 and merge_c==0 and hills==0):   
+            if(stop==0 and icy==0 and rocks==0 and school==0 and crosswalk==0 and animal_crossing==0 and tway==0 and urban==0 and merge_r==0 and merge_l==0 and merge_c==0 and hills==0):   
                 traffic_signs_list = [i for i in range(66)]
                 display_signs = False
             if(stop):
@@ -271,12 +270,10 @@ else:
                 traffic_signs_list.append(30)
             if(school):
                 traffic_signs_list.append(31)
-            if(pedestrian):
-                traffic_signs_list.append(41)
             if(crosswalk):
                 traffic_signs_list.append(41)
-            if(objects):
-                traffic_signs_list.extend([27,59])
+            if(animal_crossing):
+                traffic_signs_list.append(27)
             if(tway):
                 traffic_signs_list.append(46)
             if(urban):
@@ -309,7 +306,7 @@ else:
         boolean_features = {'stop_signs':cfgParser.getint('config', 'stop_signs'),'icy_road':cfgParser.getint('config', 'icy_road'),
                             'falling_rocks':cfgParser.getint('config', 'falling_rocks'),'school_zone':cfgParser.getint('config', 'school_zone'),
                             'pedestrian':cfgParser.getint('config', 'pedestrian'), 'crosswalk':cfgParser.getint('config', 'crosswalk'),
-                            'non_pedestrian':cfgParser.getint('config', 'non_pedestrian_crossing'),'two_way':cfgParser.getint('config', 'two_way'),
+                            'animal_crossing':cfgParser.getint('config', 'animal_crossing'),'two_way':cfgParser.getint('config', 'two_way'),
                             'urban':cfgParser.getint('config', 'urban'),'lane_merge_r':cfgParser.getint('config', 'lane_merge_right'),
                             'lane_merge_l':cfgParser.getint('config', 'lane_merge_left'),'lane_merge_c':cfgParser.getint('config', 'lane_merge_center'),
                             'hills':cfgParser.getint('config', 'hills'),'traffic_signs':cfgParser.getint('config', 'traffic_signs'),
@@ -342,7 +339,6 @@ else:
                 'end_location': end_gps,
                 'mid_locations':mid_gps,
                 'units':units,
-                #'search_radius_km': search_radius,
                 'desired_route_length_km':desired_route_length,
                 'visit_charge_station':visit_cs,
                 'min_boundaries':(lat_min,lon_min),

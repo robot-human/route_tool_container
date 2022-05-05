@@ -10,15 +10,13 @@ default_dict = {
     'end_gps': '0',
     'number_of_routes':'1',
     'units': 'km',
-    'search_radius': '60.0', 
     'desired_route_length': '10.0', 
     'visit_charge_station': '1', 
     'stop_signs': '0', 
     'school_zone': '0', 
     'icy_road': '0', 
-    'pedestrian': '0', 
     'crosswalk': '0', 
-    'non_pedestrian_crossing': '0', 
+    'animal_crossing': '0', 
     'traffic_lights': '0', 
     'traffic_signs': '0', 
     'lane_merge_right': '0', 
@@ -55,7 +53,31 @@ default_dict = {
     'two_way': '0', 
     'hills': '0', 
     'tunnel': '0', 
-    'bridge': '0'
+    'bridge': '0',
+    'hov':'0'
+    'reversible':'0'
+    'express':'0'
+    'slow':'0'
+    'auxiliary':'0'
+    'shoulder':'0'
+    'passing':'0'
+    'turn':'0'
+    'parking':'0',
+    'center_turn':'0',
+    'bikelane':'0',
+    'speed_bumps':'0',
+    'road_good':'0',
+    'road_fair':'0',
+    'road_poor':'0',
+    'toll_station':'0',
+    'speed_130km_80mph':'0',
+    'speed_101kph_to_130kph_65_to_80mph':'0',
+    'speed_91kph_to_100kph_55mph_to_64mph':'0',
+    'speed_71kph_to_90kph_41mph_to_54mph':'0',
+    'speed_51kph_to_70kph_31mph_to_40mph':'0',
+    'speed_31kph_to_50kph_21mph_to_30mph':'0',
+    'speed_11kph_to_30kph_6mph_to_20mph':'0',
+    'speed_11kph_6mph':'0'
     }
 
 if not isfile(os.path.join(os.getcwd(), input_file_name)):
