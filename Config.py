@@ -17,27 +17,87 @@ else:
     if len(sections) == 0 or 'config' not in sections:
         print("config file doesn't include [config] section")
     else:
-        route_type = cfgParser.get('config', 'route_type')
+        #route_type = cfgParser.get('config', 'route_type')
+        route_type = 'point_to_point'
+        routes_num = int(cfgParser.get('config', 'number_of_routes'))
         visit_cs = cfgParser.get('config', 'visit_charge_station')
-        temp = cfgParser.get('config', 'start_gps').split(',')
-        start_gps = (float(temp[0]), float(temp[1]))
-        temp = cfgParser.get('config', 'end_gps').split(',')
-        end_gps = (float(temp[0]), float(temp[1]))
-        search_radius_km = float(cfgParser.get('config', 'search_radius_km'))
-        desired_route_length_km = float(cfgParser.get('config', 'desired_route_length_km'))
+        
+        units = cfgParser.get('config', 'units')
+        if(units == "mi"):
+            #search_radius = 1.60934*float(cfgParser.get('config', 'search_radius'))
+            desired_route_length = 1.60934*float(cfgParser.get('config', 'desired_route_length'))
+        else:
+            #search_radius = float(cfgParser.get('config', 'search_radius'))
+            desired_route_length = float(cfgParser.get('config', 'desired_route_length'))
+
+        if(cfgParser.get('config', 'start_gps') == ""):
+            start_gps = 42.702324,-83.254979
+        else:
+            print("Not None")
+            format = cfgParser.get('config', 'start_gps').find(".")
+            if(format == -1):
+                temp = cfgParser.get('config', 'start_gps').split(',')
+                start_gps = (float(temp[0]+"."+temp[1]), float(temp[2]+"."+temp[3]))
+            else:
+                temp = cfgParser.get('config', 'start_gps').split(',')
+                start_gps = (float(temp[0]), float(temp[1]))
+        
+        if(cfgParser.get('config', 'end_gps') == ""):
+            end_gps = getRandomLocation(start_gps, desired_route_length*0.95)
+        else:
+            format = cfgParser.get('config', 'end_gps').find(".")
+        
+        format = cfgParser.get('config', 'end_gps').find(".")
+        if(format == -1):
+            temp = cfgParser.get('config', 'end_gps').split(',')
+            n_mid_points = int(len(temp)/4)
+            end_gps = (float(temp[4*(n_mid_points-1)]+"."+temp[4*(n_mid_points-1)+1]), float(temp[4*(n_mid_points-1)+2]+"."+temp[4*(n_mid_points-1)+3]))
+            mid_gps = []
+            lat_max = max(start_gps[0],end_gps[0]) + margin
+            lon_max = max(start_gps[1],end_gps[1]) + margin
+            lat_min = min(start_gps[0],end_gps[0]) - margin
+            lon_min = min(start_gps[1],end_gps[1]) - margin
+            for i in range(n_mid_points-1):
+                next_point = (float(temp[4*i]+"."+temp[(4*i) + 1]),float(temp[(4*i)+2]+"."+temp[(4*i)+3]))
+                lat_max = max(lat_max,next_point[0])
+                lon_max = max(lon_max,next_point[1])
+                lat_min = min(lat_min,next_point[0])
+                lon_min = min(lon_min,next_point[1])
+                mid_gps.append((next_point[0],next_point[1]))
+        else:
+            temp = cfgParser.get('config', 'end_gps').split(',')
+            n_mid_points = int(len(temp)/2)
+            end_gps = (float(temp[2*(n_mid_points-1)]), float(temp[2*(n_mid_points-1)+1]))
+            mid_gps = []
+            lat_max = max(start_gps[0],end_gps[0]) + margin
+            lon_max = max(start_gps[1],end_gps[1]) + margin
+            lat_min = min(start_gps[0],end_gps[0]) - margin
+            lon_min = min(start_gps[1],end_gps[1]) - margin
+            for i in range(n_mid_points-1):
+                next_point = (float(temp[2*i]),float(temp[(2*i)+1]))
+                lat_max = max(lat_max,next_point[0])
+                lon_max = max(lon_max,next_point[1])
+                lat_min = min(lat_min,next_point[0])
+                lon_min = min(lon_min,next_point[1])
+                mid_gps.append((next_point[0],next_point[1]))
+        
+        
+        
+        lat_max = lat_max + margin
+        lon_max = lon_max + margin
+        lat_min = lat_min - margin
+        lon_min = lon_min - margin
 
         distance = Haversine(start_gps,end_gps)
-        if(distance < 0.5):
-            end_gps = getRandomLocation(start_gps, desired_route_length_km/3.0)
-            route_type = "closed_route"
+        if((distance < 0.5) and (len(mid_gps) == 0)):
+            mid_gps.append(getRandomLocation(start_gps, desired_route_length/2.8))
+            #route_type = "closed_route"
 
         if(route_type == 'point_to_anywhere'):
-            end_gps = getRandomLocation(start_gps, desired_route_length_km)
+            route_type = "point_to_point"
+            end_gps = getRandomLocation(start_gps, desired_route_length*0.95)
+            print(end_gps)
 
-        lat_max = max(start_gps[0],end_gps[0]) + margin
-        lon_max = max(start_gps[1],end_gps[1]) + margin
-        lat_min = min(start_gps[0],end_gps[0]) - margin
-        lon_min = min(start_gps[1],end_gps[1]) - margin
                     
         lat_interval = lat_max - lat_min
         lon_interval = lon_max - lon_min
@@ -51,7 +111,31 @@ else:
             for j in range(resolution[1]):
                 gps_locations.append((lat_min + lat_step * i, lon_min + lon_step * j))
         
-        
+        #Lane markers
+        lane_markers = []
+        if(cfgParser.getint('config', 'lane_marker_long_dashed')):
+            lane_markers.append(1)
+        if(cfgParser.getint('config', 'lane_marker_short_dashed')):
+            lane_markers.append(6)
+        if(cfgParser.getint('config', 'lane_marker_double_dashed')):
+            lane_markers.append(10)
+        if(cfgParser.getint('config', 'lane_marker_double_solid')):
+            lane_markers.append(2)
+        if(cfgParser.getint('config', 'lane_marker_single_solid')):
+            lane_markers.append(3)
+        if(cfgParser.getint('config', 'lane_marker_inner_solid_outter_dashed')):
+            lane_markers.append(4)
+        if(cfgParser.getint('config', 'lane_marker_inner_dashed_outter_solid')):
+            lane_markers.append(5)
+        if(cfgParser.getint('config', 'lane_marker_no_divider')):
+            lane_markers.append(11)
+        if(cfgParser.getint('config', 'lane_marker_physical_divider')):
+            lane_markers.append(9)
+        if(len(lane_markers) > 0):
+            lane_markers_bool = 1
+        else:
+            lane_markers_bool = 0
+
         #Highway feature list setup
         if(cfgParser.getint('config', 'highway')):
             functional_class_list = [1,2, 3]
@@ -239,24 +323,27 @@ else:
                             'oneway':cfgParser.getint('config', 'oneway'),'urban':cfgParser.getint('config', 'urban'),'overpass':cfgParser.getint('config', 'overpass'),
                             'underpass':cfgParser.getint('config', 'underpass'),'manoeuvre':cfgParser.getint('config', 'manoeuvre'),
                             'roundabout':cfgParser.getint('config', 'roundabout'),'one_lane':cfgParser.getint('config', 'one_lane'),
-                            'multiple_lanes':cfgParser.getint('config', 'multiple_lanes')}
+                            'multiple_lanes':cfgParser.getint('config', 'multiple_lanes'),'lane_markers_bool':lane_markers_bool}
 
         attr_features = {'FUNCTIONAL_CLASS':functional_class_list, 'SPEED_CATEGORY':speed_category_list, 'TRAVEL_DIRECTION':direction_list,  'URBAN':urban_list, 'LIMITED_ACCESS_ROAD':limited_access_list, 'PAVED':paved_list, 'RAMP':ramp_list, 
                         'INTERSECTION_CATEGORY':intersection_list, 'LANE_CATEGORY':lane_list, 'OVERPASS_UNDERPASS':overpass_list}
         sign_features = {'CONDITION_TYPE':traffic_condition_list,'SIGN_TYPE':traffic_signs_list,'display_condition':display_condition,'display_signs':display_signs}
         
         geom_features = {'TUNNEL':tunnel_list, 'BRIDGE':bridge_list}
-        
-        
+
         speed_features = {'SPEED_MIN' : min_speed,'SPEED_MAX' : max_speed, 'boolean_speed_min':boolean_speed_min,'boolean_speed_max':boolean_speed_max}
             
-        query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 'speed_features':speed_features}
-
+        query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 
+                          'speed_features':speed_features, 'lane_markers':lane_markers}
+        
         cfg = { 'route_type': route_type,
+                'routes_number':routes_num,
                 'start_location': start_gps,
                 'end_location': end_gps,
-                'search_radius_km': search_radius_km,
-                'desired_route_length_km':desired_route_length_km,
+                'mid_locations':mid_gps,
+                'units':units,
+                #'search_radius_km': search_radius,
+                'desired_route_length_km':desired_route_length,
                 'visit_charge_station':visit_cs,
                 'min_boundaries':(lat_min,lon_min),
                 'max_boundaries':(lat_max,lon_max),

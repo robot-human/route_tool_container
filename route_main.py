@@ -9,11 +9,10 @@ from HEREgraph2 import graphFromTileList
 from Route import Route, getSigns
 
 
-
 session = requests.Session()
-#UPDATED_CODE_31012022
+#UPDATED_CODE_05052022
 
-N_ROUTES = 5
+N_ROUTES = cfg.get('routes_number')
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
 
@@ -37,13 +36,13 @@ feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","
                 "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing",
                 "no_overtaking","overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps",
-                "functional_class_1 (km)","functional_class_2 (km)","functional_class_3 (km)","functional_class_4 (km)","functional_class_5 (km)",
-                "functional_class_1 (h)","functional_class_2 (h)","functional_class_3 (h)","functional_class_4 (h)","functional_class_5 (h)"]
+                "functional_class_1","functional_class_2","functional_class_3","functional_class_4","functional_class_5",
+                "functional_class_1(hrs)","functional_class_2(hrs)","functional_class_3(hrs)","functional_class_4(hrs)","functional_class_5(hrs)"]
 def createCSVFile():
     features_file_name = f"./gpx/summary.csv"
     head = ",".join([str(item) for item in feature_list])
     features_file = open(features_file_name, "w")
-    features_file.write("route_num,route_length (km),route_estimated_time (h),"+head+"\n")
+    features_file.write("route_num,route_length,route_estimated_time(hrs),"+head+"\n")
     features_file.close()
 
 if __name__ == '__main__':
@@ -68,10 +67,15 @@ if __name__ == '__main__':
     start_time_03 = time.time()
     start_node, _ = g.findNodeFromCoord(cfg.get('start_location'))
     if(cfg.get('route_type') == 'point_to_anywhere'):
-        end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
+        end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('desired_route_length'))
         end_node, _ = g.findNodeFromCoord(end_loc)
     else:
         end_node, _ = g.findNodeFromCoord(cfg.get('end_location'))
+    mid_nodes = []
+    for loc in cfg.get('mid_locations'):
+        mid_n, _ = g.findNodeFromCoord(loc)
+        mid_nodes.append(mid_n)
+
     routes_list = list()
     i = 0
     
@@ -84,16 +88,17 @@ if __name__ == '__main__':
     while(i < N_ROUTES):
         route_bool = False
         print(f"Route number {i}")
-        route = Route(cfg.get('route_type'), cfg.get('desired_route_length_km'), float(cfg.get('search_radius_km')),chargingStations, int(cfg.get('visit_charge_station')))
+        route = Route(cfg.get('desired_route_length_km'),chargingStations, int(cfg.get('visit_charge_station')))
         while(route_bool == False):
             try:
-                route.setRoute(g, start_node, end_node)
+                route.setRoute(g, start_node, end_node, mid_nodes)
                 route_bool = True
             except:
-                end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('search_radius_km'))
+                end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('desired_route_length'))
                 end_node, _ = g.findNodeFromCoord(end_loc)
+        
         route.setGPXFile(g, i, "./gpx", cfg)       
-        route.setCSVFeatures(g, i)
+        route.setCSVFeatures(g, i, units=cfg.get('units'))
         rank_points = route.getRankPoints()
         routes_list.append(route)
         if(rank_points > ref_rank_points):

@@ -6,7 +6,8 @@ import gpxpy
 import os
 from Tools import Haversine, getRandomLocation, distance
 import pandas as pd
-"summary"
+import datetime
+import time
 #This function returns the full graph traffic signs list
 def getSigns(G, cfg):
     gpx = gpxpy.gpx.GPX()
@@ -53,10 +54,10 @@ def getSigns(G, cfg):
 
 #Route class
 class Route:
-    def __init__(self, route_type, desired_length, search_radius, charging_stations: dict, visit_charging_station: bool):
-        self.route_type = route_type
+    def __init__(self, desired_length, charging_stations: dict, visit_charging_station: bool):
+        #self.route_type = route_type
         self.desired_length = desired_length
-        self.search_radius = search_radius
+        #self.search_radius = search_radius
         self.charging_stations = charging_stations
         self.c_station = None
         self.visit_charging_stationt = visit_charging_station
@@ -98,9 +99,8 @@ class Route:
                 self.c_station = cs
         return nearest_cs   
     
-    def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
-        increment = 100
-        path = nx.shortest_path(G, start_node, mid_point, weight='WEIGHT')
+    def setPathWeights(self, G, path):
+        increment = 5
         for i in range(1,len(path)):
             link_data = G.get_edge_data(path[i-1],path[i])
             link_attributes = link_data[list(link_data.keys())[0]]
@@ -110,28 +110,52 @@ class Route:
             if(link_data != None):
                 link_attributes = link_data[list(link_data.keys())[0]]
                 link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
+        return None
+
+    def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
+        path = nx.shortest_path(G, start_node, mid_point, weight='WEIGHT')
+        self.setPathWeights(G, path)
         last_node = path.pop(len(path)-1)
         path_cont = nx.shortest_path(G, last_node, end_node, weight='WEIGHT')
         path.extend(path_cont)
         return path  
         
-    def findRoute(self, G, start_node, end_node):
-        if(self.route_type == 'point_to_point'):
-            return self.pointToPointRoute(G, start_node, end_node)
-        elif(self.route_type == 'closed_route'):
-            return self.closedRoute(G, start_node, end_node)
-        elif(self.route_type == 'point_to_anywhere'):
-            try:
-                return self.pointToPointRoute(G, start_node, end_node)
-                route_bool = True
-            except:
-                print("couldn't find route")
-        elif(self.route_type == 'point_to_charge_station'):
-            print("Charge station")
-            return self.pointToChargeStationRoute(G, start_node, end_node)
+    def findRoute(self, G, start_node, end_node, mid_points):
+        if(len(mid_points) > 0):
+            full_path = []
+            prev_node = start_node
+            for next_node in mid_points:
+                path_cont = nx.shortest_path(G, prev_node, next_node, weight='WEIGHT')
+                self.setPathWeights(G,path_cont)
+                last_node = path_cont.pop(len(path_cont)-1)
+                full_path.extend(path_cont)
+                prev_node = next_node
+            path_cont = nx.shortest_path(G, prev_node, end_node, weight='WEIGHT')
+            self.setPathWeights(G, path_cont)
+            last_node = path_cont.pop(len(path_cont)-1)
+            full_path.extend(path_cont)
+            return full_path
         else:
-            print("Invalid route type")
-            return None
+            return self.pointToPointRoute(G, start_node, end_node)
+            """
+            if(self.route_type == 'point_to_point'):
+                print("point to point")
+                return self.pointToPointRoute(G, start_node, end_node)
+            elif(self.route_type == 'closed_route'):
+                return self.closedRoute(G, start_node, end_node)
+            elif(self.route_type == 'point_to_anywhere'):
+                try:
+                    return self.pointToPointRoute(G, start_node, end_node)
+                    route_bool = True
+                except:
+                    print("couldn't find route")
+            elif(self.route_type == 'point_to_charge_station'):
+                print("Charge station")
+                return self.pointToChargeStationRoute(G, start_node, end_node)
+            else:
+                print("Invalid route type")
+                return None
+            """
 
     def getRouteLength(self):
         return self.route_length
@@ -183,13 +207,12 @@ class Route:
                 print(non_route_available)
         return route
     
-    def setRoute(self, G, start_point, mid_point):
+    def setRoute(self, G, start_point, end_point, mid_points):
         increment = 5.0
         self.avg_speed = 0
-        self.route = self.findRoute(G, start_point, mid_point)
+        self.route = self.findRoute(G, start_point, end_point, mid_points)
         for i in range(1,len(self.route)):
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
-            #print(link_data)
             link_attributes = link_data[list(link_data.keys())[0]]
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
@@ -216,16 +239,16 @@ class Route:
     
     def displayRouteInfo(self):
         print(f"Route length in km = {self.route_length}")
-        print(f"Average speed km/g = {self.avg_speed}")
+        print(f"Average speed km/h = {self.avg_speed}")
         print(f"Driving time in hrs = {self.driving_time}")
         print(f"Number of desired features = {self.n_features}")
         print(f"Query points = {self.rank_points}")
         return None
 
-    def setCSVFeatures(self, G, route_num: int):
+    def setCSVFeatures(self, G, route_num, units="km"):
         file_name = f"./gpx/route{route_num}_staticfeaturesfile.csv"
         feat_line = ",".join([str(item) for item in feature_list])
-        head = "Route_name,LAT,LON,Link_length (m),Avg_speed (km/h),Speed_limit (km/h),Time (h),Accum_len (km),Accum_time (h),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
+        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time(hrs),Accum_len,Accum_time(hrs),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
@@ -248,11 +271,19 @@ class Route:
             feat_list = self.fillFeaturesCSV(link_attributes, next_link_attributes, start)
             lat = str(int(link_attributes['LAT'].split(",")[0])/100000)
             lon = str(int(link_attributes['LON'].split(",")[0])/100000)
-            link_length = 0.001*float(link_attributes['LINK_LENGTH'])
-            if(str(link_attributes['SPEED_LIMIT']) == 'None'):
-                time = link_length/float(link_attributes['AVG_SPEED'])
+            if(units=="mi"):
+                link_length = 0.000621371*float(link_attributes['LINK_LENGTH'])
+                if(str(link_attributes['SPEED_LIMIT']) == 'None'):
+                    time = link_length/(0.621371*float(link_attributes['AVG_SPEED']))
+                else:
+                    time = link_length/(0.621371*float(link_attributes['SPEED_LIMIT']))
             else:
-                time = link_length/float(link_attributes['SPEED_LIMIT'])
+                link_length = 0.001*float(link_attributes['LINK_LENGTH'])
+                if(str(link_attributes['SPEED_LIMIT']) == 'None'):
+                    time = link_length/float(link_attributes['AVG_SPEED'])
+                else:
+                    time = link_length/float(link_attributes['SPEED_LIMIT'])
+
             len_accum = len_accum + link_length
             time_accum = time_accum + time
             feat_line = ",".join([str(item) for item in feat_list])
@@ -405,7 +436,7 @@ class Route:
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[21]}")) 
                 self.n_features += 1
 
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1])) 
+            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
             if(self.c_station != None):
                 lat = int(self.charging_stations[self.c_station]['LAT'])/100000
@@ -426,7 +457,7 @@ class Route:
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[signNumber]}")) 
             self.n_features += 1
 
-    def fillFeaturesCSV(self,attributes, next_attributes, start):
+    def fillFeaturesCSV(self, attributes, next_attributes, start):
         feat_list = ['Not present' for i in range(len(feature_list)+1)]
         edge_dir = attributes['EDGE_DIRECTION']
         if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
@@ -597,4 +628,4 @@ feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","
                 "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
                 "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps",
                 "functional_class_1","functional_class_2","functional_class_3","functional_class_4","functional_class_5",
-                "functional_class_1 (h)","functional_class_2 (h)","functional_class_3 (h)","functional_class_4 (h)","functional_class_5 (h)"]
+                "functional_class_1(hrs)","functional_class_2(hrs)","functional_class_3(hrs)","functional_class_4(hrs)","functional_class_5(hrs)"]

@@ -6,10 +6,12 @@ config_ini_file_name = 'config.ini'
 input_file_name = 'request_input.txt'
 default_dict = {
     'route_type': 'point_to_point', 
-    'start_gps': '42.702324,-83.254979', 
-    'end_gps': '42.682580,-83.283780', 
-    'search_radius_km': '60.0', 
-    'desired_route_length_km': '10.0', 
+    'start_gps': '', 
+    'end_gps': '0',
+    'number_of_routes':'1',
+    'units': 'km',
+    'search_radius': '60.0', 
+    'desired_route_length': '10.0', 
     'visit_charge_station': '1', 
     'stop_signs': '0', 
     'school_zone': '0', 
@@ -21,7 +23,16 @@ default_dict = {
     'traffic_signs': '0', 
     'lane_merge_right': '0', 
     'lane_merge_left': '0', 
-    'lane_merge_center': '0', 
+    'lane_merge_center': '0',
+    'lane_marker_long_dashed' : '0',
+    'lane_marker_short_dashed' : '0',
+    'lane_marker_double_dashed' : '0',
+    'lane_marker_double_solid' : '0',
+    'lane_marker_single_solid' : '0',
+    'lane_marker_inner_solid_outter_dashed' : '0',
+    'lane_marker_inner_dashed_outter_solid' : '0',
+    'lane_marker_no_divider' : '0',
+    'lane_marker_physical_divider' : '0',
     'highway': '0', 
     'avoid_highway': '0', 
     'oneway': '0', 
@@ -54,6 +65,7 @@ else:
         input = input_file.readlines()
     for i in range(1,len(input)):
         if(input[i] != "\n"):
+            print(input[i])
             line = input[i].split("=")
             var = line[0].replace(" ", "").lower()
             val = line[1].replace(" ", "").replace("\n","")

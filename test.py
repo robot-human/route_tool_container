@@ -1,3 +1,8 @@
+import datetime
+import time
+
+print(datetime.datetime(2022, 1, 1))
+"""
 from Config import cfg
 import requests
 from HERErequest import  getTiles
@@ -24,7 +29,7 @@ for k in links_dict.keys():
     #if(links_dict[k]['SPEED_BUMPS'] != None):
     printDict(links_dict[k])
 
-
+"""
 
 
 

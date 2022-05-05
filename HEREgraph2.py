@@ -4,6 +4,8 @@ import requests
 from requests.sessions import session
 import numpy as np
 from HERErequest import getLinksFromTile
+from multiprocessing import Pool
+from functools import partial
 
 #from HERErequest import coordsToTile, getTileRequest,  displayUsageCount, incrementApiCount, getLinksFromTile
 #from Tools import getIdxList, getSubDict, getIdxListCount
@@ -56,6 +58,12 @@ def getGraphFromTile(tile: tuple, query: dict, session: requests.Session=None):
 #   Output: HERE graph
 def graphFromTileList(tiles: list, query: dict,  session):
     ng = HEREgraph()
+    #with Pool(processes=4) as p:
+    #    part = partial(getGraphFromTile, session=session)
+    #    for tile in tiles:
+    #        new_graph = p.map(part, tile, query)
+    #        ng.updateGraph(new_graph)
+    
     for tile in tiles:
         new_graph = getGraphFromTile(tile, query, session=session)
         ng.updateGraph(new_graph)

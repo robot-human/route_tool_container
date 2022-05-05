@@ -2,7 +2,7 @@
 route_type = point_to_point
 route_type = closed_route
 start_gps = 42.702324, -83.254979
-end_gps = 42.602580, -83.303780
+end_gps = 
 search_radius_km = 60.0
 desired_route_length_km = 10.0
 visit_charge_station = 1
