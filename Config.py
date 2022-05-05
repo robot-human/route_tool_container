@@ -33,7 +33,6 @@ else:
         if(cfgParser.get('config', 'start_gps') == ""):
             start_gps = 42.702324,-83.254979
         else:
-            print("Not None")
             format = cfgParser.get('config', 'start_gps').find(".")
             if(format == -1):
                 temp = cfgParser.get('config', 'start_gps').split(',')
@@ -96,7 +95,6 @@ else:
         if(route_type == 'point_to_anywhere'):
             route_type = "point_to_point"
             end_gps = getRandomLocation(start_gps, desired_route_length*0.95)
-            print(end_gps)
 
                     
         lat_interval = lat_max - lat_min
