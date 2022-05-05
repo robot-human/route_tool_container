@@ -305,7 +305,7 @@ else:
             
         boolean_features = {'stop_signs':cfgParser.getint('config', 'stop_signs'),'icy_road':cfgParser.getint('config', 'icy_road'),
                             'falling_rocks':cfgParser.getint('config', 'falling_rocks'),'school_zone':cfgParser.getint('config', 'school_zone'),
-                            'pedestrian':cfgParser.getint('config', 'pedestrian'), 'crosswalk':cfgParser.getint('config', 'crosswalk'),
+                            'crosswalk':cfgParser.getint('config', 'crosswalk'),
                             'animal_crossing':cfgParser.getint('config', 'animal_crossing'),'two_way':cfgParser.getint('config', 'two_way'),
                             'urban':cfgParser.getint('config', 'urban'),'lane_merge_r':cfgParser.getint('config', 'lane_merge_right'),
                             'lane_merge_l':cfgParser.getint('config', 'lane_merge_left'),'lane_merge_c':cfgParser.getint('config', 'lane_merge_center'),

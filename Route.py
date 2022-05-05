@@ -402,7 +402,6 @@ class Route:
                 self.addSignWayPoint(gpx,loc,link_attributes,'school_zone',31,edge_dir,cfg)
                 self.addSignWayPoint(gpx,loc,link_attributes,'icy_road',28,edge_dir,cfg)
                 self.addSignWayPoint(gpx,loc,link_attributes,'falling_rocks',30,edge_dir,cfg)
-                self.addSignWayPoint(gpx,loc,link_attributes,'pedestrian',41,edge_dir,cfg)
                 self.addSignWayPoint(gpx,loc,link_attributes,'crosswalk',41,edge_dir,cfg)
                 self.addSignWayPoint(gpx,loc,link_attributes,'animal_crossing',27,edge_dir,cfg)
                 self.addSignWayPoint(gpx,loc,link_attributes,'two_way',46,edge_dir,cfg)
