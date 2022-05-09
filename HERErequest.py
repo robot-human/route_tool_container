@@ -171,6 +171,8 @@ def requestSignsTile(links_dict: dict, tile: tuple, features_query: dict, increm
                         links_dict[link_id]['TRAFFIC_SIGNS_F'].append(int(attr['TRAFFIC_SIGN_TYPE']))
                         links_dict[link_id]['TRAFFIC_SIGNS_T'].append(int(attr['TRAFFIC_SIGN_TYPE']))
                 links_dict[link_id]['WEIGHT'] += setSignsWeight(attr, features_query, increment)
+                if(links_dict[link_id]['WEIGHT'] < 0):
+                    links_dict[link_id]['WEIGHT'] = 0
             except:
                 continue
                 #print("Signs layer empty")
@@ -188,6 +190,8 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, in
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
                 links_dict[link_id]['WEIGHT'] += setRoadGeomWeight(geom, features_query, increment)
+                if(links_dict[link_id]['WEIGHT'] < 0):
+                    links_dict[link_id]['WEIGHT'] = 0
             except:
                 continue
                 #print("Road Geom layer empty")
@@ -210,6 +214,8 @@ def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dic
                 if(layer['TO_AVG_ROUGHN_CAT'] != None):
                     links_dict[link_id]['ROAD_ROUGHNESS_T'] = road_roughn_cat[int(layer['TO_AVG_ROUGHN_CAT'])]
                 links_dict[link_id]['WEIGHT'] += setRoadRoughnessWeight(layer, features_query, increment)
+                if(links_dict[link_id]['WEIGHT'] < 0):
+                    links_dict[link_id]['WEIGHT'] = 0
             except:
                 continue
                 #print("Road Roughness layer empty")
@@ -256,6 +262,8 @@ def requestLaneTile(links_dict: dict, tile: tuple, features_query: dict, increme
                 if(str(attr['WIDTH']) != 'None'): 
                     links_dict[link_id]['WIDTH'] = float(attr['WIDTH'])
                 links_dict[link_id]['WEIGHT'] += setLanesWeight(attr, features_query, increment)
+                if(links_dict[link_id]['WEIGHT'] < 0):
+                    links_dict[link_id]['WEIGHT'] = 0
             except:
                 continue
                 #print("Lane layer empty")
@@ -268,9 +276,9 @@ def requestSpeedBumpsTile(links_dict: dict,  tile: tuple, features_query: dict, 
             try:
                 link_id = limit['LINK_ID']
                 links_dict[link_id]['SPEED_BUMPS'] = int(limit['SPEED_LIMIT_TYPE'])
-                #print(int(limit['SPEED_LIMIT_TYPE']))
                 links_dict[link_id]['WEIGHT'] += setSpeedBumpsWeight(limit, features_query, increment)
-                #print(limit['SPEED_LIMIT_TYPE'])
+                if(links_dict[link_id]['WEIGHT'] < 0):
+                    links_dict[link_id]['WEIGHT'] = 0
             except:
                 continue
                 #print("Speed Bumps layer empty")
@@ -299,6 +307,12 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, i
                     links_dict[link_id_2]['TOLL_BOOTH'] = layer['NAME']
                     links_dict[link_id_1]['WEIGHT'] += setTollBoothWeight(layer, features_query, increment)
                     links_dict[link_id_2]['WEIGHT'] += setTollBoothWeight(layer, features_query, increment)
+                    if(links_dict[link_id_1]['WEIGHT'] < 0):
+                        links_dict[link_id_1]['WEIGHT'] = 0
+                        print("toll",links_dict[link_id_1]['WEIGHT'])
+                    if(links_dict[link_id_1]['WEIGHT'] < 0):
+                        links_dict[link_id_2]['WEIGHT'] = 0
+                        print("toll",links_dict[link_id_2]['WEIGHT'])
                 elif(len(link_ids) == 1):
                     link_1 = link_ids[0]
                     if(link_1.find('-') == 0):
@@ -308,6 +322,9 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, i
                     links_dict[link_id_1]['TOLL_LOC'] = str(int(layer['LAT'])/100000)+","+str(int(layer['LON'])/100000)
                     links_dict[link_id_1]['TOLL_BOOTH'] = layer['NAME']
                     links_dict[link_id_1]['WEIGHT'] += setTollBoothWeight(layer, features_query, increment)
+                    if(links_dict[link_id_1]['WEIGHT'] < 0):
+                        links_dict[link_id]['WEIGHT'] = 0
+                        print("toll",links_dict[link_id_1]['WEIGHT'])
             except:
                 continue
                 #print("Toll Booth layer empty")

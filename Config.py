@@ -402,14 +402,15 @@ else:
         query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 
                           'speed_features':speed_features, 'lane_features':lane_features}
         
-        sum = 0
+        sum = routes_num
         for feat in boolean_features:
             sum += boolean_features[feat]
         if(sum > 0):
-            increment = 50/sum
+            feat_increment = 80/sum
         else:
-            increment = 0
+            feat_increment = 0
 
+        route_increment=0
         cfg = { 'route_type': route_type,
                 'routes_number':routes_num,
                 'start_location': start_gps,
@@ -422,6 +423,7 @@ else:
                 'max_boundaries':(lat_max,lon_max),
                 'gps_locations': gps_locations,
                 'query_features':query_features,
-                'increment':increment
+                'feat_increment':feat_increment,
+                'route_increment':route_increment,
                 }
 
