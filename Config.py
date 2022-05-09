@@ -406,7 +406,7 @@ else:
         for feat in boolean_features:
             sum += boolean_features[feat]
         if(sum > 0):
-            increment = 90/sum
+            increment = 50/sum
         else:
             increment = 0
 
