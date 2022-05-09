@@ -57,7 +57,6 @@ class Route:
     def __init__(self, desired_length, charging_stations: dict, visit_charging_station: bool):
         #self.route_type = route_type
         self.desired_length = desired_length
-        #self.search_radius = search_radius
         self.charging_stations = charging_stations
         self.c_station = None
         self.visit_charging_stationt = visit_charging_station

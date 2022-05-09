@@ -47,16 +47,16 @@ def graphFromDict(links_dict: dict):
 #This function request links attributes from tile coordinates
 #   Input: tile coordinates, desired features dictionary, session
 #   Output: HERE graph
-def getGraphFromTile(tile: tuple, query: dict, session: requests.Session=None):
+def getGraphFromTile(tile: tuple, query: dict, increment, session: requests.Session=None):
     if not session: session = requests.Session() 
-    links_dict = getLinksFromTile(tile, query, session)
+    links_dict = getLinksFromTile(tile, query, increment, session)
     graph = graphFromDict(links_dict)
     return graph 
 
 #This function creates a HERE graph from tles list coordinates
 #   Input: tiles coordinates list, desired features dictionary, session
 #   Output: HERE graph
-def graphFromTileList(tiles: list, query: dict,  session):
+def graphFromTileList(tiles: list, query: dict, increment,  session):
     ng = HEREgraph()
     #with Pool(processes=4) as p:
     #    part = partial(getGraphFromTile, session=session)
@@ -65,7 +65,7 @@ def graphFromTileList(tiles: list, query: dict,  session):
     #        ng.updateGraph(new_graph)
     
     for tile in tiles:
-        new_graph = getGraphFromTile(tile, query, session=session)
+        new_graph = getGraphFromTile(tile, query, increment, session=session)
         ng.updateGraph(new_graph)
     return ng
 

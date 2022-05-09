@@ -57,7 +57,7 @@ if __name__ == '__main__':
     end_time_01 = time.time()
 
     start_time_02 = time.time()
-    g = graphFromTileList(tiles, cfg['query_features'], session) 
+    g = graphFromTileList(tiles, cfg['query_features'], cfg['increment'], session) 
     
     g.saveEdgesToNumpy()
     g.saveNodesToNumpy()

@@ -17,9 +17,12 @@ else:
     if len(sections) == 0 or 'config' not in sections:
         print("config file doesn't include [config] section")
     else:
-        route_type = 'point_to_point'
         routes_num = int(cfgParser.get('config', 'number_of_routes'))
         visit_cs = cfgParser.get('config', 'visit_charge_station')
+        if(visit_cs):
+            route_type = 'point_to_point'
+        else:
+            route_type = 'point_to_point'
         
         units = cfgParser.get('config', 'units')
         if(units == "mi"):
@@ -361,7 +364,7 @@ else:
         except:
             max_speed = 200
             boolean_speed_max = False
-            
+    
         boolean_features = {'stop_signs':cfgParser.getint('config', 'stop_signs'),'icy_road':cfgParser.getint('config', 'icy_road'),
                             'falling_rocks':cfgParser.getint('config', 'falling_rocks'),'school_zone':cfgParser.getint('config', 'school_zone'),
                             'crosswalk':cfgParser.getint('config', 'crosswalk'),'speed_category':speed_category_bool,
@@ -399,6 +402,14 @@ else:
         query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 
                           'speed_features':speed_features, 'lane_features':lane_features}
         
+        sum = 0
+        for feat in boolean_features:
+            sum += boolean_features[feat]
+        if(sum > 0):
+            increment = 90/sum
+        else:
+            increment = 0
+
         cfg = { 'route_type': route_type,
                 'routes_number':routes_num,
                 'start_location': start_gps,
@@ -410,6 +421,7 @@ else:
                 'min_boundaries':(lat_min,lon_min),
                 'max_boundaries':(lat_max,lon_max),
                 'gps_locations': gps_locations,
-                'query_features':query_features
+                'query_features':query_features,
+                'increment':increment
                 }
 
