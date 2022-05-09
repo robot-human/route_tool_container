@@ -347,7 +347,7 @@ class Route:
                 start[2] = self.displayFeature(gpx, loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[2], "Ramp")
             if(cfg['query_features']['boolean_features']['paved']):
                 start[3] = self.displayFeature(gpx, loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[3], "Paved")
-            if(cfg['query_features']['boolean_features']['access']):
+            if(cfg['query_features']['boolean_features']['limited_access']):
                 start[4] = self.displayFeature(gpx, loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[4], "Limited access")
             if(cfg['query_features']['boolean_features']['both_ways']):
                 start[5] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[5], "Bothways")
@@ -503,20 +503,21 @@ class Route:
         if(attributes[f'TRAVEL_DIRECTION'] == "B"):
             self.feat_count[14] += attributes['LINK_LENGTH']*0.001
             feat_list[14] = 'Present'
-        if(47 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[15] += 1
+        if(attributes['URBAN'] == 'Y'):
+            self.feat_count[15] += attributes['LINK_LENGTH']*0.001
             feat_list[15] = 'Present'
-        if(str(attributes['LIMITED_ACCESS_ROAD']) != 'None'):
+        if(attributes['LIMITED_ACCESS_ROAD'] == 'Y'):
             self.feat_count[16] += attributes['LINK_LENGTH']*0.001
             feat_list[16] = 'Present'
-        if(str(attributes['PAVED']) != 'None'):
+        if(attributes['PAVED'] == 'Y'):
             self.feat_count[17] += attributes['LINK_LENGTH']*0.001
             feat_list[17] = 'Present'
         if(str(attributes['RAMP']) == 'Y'):
-            if((str(next_attributes['RAMP']) == 'Y') and (start[0] == False)):
-                self.feat_count[18] += 1
+            if(str(next_attributes['RAMP']) == 'Y'):
                 feat_list[18] = 'Present'
-                start[0] = True
+                if(start[0] == False):
+                    self.feat_count[18] += 1
+                    start[0] = True
             elif(str(next_attributes['RAMP']) == 'N'):
                 start[0] = False
         if(str(attributes['INTERSECTION']) == '2'):
