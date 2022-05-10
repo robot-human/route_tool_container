@@ -309,10 +309,8 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, i
                     links_dict[link_id_2]['WEIGHT'] += setTollBoothWeight(layer, features_query, increment)
                     if(links_dict[link_id_1]['WEIGHT'] < 0):
                         links_dict[link_id_1]['WEIGHT'] = 0
-                        print("toll",links_dict[link_id_1]['WEIGHT'])
                     if(links_dict[link_id_1]['WEIGHT'] < 0):
                         links_dict[link_id_2]['WEIGHT'] = 0
-                        print("toll",links_dict[link_id_2]['WEIGHT'])
                 elif(len(link_ids) == 1):
                     link_1 = link_ids[0]
                     if(link_1.find('-') == 0):
@@ -324,7 +322,6 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, i
                     links_dict[link_id_1]['WEIGHT'] += setTollBoothWeight(layer, features_query, increment)
                     if(links_dict[link_id_1]['WEIGHT'] < 0):
                         links_dict[link_id]['WEIGHT'] = 0
-                        print("toll",links_dict[link_id_1]['WEIGHT'])
             except:
                 continue
                 #print("Toll Booth layer empty")
