@@ -18,8 +18,8 @@ resource_url = {'get_specific_layer_tile':'/1/tile.json',
                 'list_layer_attributes':'/1/doc/layer.json',
                 'list_available_layers':'/1/doc/layers.json'}
 
-APP_ID = 'u_mAl_GQlXOPuFueGYLatXGLrJLpgHsMb8QmNKlHwfY'
-APP_CODE = 'UUWISlzU8orDegoNz_Y9-Ht0iiHRZKk7jrcRLjMEoSE'
+#APP_ID = 'u_mAl_GQlXOPuFueGYLatXGLrJLpgHsMb8QmNKlHwfY'
+APP_CODE = 'm2Bk_Yc8VolukAoHJZL_KHrNCBnWxhZPVrWkVtJILFg'
 
 level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 api_usage_count = 0
@@ -350,20 +350,23 @@ def getChargingStationsList(tiles: tuple, session):
     filt=False
     for tile in tiles:
         stations = checkTileFromCache(tile, f'EVCHARGING_POI', session)
-        for s in stations:
-            if(str(s['CONNECTORTYPE']) != str(None)):
-                if(filt==False):
-                    stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
-                else:
-                    string = s['CONNECTORTYPE'].split("                   ")
-                    if('combo' in string[0]):
-                        if(len(string) == 1):
-                            alt_string = string[0].split(";")
-                            cs_type = alt_string[len(alt_string) - 1]
-                        else:
-                            cs_type = string[7]
-                        if((cs_type == "ChargePoint") or (cs_type == "Electrify America")):
-                            stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
+        try:
+            for s in stations:
+                if(str(s['CONNECTORTYPE']) != str(None)):
+                    if(filt==False):
+                        stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
+                    else:
+                        string = s['CONNECTORTYPE'].split("                   ")
+                        if('combo' in string[0]):
+                            if(len(string) == 1):
+                                alt_string = string[0].split(";")
+                                cs_type = alt_string[len(alt_string) - 1]
+                            else:
+                                cs_type = string[7]
+                            if((cs_type == "ChargePoint") or (cs_type == "Electrify America")):
+                                stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
+        except:
+            continue
     return stations_dict
 
 #This function request the link layer and link attributes layer tile data and creates the link attribute dictionary
