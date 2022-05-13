@@ -7,7 +7,7 @@ from Tools import removeGPXFiles, Haversine, getRandomLocation
 from HERErequest import  getTiles, getChargingStationsList
 from HEREgraph2 import graphFromTileList
 from Route import Route, getSigns
-#import tracemalloc
+import tracemalloc
 
 
 session = requests.Session()
