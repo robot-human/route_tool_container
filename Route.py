@@ -276,7 +276,7 @@ class Route:
             feat_list = self.fillFeaturesCSV(link_attributes, next_link_attributes, start)
             lat = str(int(link_attributes['LAT'].split(",")[0])/100000)
             lon = str(int(link_attributes['LON'].split(",")[0])/100000)
-            if(units=="mi"):
+            if((units == "mi") or (units.lower() == "m")):
                 link_length = 0.000621371*float(link_attributes['LINK_LENGTH'])
                 if(str(link_attributes['SPEED_LIMIT']) == 'None'):
                     time = link_length/(0.621371*float(link_attributes['AVG_SPEED']))

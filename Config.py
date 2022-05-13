@@ -3,7 +3,7 @@ import os
 from configparser import ConfigParser
 from Tools import Haversine, getRandomLocation
 
-sample_separation = 0.0001
+sample_separation = 0.001
 margin = 0.02
 maximum_gps_coordinates = 500
 cfg = None
@@ -25,7 +25,7 @@ else:
             route_type = 'point_to_point'
         
         units = cfgParser.get('config', 'units')
-        if(units == "mi"):
+        if((units == "mi") or (units.lower() == "m")):
             desired_route_length = 1.60934*float(cfgParser.get('config', 'desired_route_length'))
         else:
             desired_route_length = float(cfgParser.get('config', 'desired_route_length'))
