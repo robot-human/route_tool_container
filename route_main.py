@@ -100,7 +100,8 @@ if __name__ == '__main__':
         route.setGPXFile(g, i, "./gpx", cfg)       
         route.setCSVFeatures(g, i, units=cfg.get('units'))
         rank_points = route.getRankPoints()
-        routes_list.append(route)
+        del route
+        #routes_list.append(route)
         if(rank_points > ref_rank_points):
             ref_rank_points=rank_points
             best_route=i
