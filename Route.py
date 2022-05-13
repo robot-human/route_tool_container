@@ -68,7 +68,11 @@ class Route:
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
         self.features_file_name = f"./gpx/summary.csv"
         return None
-    
+
+    def clean(self):
+        del self.route
+        del self.charging_stations
+
     def auxRoute(self, G, start_loc, end_loc):
         start_node_distances = []
         end_node_distances = []
@@ -453,6 +457,7 @@ class Route:
         f.close()
         self.routeRankPoints()
         self.displayRouteInfo()
+        del gpx
         return None
     
     def addSignWayPoint(self,gpx,loc,attr,signName,signNumber,edgeDirection,cfg):

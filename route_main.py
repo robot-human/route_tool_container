@@ -7,6 +7,7 @@ from Tools import removeGPXFiles, Haversine, getRandomLocation
 from HERErequest import  getTiles, getChargingStationsList
 from HEREgraph2 import graphFromTileList
 from Route import Route, getSigns
+#import tracemalloc
 
 
 session = requests.Session()
@@ -46,6 +47,7 @@ def createCSVFile():
     features_file.close()
 
 if __name__ == '__main__':
+    #tracemalloc.start()
     start_time = time.time()
     
     removeGPXFiles("./gpx/")
@@ -66,6 +68,7 @@ if __name__ == '__main__':
     
     start_time_03 = time.time()
     start_node, _ = g.findNodeFromCoord(cfg.get('start_location'))
+
     if(cfg.get('route_type') == 'point_to_anywhere'):
         end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('desired_route_length'))
         end_node, _ = g.findNodeFromCoord(end_loc)
@@ -100,8 +103,11 @@ if __name__ == '__main__':
         route.setGPXFile(g, i, "./gpx", cfg)       
         route.setCSVFeatures(g, i, units=cfg.get('units'))
         rank_points = route.getRankPoints()
+        #print(100*tracemalloc.get_traced_memory()[0]/tracemalloc.get_traced_memory()[1])
+        route.clean()
+        #print(100*tracemalloc.get_traced_memory()[0]/tracemalloc.get_traced_memory()[1])
         del route
-        #routes_list.append(route)
+        #print(100*tracemalloc.get_traced_memory()[0]/tracemalloc.get_traced_memory()[1])
         if(rank_points > ref_rank_points):
             ref_rank_points=rank_points
             best_route=i
@@ -116,3 +122,4 @@ if __name__ == '__main__':
     tiles_time = end_time_01 - start_time_01
     graph_time = end_time_02 - start_time_02
     route_time = end_time_03 - start_time_03
+    #tracemalloc.stop()
