@@ -1,12 +1,26 @@
+from os.path import isfile
+import os
 from HERErequest import  getTiles, fillCache
-import requests 
+import requests
+from configparser import ConfigParser
 
 session = requests.Session()
 
 sample_separation = 0.001
 
-start_gps = [42.794493, -83.422365]
-end_gps = [42.693361, -82.480642]
+if not isfile(os.path.join(os.getcwd(), 'config.ini')):
+    print("config file doesn't exist")
+else:
+    cfgParser = ConfigParser()
+    cfgParser.read(os.path.join(os.getcwd(), 'config.ini'))
+    sections = cfgParser.sections()
+    if len(sections) == 0 or 'config' not in sections:
+        print("config file doesn't include [config] section")
+    else:
+        temp = cfgParser.get('config', 'start_gps').split(',')
+        start_gps = (float(temp[0]), float(temp[1]))
+        temp = cfgParser.get('config', 'end_gps').split(',')
+        end_gps = (float(temp[0]), float(temp[1]))
 
 
 
