@@ -33,12 +33,17 @@ road_roughn_cat = {1:"Good",2:"Fair",3:"Poor"}
 #   Output: None
 def fillCache(tiles: list, session):
     for tile in tiles:
-        tileToCache(tile, f'LINK_FC{level_layerID_map[tile[2]]}', tiles_cache_path, session)
-        tileToCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', tiles_cache_path, session)
-        tileToCache(tile, f'LANE_FC{level_layerID_map[tile[2]]}', tiles_cache_path, session)
-        tileToCache(tile, f'TRAFFIC_SIGN_FC{level_layerID_map[tile[2]]}', tiles_cache_path, session)
-        tileToCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', tiles_cache_path, session)
-        tileToCache(tile, f'EVCHARGING_POI', tiles_cache_path, session)
+        checkTileFromCache(tile, f'LINK_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'LANE_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'TRAFFIC_SIGN_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'EVCHARGING_POI', session)
+        checkTileFromCache(tile, f'ROAD_ROUGHNESS_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'SPEED_LIMITS_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'SPEED_LIMITS_COND_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'TOLL_BOOTH_FC{level_layerID_map[tile[2]]}', session)
+        checkTileFromCache(tile, f'TRAFFIC_PATTERN_FC{level_layerID_map[tile[2]]}', session)
     return None
 
 #This function is used for access to tile/layer map data, first checks if the tile/layer data is in cache, 
