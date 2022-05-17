@@ -15,10 +15,7 @@ main_file_path = f'./route_main.py'
 if __name__ == '__main__':
     if(DOWNLOAD):
         while(LOOP):
-            subprocess.run(f'python3 {subscribe_file_path}',shell=True)
-            subprocess.run(f'python3 {validation_file_path}',shell=True)
             subprocess.run(f'python3 {download_file_path}',shell=True)
-            time.sleep(1)
     else:
         while(LOOP):
             subprocess.run(f'python3 {subscribe_file_path}',shell=True)
