@@ -32,6 +32,7 @@ road_roughn_cat = {1:"Good",2:"Fair",3:"Poor"}
 #   Input: a list of tiles
 #   Output: None
 def fillCache(tiles: list, session):
+    print("start filling cache")
     for tile in tiles:
         checkTileFromCache(tile, f'LINK_FC{level_layerID_map[tile[2]]}', session)
         checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)
