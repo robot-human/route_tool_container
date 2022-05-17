@@ -17,6 +17,7 @@ else:
     if len(sections) == 0 or 'config' not in sections:
         print("config file doesn't include [config] section")
     else:
+        print("Start download")
         temp = cfgParser.get('config', 'start_gps').split(',')
         start_gps = (float(temp[0]), float(temp[1]))
         temp = cfgParser.get('config', 'end_gps').split(',')
