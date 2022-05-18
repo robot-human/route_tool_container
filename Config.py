@@ -19,10 +19,7 @@ else:
     else:
         routes_num = int(cfgParser.get('config', 'number_of_routes'))
         visit_cs = cfgParser.get('config', 'visit_charge_station')
-        if(visit_cs):
-            route_type = 'point_to_point'
-        else:
-            route_type = 'point_to_point'
+        route_type = 'point_to_point'
         
         units = cfgParser.get('config', 'units')
         if((units == "mi") or (units.lower() == "m")):
@@ -91,7 +88,6 @@ else:
         distance = Haversine(start_gps,end_gps)
         if((distance < 0.5) and (len(mid_gps) == 0)):
             mid_gps.append(getRandomLocation(start_gps, desired_route_length/3.0))
-            #route_type = "closed_route"
 
         if(route_type == 'point_to_anywhere'):
             route_type = "point_to_point"
@@ -110,6 +106,112 @@ else:
             for j in range(resolution[1]):
                 gps_locations.append((lat_min + lat_step * i, lon_min + lon_step * j))
         
+        #Highway feature list setup
+        if(cfgParser.getint('config', 'highway')):
+            functional_class_list = [1,2, 3]
+            speed_category_list = [1,2,3,4]
+        elif(cfgParser.getint('config', 'avoid_highway')):
+            functional_class_list = [4,5]
+            speed_category_list = [5,6,7,8]
+        else:
+            functional_class_list = [1,2,3,4,5]
+            speed_category_list = [1,2,3,4,5,6,7,8]
+
+        #Urban list setup
+        if(cfgParser.getint('config', 'urban')):
+            urban_list = ['S','Y']
+        else:
+            urban_list = ['Y','N']
+
+        #Bothways, oneway list setup
+        if((cfgParser.getint('config', 'oneway')==1) and (cfgParser.getint('config', 'both_ways')==0)):
+            direction_list = ['F','T']
+        elif((cfgParser.getint('config', 'oneway')==0) and (cfgParser.getint('config', 'both_ways')==1)):
+            direction_list = ['B']
+        else:
+            direction_list = ['F','T','B']
+
+        #Limited access list setup
+        if(cfgParser.getint('config', 'limited_access')):
+            limited_access_list = ['S','Y']
+        else:
+            limited_access_list = ['Y','N']
+    
+        #Paved list setup
+        if(cfgParser.getint('config', 'paved')):
+            paved_list = ['S','Y']
+        else:
+            paved_list = ['Y','N']
+        
+        #Ramp list setup        
+        if(cfgParser.getint('config', 'ramp')):
+            ramp_list = ['S','Y']
+        else:
+            ramp_list = ['Y','N']
+        
+        #Intersection list setup
+        intersection_list = []
+        if(cfgParser.getint('config', 'manoeuvre')):
+            intersection_list.append(2)
+        else:
+            intersection_list.append(-2)
+        if(cfgParser.getint('config', 'roundabout')):
+            intersection_list.append(4)
+        else:
+            intersection_list.append(-4)
+        if((cfgParser.getint('config', 'manoeuvre')==0) and (cfgParser.getint('config', 'roundabout')==0)):
+            intersection_list = [-2,-4,1,2,3,4,5,6]
+
+        #One lane road vs multi lane list setup
+        if(cfgParser.getint('config', 'one_lane')):
+            lane_list = [1]
+        elif(cfgParser.getint('config', 'multiple_lanes')):
+            lane_list = [2,3]
+        elif((cfgParser.getint('config', 'multiple_lanes')==0) and(cfgParser.getint('config', 'one_lane')==0)):
+            lane_list = [1,2,3]
+
+        #Overpass Underpass list setup
+        overpass_list = []
+        if(cfgParser.getint('config', 'overpass')):
+            overpass_list.append(1)
+        else:
+            overpass_list.append(-1)
+        if(cfgParser.getint('config', 'underpass')):
+            overpass_list.append(2)
+        else:
+            overpass_list.append(-2)
+
+        #Speed category
+        speed_category_bool=0
+        speed_category=[]
+        if(cfgParser.getint('config', 'speed_130km_80mph')):
+            speed_category.append(1)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_101kph_to_130kph_65_to_80mph')):
+            speed_category.append(2)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_91kph_to_100kph_55mph_to_64mph')):
+            speed_category.append(3)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_71kph_to_90kph_41mph_to_54mph')):
+            speed_category.append(4)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_51kph_to_70kph_31mph_to_40mph')):
+            speed_category.append(5)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_31kph_to_50kph_21mph_to_30mph')):
+            speed_category.append(6)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_11kph_to_30kph_6mph_to_20mph')):
+            speed_category.append(7)
+            speed_category_bool=1
+        if(cfgParser.getint('config', 'speed_11kph_6mph')):
+            speed_category.append(8)
+            speed_category_bool=1
+
+
+
+        """
         #Lane markers
         lane_markers = []
         if(cfgParser.getint('config', 'lane_marker_long_dashed')):
@@ -168,113 +270,15 @@ else:
         else:
             lane_type_bool = 0
 
-        #Highway feature list setup
-        if(cfgParser.getint('config', 'highway')):
-            functional_class_list = [1,2, 3]
-            speed_category_list = [1,2,3,4]
-        elif(cfgParser.getint('config', 'avoid_highway')):
-            functional_class_list = [4,5]
-            speed_category_list = [5,6,7,8]
-        else:
-            functional_class_list = [1,2,3,4,5]
-            speed_category_list = [1,2,3,4,5,6,7,8]
         
-        #Ramp list setup        
-        if(cfgParser.getint('config', 'ramp')):
-            ramp_list = ['S','Y']
-        else:
-            ramp_list = ['Y','N']
+
         
-        #Paved list setup
-        if(cfgParser.getint('config', 'paved')):
-            paved_list = ['S','Y']
-        else:
-            paved_list = ['Y','N']
         
-        #Speed category
-        speed_category_bool=0
-        speed_category=[]
-        if(cfgParser.getint('config', 'speed_130km_80mph')):
-            speed_category.append(1)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_101kph_to_130kph_65_to_80mph')):
-            speed_category.append(2)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_91kph_to_100kph_55mph_to_64mph')):
-            speed_category.append(3)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_71kph_to_90kph_41mph_to_54mph')):
-            speed_category.append(4)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_51kph_to_70kph_31mph_to_40mph')):
-            speed_category.append(5)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_31kph_to_50kph_21mph_to_30mph')):
-            speed_category.append(6)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_11kph_to_30kph_6mph_to_20mph')):
-            speed_category.append(7)
-            speed_category_bool=1
-        if(cfgParser.getint('config', 'speed_11kph_6mph')):
-            speed_category.append(8)
-            speed_category_bool=1
 
         road_roughness_good = cfgParser.getint('config', 'road_good')
         road_roughness_fair = cfgParser.getint('config', 'road_fair')
         road_roughness_poor = cfgParser.getint('config', 'road_poor')
-        
-        #Limited access list setup
-        if(cfgParser.getint('config', 'limited_access')):
-            limited_access_list = ['S','Y']
-        else:
-            limited_access_list = ['Y','N']
-        
-        #Bothways, oneway list setup
-        if((cfgParser.getint('config', 'oneway')==1) and (cfgParser.getint('config', 'both_ways')==0)):
-            direction_list = ['F','T']
-        elif((cfgParser.getint('config', 'oneway')==0) and (cfgParser.getint('config', 'both_ways')==1)):
-            direction_list = ['B']
-        else:
-            direction_list = ['F','T','B']
-        
-        #Urban list setup
-        if(cfgParser.getint('config', 'urban')):
-            urban_list = ['S','Y']
-        else:
-            urban_list = ['Y','N']
-       
-        #Overpass Underpass list setup
-        overpass_list = []
-        if(cfgParser.getint('config', 'overpass')):
-            overpass_list.append(1)
-        else:
-            overpass_list.append(-1)
-        if(cfgParser.getint('config', 'underpass')):
-            overpass_list.append(2)
-        else:
-            overpass_list.append(-2)
-        
-        #Intersection list setup
-        intersection_list = []
-        if(cfgParser.getint('config', 'manoeuvre')):
-            intersection_list.append(2)
-        else:
-            intersection_list.append(-2)
-        if(cfgParser.getint('config', 'roundabout')):
-            intersection_list.append(4)
-        else:
-            intersection_list.append(-4)
-        if((cfgParser.getint('config', 'manoeuvre')==0) and (cfgParser.getint('config', 'roundabout')==0)):
-            intersection_list = [-2,-4,1,2,3,4,5,6]
-        
-        #One lane road vs multi lane list setup
-        if(cfgParser.getint('config', 'one_lane')):
-            lane_list = [1]
-        elif(cfgParser.getint('config', 'multiple_lanes')):
-            lane_list = [2,3]
-        elif((cfgParser.getint('config', 'multiple_lanes')==0) and(cfgParser.getint('config', 'one_lane')==0)):
-            lane_list = [1,2,3]
-        
+                
         if(cfgParser.getint('config', 'tunnel')):
             tunnel_list = ['S','Y']
         else:
@@ -402,11 +406,23 @@ else:
         query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 
                           'speed_features':speed_features, 'lane_features':lane_features}
         
+        """
+
+        boolean_features = {'highway':cfgParser.getint('config', 'highway'),'avoid_highway':cfgParser.getint('config', 'avoid_highway'),
+                            'urban':cfgParser.getint('config', 'urban'),'oneway':cfgParser.getint('config', 'oneway'),
+                            'both_ways':cfgParser.getint('config', 'both_ways'),'limited_access':cfgParser.getint('config', 'limited_access'),
+                            'paved':cfgParser.getint('config', 'paved'), 'ramp':cfgParser.getint('config', 'ramp'),
+                            'manoeuvre':cfgParser.getint('config', 'manoeuvre'),'roundabout':cfgParser.getint('config', 'roundabout'),
+                            'one_lane':cfgParser.getint('config', 'one_lane'),'multiple_lanes':cfgParser.getint('config', 'multiple_lanes'),
+                            'overpass':cfgParser.getint('config', 'overpass'),'underpass':cfgParser.getint('config', 'underpass'),
+                            'speed_category':speed_category_bool}
+        query_features = {'boolean_features':boolean_features}
+
         sum = routes_num
         for feat in boolean_features:
             sum += boolean_features[feat]
         if(sum > 0):
-            feat_increment = 80/sum
+            feat_increment = 1/sum
         else:
             feat_increment = 0
 
@@ -417,7 +433,7 @@ else:
                 'end_location': end_gps,
                 'mid_locations':mid_gps,
                 'units':units,
-                'desired_route_length_km':desired_route_length,
+                'desired_route_length':desired_route_length,
                 'visit_charge_station':visit_cs,
                 'min_boundaries':(lat_min,lon_min),
                 'max_boundaries':(lat_max,lon_max),
@@ -426,4 +442,4 @@ else:
                 'feat_increment':feat_increment,
                 'route_increment':route_increment,
                 }
-
+        print(feat_increment)

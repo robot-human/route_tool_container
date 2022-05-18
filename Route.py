@@ -103,7 +103,7 @@ class Route:
         return nearest_cs   
     
     def setPathWeights(self, G, path):
-        increment = 5
+        increment = 2.8
         for i in range(1,len(path)):
             link_data = G.get_edge_data(path[i-1],path[i])
             link_attributes = link_data[list(link_data.keys())[0]]
@@ -133,36 +133,15 @@ class Route:
             prev_node = start_node
             for next_node in mid_points:
                 path_cont = nx.shortest_path(G, prev_node, next_node, weight='WEIGHT')
-                self.setPathWeights(G,path_cont)
                 last_node = path_cont.pop(len(path_cont)-1)
                 full_path.extend(path_cont)
                 prev_node = next_node
             path_cont = nx.shortest_path(G, prev_node, end_node, weight='WEIGHT')
-            self.setPathWeights(G, path_cont)
             last_node = path_cont.pop(len(path_cont)-1)
             full_path.extend(path_cont)
             return full_path
         else:
             return self.pointToPointRoute(G, start_node, end_node)
-            """
-            if(self.route_type == 'point_to_point'):
-                print("point to point")
-                return self.pointToPointRoute(G, start_node, end_node)
-            elif(self.route_type == 'closed_route'):
-                return self.closedRoute(G, start_node, end_node)
-            elif(self.route_type == 'point_to_anywhere'):
-                try:
-                    return self.pointToPointRoute(G, start_node, end_node)
-                    route_bool = True
-                except:
-                    print("couldn't find route")
-            elif(self.route_type == 'point_to_charge_station'):
-                print("Charge station")
-                return self.pointToChargeStationRoute(G, start_node, end_node)
-            else:
-                print("Invalid route type")
-                return None
-            """
 
     def getRouteLength(self):
         return self.route_length
@@ -215,7 +194,7 @@ class Route:
         return route
     
     def setRoute(self, G, start_point, end_point, mid_points):
-        increment = 5.0
+        increment = 1.8
         self.avg_speed = 0
         self.route = self.findRoute(G, start_point, end_point, mid_points)
         for i in range(1,len(self.route)):
@@ -225,8 +204,6 @@ class Route:
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
-            if(link_attributes['WEIGHT'] < 0):
-                link_attributes['WEIGHT'] = 0
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000
         return None
@@ -256,8 +233,9 @@ class Route:
 
     def setCSVFeatures(self, G, route_num, units="km"):
         file_name = f"./gpx/route{route_num}_staticfeaturesfile.csv"
-        feat_line = ",".join([str(item) for item in feature_list])
-        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time(hrs),Accum_len,Accum_time(hrs),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
+        feat_line = ",".join([str(item) for item in feature_dict])
+        #head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time(hrs),Accum_len,Accum_time(hrs),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
+        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time(hrs),"+feat_line+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
@@ -266,7 +244,7 @@ class Route:
         time_accum = 0
         self.feat_count = []
         start = [False]
-        for feat in feature_list:
+        for feat in feature_dict:
             self.feat_count.append(0)
         for i in range(1,len((self.route))):
             str_line = str(route_num)
@@ -280,7 +258,7 @@ class Route:
             feat_list = self.fillFeaturesCSV(link_attributes, next_link_attributes, start)
             lat = str(int(link_attributes['LAT'].split(",")[0])/100000)
             lon = str(int(link_attributes['LON'].split(",")[0])/100000)
-            if((units == "mi") or (units.lower() == "m")):
+            if(units == "Mi"):
                 link_length = 0.000621371*float(link_attributes['LINK_LENGTH'])
                 if(str(link_attributes['SPEED_LIMIT']) == 'None'):
                     time = link_length/(0.621371*float(link_attributes['AVG_SPEED']))
@@ -297,7 +275,7 @@ class Route:
             time_accum = time_accum + time
             feat_line = ",".join([str(item) for item in feat_list])
             str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+ "," + str(link_attributes['SPEED_LIMIT'])
-            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "," + lane_divider_dict[int(link_attributes['LANE_DIVIDER_MARKER'])] + "," + str(link_attributes['TOLL_BOOTH'])+ "," +str(link_attributes['FUNCTIONAL_CLASS'])+ "\n"
+            str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "\n"
             features_file.write(str_line)
 
         feat_count_line = ",".join([str(item) for item in self.feat_count])
@@ -346,33 +324,23 @@ class Route:
                 next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
             else:
                 next_link_attributes = link_data[list(link_data.keys())[0]]
-
             edge_dir = link_attributes['EDGE_DIRECTION']
             if(cfg['query_features']['boolean_features']['highway']):
                 start[0] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
             if(cfg['query_features']['boolean_features']['avoid_highway']):
                 start[1] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
-            if(cfg['query_features']['boolean_features']['ramp']):
-                start[2] = self.displayFeature(gpx, loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[2], "Ramp")
-            if(cfg['query_features']['boolean_features']['paved']):
-                start[3] = self.displayFeature(gpx, loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[3], "Paved")
-            if(cfg['query_features']['boolean_features']['limited_access']):
-                start[4] = self.displayFeature(gpx, loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[4], "Limited access")
-            if(cfg['query_features']['boolean_features']['both_ways']):
-                start[5] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[5], "Bothways")
-            if(cfg['query_features']['boolean_features']['oneway']):
-                start[6] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[6], "One way")
             if(cfg['query_features']['boolean_features']['urban']):
                 start[7] = self.displayFeature(gpx, loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[7], "Urban")
-            if(cfg['query_features']['boolean_features']['overpass']):
-                start[8] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['1'], start[8], "Overpass")
-            if(cfg['query_features']['boolean_features']['underpass']):
-                start[9] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['2'], start[9], "Underpass")
-            if(cfg['query_features']['boolean_features']['one_lane']):
-                start[10] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
-            if(cfg['query_features']['boolean_features']['multiple_lanes']):
-                start[11] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
-
+            if(cfg['query_features']['boolean_features']['oneway']):
+                start[6] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[6], "One way")
+            if(cfg['query_features']['boolean_features']['both_ways']):
+                start[5] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[5], "Bothways")
+            if(cfg['query_features']['boolean_features']['limited_access']):
+                start[4] = self.displayFeature(gpx, loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[4], "Limited access")
+            if(cfg['query_features']['boolean_features']['paved']):
+                start[3] = self.displayFeature(gpx, loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[3], "Paved")
+            if(cfg['query_features']['boolean_features']['ramp']):
+                start[2] = self.displayFeature(gpx, loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[2], "Ramp")
             if(cfg['query_features']['boolean_features']['manoeuvre']):
                 if(link_attributes['INTERSECTION'] != None):
                     if((int(link_attributes['INTERSECTION']) == 2) and (prev_link_manoeuvre == False)):
@@ -389,7 +357,16 @@ class Route:
                         prev_link_roundabout = True
                 else:
                     prev_link_roundabout = False
+            if(cfg['query_features']['boolean_features']['one_lane']):
+                start[10] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
+            if(cfg['query_features']['boolean_features']['multiple_lanes']):
+                start[11] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
+            if(cfg['query_features']['boolean_features']['overpass']):
+                start[8] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['1'], start[8], "Overpass")
+            if(cfg['query_features']['boolean_features']['underpass']):
+                start[9] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['2'], start[9], "Underpass")
             
+            """
             if(cfg['query_features']['boolean_features']['tunnel']):
                 if((link_attributes["TUNNEL"] == 'Y') and (prev_link_tunnel == False)):
                     gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Tunnel"))
@@ -442,6 +419,7 @@ class Route:
             if((cfg['query_features']['boolean_features']['overtaking']) and (21 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[21]}")) 
                 self.n_features += 1
+            """
 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
@@ -451,13 +429,12 @@ class Route:
                 CONNECTOR = self.charging_stations[self.c_station]["CONNECTORTYPE"]
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=CONNECTOR))
         #    station = self.closestChargingStation(G, cfg['start_location'],cfg['end_location'])
-        #self.displayChargeStations(gpx, station)
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
-        self.routeRankPoints()
-        self.displayRouteInfo()
-        del gpx
+        #self.routeRankPoints()
+        #self.displayRouteInfo()
+        #del gpx
         return None
     
     def addSignWayPoint(self,gpx,loc,attr,signName,signNumber,edgeDirection,cfg):
@@ -466,137 +443,151 @@ class Route:
             self.n_features += 1
 
     def fillFeaturesCSV(self, attributes, next_attributes, start):
-        feat_list = ['Not present' for i in range(len(feature_list)+1)]
+        feat_list = ['Not present' for i in range(len(feature_dict)+1)]
         edge_dir = attributes['EDGE_DIRECTION']
-        if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[0] += 1
-            feat_list[0] = 'Present'
-        if(31 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[1] += 1
-            feat_list[1] = 'Present'
-        if(28 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[2] += 1
-            feat_list[2] = 'Present'
-        if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[3] += 1
-            feat_list[3] = 'Present'
-        if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[4] += 1
-            feat_list[4] = 'Present'
-        if((27 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (59 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
-            self.feat_count[5] += 1
-            feat_list[5] = 'Present'
-        if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[6] += 1
-            feat_list[6] = 'Present'
-        if(17 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[7] += 1
-            feat_list[7] = 'Present'
-        if(6 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[8] += 1
-            feat_list[8] = 'Present'
-        if(7 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[9] += 1
-            feat_list[9] = 'Present'
-        if(8 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[10] += 1
-            feat_list[10] = 'Present'
+        #highway
         if(int(attributes[f'FUNCTIONAL_CLASS']) <= 3):
-            self.feat_count[11] += attributes['LINK_LENGTH']*0.001
-            feat_list[11] = 'Present'
+            self.feat_count[feature_dict['highway']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['highway']] = 'Present'
+        #avoid highway
         if(int(attributes[f'FUNCTIONAL_CLASS']) >= 4):
-            self.feat_count[12] += attributes['LINK_LENGTH']*0.001
-            feat_list[12] = 'Present'
-        if(attributes[f'TRAVEL_DIRECTION'] != "B"):
-            self.feat_count[13] += attributes['LINK_LENGTH']*0.001
-            feat_list[13] = 'Present'
-        if(attributes[f'TRAVEL_DIRECTION'] == "B"):
-            self.feat_count[14] += attributes['LINK_LENGTH']*0.001
-            feat_list[14] = 'Present'
+            self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['avoid_highway']] = 'Present'
         if(attributes['URBAN'] == 'Y'):
-            self.feat_count[15] += attributes['LINK_LENGTH']*0.001
-            feat_list[15] = 'Present'
+            self.feat_count[feature_dict['urban']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['urban']] = 'Present'
+        #One way
+        if(attributes[f'TRAVEL_DIRECTION'] != "B"):
+            self.feat_count[feature_dict['oneway']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['oneway']] = 'Present'
+        #Both ways
+        if(attributes[f'TRAVEL_DIRECTION'] == "B"):
+            self.feat_count[feature_dict['both_ways']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['both_ways']] = 'Present'
+        #Limited acces
         if(attributes['LIMITED_ACCESS_ROAD'] == 'Y'):
-            self.feat_count[16] += attributes['LINK_LENGTH']*0.001
-            feat_list[16] = 'Present'
+            self.feat_count[feature_dict['limited_access']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['limited_access']] = 'Present'
+        #Paved
         if(attributes['PAVED'] == 'Y'):
-            self.feat_count[17] += attributes['LINK_LENGTH']*0.001
-            feat_list[17] = 'Present'
+            self.feat_count[feature_dict['paved']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['paved']] = 'Present'
+        #Ramp
         if(str(attributes['RAMP']) == 'Y'):
             if(str(next_attributes['RAMP']) == 'Y'):
-                feat_list[18] = 'Present'
+                feat_list[feature_dict['ramp']] = 'Present'
                 if(start[0] == False):
-                    self.feat_count[18] += 1
+                    self.feat_count[feature_dict['ramp']] += 1
                     start[0] = True
             elif(str(next_attributes['RAMP']) == 'N'):
                 start[0] = False
+        #Manoeuvre
         if(str(attributes['INTERSECTION']) == '2'):
-            self.feat_count[19] += 1
-            feat_list[19] = 'Present'
+            self.feat_count[feature_dict['manoeuvre']] += 1
+            feat_list[feature_dict['manoeuvre']] = 'Present'
+        #Roundabout
         if(str(attributes['INTERSECTION']) == '4'):
-            self.feat_count[20] += 1
-            feat_list[20] = 'Present'
+            self.feat_count[feature_dict['roundabout']] += 1
+            feat_list[feature_dict['roundabout']] = 'Present'
+        #One lane
         if(str(attributes['LANE_CATEGORY']) == '1'):
-            self.feat_count[21] += attributes['LINK_LENGTH']*0.001
-            feat_list[21] = 'Present'
+            self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['one_lane']] = 'Present'
+        #Multiple lanes
         if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
-            self.feat_count[22] += attributes['LINK_LENGTH']*0.001
-            feat_list[22] = 'Present'
+            self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['multiple_lanes']] = 'Present'
+        #Overpass
         if(str(attributes['OVERPASS_UNDERPASS']) == '1'):
-            self.feat_count[23] += 1
-            feat_list[23] = 'Present'
+            self.feat_count[feature_dict['overpass']] += 1
+            feat_list[feature_dict['overpass']] = 'Present'
+        #Underpass
         if(str(attributes['OVERPASS_UNDERPASS']) == '2'):
-            self.feat_count[24] += 1
-            feat_list[24] = 'Present'
-        if(11 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[25] += 1
-            feat_list[25] = 'Present'
-        if(18 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[26] += 1
-            feat_list[26] = 'Present'
-        if(19 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[27] += 1
-            feat_list[27] = 'Present'
-        if(21 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[28] += 1
-            feat_list[28] = 'Present'
-        if(30 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[29] += 1
-            feat_list[29] = 'Present'
-        if((18 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (19 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (26 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
-            self.feat_count[30] += 1
-            feat_list[30] = 'Present'
-        if(attributes['TUNNEL'] == 'Y'):
-            self.feat_count[31] += 1
-            feat_list[31] = 'Present'
-        if(attributes['BRIDGE'] == 'Y'):
-            self.feat_count[32] += 1
-            feat_list[32] = 'Present'
-        if(1 in attributes[f'BUMP_{edge_dir}']):
-            self.feat_count[33] += 1
-            feat_list[33] = 'Present'
-        if(2 in attributes[f'BUMP_{edge_dir}']):
-            self.feat_count[34] += 1
-            feat_list[34] = 'Present'
-        if(attributes[f'SPEED_BUMPS'] == 3):
-            self.feat_count[35] += 1
-            feat_list[35] = 'Present'
-        feat_list[36] = attributes[f'ROAD_ROUGHNESS_{edge_dir}']
-        if(attributes[f'FUNCTIONAL_CLASS'] == 1):
-            self.feat_count[36] += attributes['LINK_LENGTH']*0.001
-            self.feat_count[41] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
-        if(attributes[f'FUNCTIONAL_CLASS'] == 2):
-            self.feat_count[37] += attributes['LINK_LENGTH']*0.001
-            self.feat_count[42] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
-        if(attributes[f'FUNCTIONAL_CLASS'] == 3):
-            self.feat_count[38] += attributes['LINK_LENGTH']*0.001
-            self.feat_count[43] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
-        if(attributes[f'FUNCTIONAL_CLASS'] == 4):
-            self.feat_count[39] += attributes['LINK_LENGTH']*0.001
-            self.feat_count[44] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
-        if(attributes[f'FUNCTIONAL_CLASS'] == 5):
-            self.feat_count[40] += attributes['LINK_LENGTH']*0.001
-            self.feat_count[45] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+            self.feat_count[feature_dict['underpass']] += 1
+            feat_list[feature_dict['underpass']] = 'Present'
+
+        # if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[0] += 1
+        #     feat_list[0] = 'Present'
+        # if(31 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[1] += 1
+        #     feat_list[1] = 'Present'
+        # if(28 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[2] += 1
+        #     feat_list[2] = 'Present'
+        # if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[3] += 1
+        #     feat_list[3] = 'Present'
+        # if(41 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[4] += 1
+        #     feat_list[4] = 'Present'
+        # if((27 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (59 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
+        #     self.feat_count[5] += 1
+        #     feat_list[5] = 'Present'
+        # if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+        #     self.feat_count[6] += 1
+        #     feat_list[6] = 'Present'
+        # if(17 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+        #     self.feat_count[7] += 1
+        #     feat_list[7] = 'Present'
+        # if(6 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[8] += 1
+        #     feat_list[8] = 'Present'
+        # if(7 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[9] += 1
+        #     feat_list[9] = 'Present'
+        # if(8 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[10] += 1
+        #     feat_list[10] = 'Present'
+        # if(11 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+        #     self.feat_count[25] += 1
+        #     feat_list[25] = 'Present'
+        # if(18 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+        #     self.feat_count[26] += 1
+        #     feat_list[26] = 'Present'
+        # if(19 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+        #     self.feat_count[27] += 1
+        #     feat_list[27] = 'Present'
+        # if(21 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
+        #     self.feat_count[28] += 1
+        #     feat_list[28] = 'Present'
+        # if(30 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+        #     self.feat_count[29] += 1
+        #     feat_list[29] = 'Present'
+        # if((18 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (19 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']) or (26 in attributes[f'TRAFFIC_SIGNS_{edge_dir}'])):
+        #     self.feat_count[30] += 1
+        #     feat_list[30] = 'Present'
+        # if(attributes['TUNNEL'] == 'Y'):
+        #     self.feat_count[31] += 1
+        #     feat_list[31] = 'Present'
+        # if(attributes['BRIDGE'] == 'Y'):
+        #     self.feat_count[32] += 1
+        #     feat_list[32] = 'Present'
+        # if(1 in attributes[f'BUMP_{edge_dir}']):
+        #     self.feat_count[33] += 1
+        #     feat_list[33] = 'Present'
+        # if(2 in attributes[f'BUMP_{edge_dir}']):
+        #     self.feat_count[34] += 1
+        #     feat_list[34] = 'Present'
+        # if(attributes[f'SPEED_BUMPS'] == 3):
+        #     self.feat_count[35] += 1
+        #     feat_list[35] = 'Present'
+        # feat_list[36] = attributes[f'ROAD_ROUGHNESS_{edge_dir}']
+        # if(attributes[f'FUNCTIONAL_CLASS'] == 1):
+        #     self.feat_count[36] += attributes['LINK_LENGTH']*0.001
+        #     self.feat_count[41] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        # if(attributes[f'FUNCTIONAL_CLASS'] == 2):
+        #     self.feat_count[37] += attributes['LINK_LENGTH']*0.001
+        #     self.feat_count[42] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        # if(attributes[f'FUNCTIONAL_CLASS'] == 3):
+        #     self.feat_count[38] += attributes['LINK_LENGTH']*0.001
+        #     self.feat_count[43] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        # if(attributes[f'FUNCTIONAL_CLASS'] == 4):
+        #     self.feat_count[39] += attributes['LINK_LENGTH']*0.001
+        #     self.feat_count[44] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        # if(attributes[f'FUNCTIONAL_CLASS'] == 5):
+        #     self.feat_count[40] += attributes['LINK_LENGTH']*0.001
+        #     self.feat_count[45] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
         return feat_list
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
@@ -632,9 +623,13 @@ lane_type = {1:"REGULAR",2:"HOV",4:"REVERSIBLE",6:"HOV + REVERSIBLE",8:"EXPRESS"
             36:"REVERSIBLE + DECELERATION",38:"HOV + REVERSIBLE + DECELERATION",40:"EXPRESS + DECELERATION",
             64:"AUXILIARY",128:"SLOW",256:"PASSING",512:"SHOULDER",1024:"REGULATED ACCESS",2048:"TURN",
             4096:"CENTRE TURN",8192:"TRUCK PARKING",16384:"PARKING",32768:"VARIABLE DRIVING",65536:"BICYCLE"}
-feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
-                "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
-                "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
-                "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps",
-                "functional_class_1","functional_class_2","functional_class_3","functional_class_4","functional_class_5",
-                "functional_class_1(hrs)","functional_class_2(hrs)","functional_class_3(hrs)","functional_class_4(hrs)","functional_class_5(hrs)"]
+
+#feature_list = ["stop_signs","school_zone","icy_road","pedestrian","crosswalk","non_pedestrian_crossing","traffic_lights","traffic_signs",
+#                "lane_merge_right","lane_merge_left","lane_merge_center","highway","avoid_highway","oneway","both_ways","urban","limited_access",
+#                "paved","ramp","manoeuvre","roundabout","one_lane","multiple_lanes","overpass","underpass","variable_speed","railway_crossing","no_overtaking",
+#                "overtaking","falling_rocks","hills","tunnel","bridge","bump","dip","speed_bumps",
+#                "functional_class_1","functional_class_2","functional_class_3","functional_class_4","functional_class_5",
+#                "functional_class_1(hrs)","functional_class_2(hrs)","functional_class_3(hrs)","functional_class_4(hrs)","functional_class_5(hrs)"]
+
+feature_dict = {"highway":0,"avoid_highway":1,"urban":2,"oneway":3,"both_ways":4,"limited_access":5,"paved":6,"ramp":7,"manoeuvre":8,"roundabout":9,"one_lane":10,"multiple_lanes":11,
+                "overpass":12,"underpass":13}
