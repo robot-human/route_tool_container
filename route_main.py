@@ -7,6 +7,7 @@ from Tools import removeGPXFiles, Haversine, getRandomLocation
 from HERErequest import  getTiles, getChargingStationsList
 from HEREgraph2 import graphFromTileList
 from Route import Route, getSigns
+from resources import feature_dict
 import tracemalloc
 
 
@@ -16,10 +17,6 @@ session = requests.Session()
 N_ROUTES = cfg.get('routes_number')
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
-
-
-feature_dict = {"highway":0,"avoid_highway":1,"urban":2,"oneway":3,"both_ways":4,"limited_access":5,"paved":6,"ramp":7,"manoeuvre":8,"roundabout":9,"one_lane":10,"multiple_lanes":11,
-                "overpass":12,"underpass":13}
 
 def createCSVFile():
     features_file_name = f"./gpx/summary.csv"
@@ -41,7 +38,7 @@ if __name__ == '__main__':
     end_time_01 = time.time()
 
     start_time_02 = time.time()
-    g = graphFromTileList(tiles, cfg['query_features'], cfg['feat_increment'], session) 
+    g = graphFromTileList(tiles, cfg['query_features'], session) 
     
     g.saveEdgesToNumpy()
     g.saveNodesToNumpy()
