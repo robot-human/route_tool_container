@@ -222,6 +222,17 @@ else:
         if(ts):
             traffic_condition_list.append(17)
             display_condition = True
+            stop = 1
+            school = 1
+            icy = 1
+            crosswalk = 1
+            rocks = 1
+            animal_crossing = 1
+            tway = 1
+            merge_r = 1
+            merge_l = 1
+            merge_c = 1
+            hills = 1
             traffic_signs_list = [i for i in range(66)]
         else:
             stop = cfgParser.getint('config', 'stop_signs')

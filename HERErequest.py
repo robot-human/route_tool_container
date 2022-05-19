@@ -399,7 +399,6 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, s
         for layer in toll_layer:
             try:
                 link_ids = layer['LINK_IDS'].split(",")
-                print(link_ids)
                 if(len(link_ids) == 2):
                     link_1 = link_ids[0]
                     link_2 = link_ids[1]
@@ -426,7 +425,6 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, s
                     links_dict[link_id_1]['TOLL_LOC'] = str(int(layer['LAT'])/100000)+","+str(int(layer['LON'])/100000)
                     links_dict[link_id_1]['TOLL_BOOTH'] = layer['NAME']
                     links_dict[link_id_1]['WEIGHT'] *= setTollBoothWeight(layer, features_query)
-                print(layer['NAME'])
             except:
                 continue
     return links_dict
