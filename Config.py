@@ -387,9 +387,10 @@ else:
                             'toll_booth':cfgParser.getint('config', 'toll_station'),'lane_markers_bool':lane_markers_bool,
                             'lane_type_bool':lane_type_bool}
 
+        attr_features = {'SPEED_CAT':speed_category}
         sign_features = {'CONDITION_TYPE':traffic_condition_list,'SIGN_TYPE':traffic_signs_list}
         lane_features = {'LANE_MARKERS':lane_markers,'LANE_TYPE':lane_type}
-        query_features = {'boolean_features':boolean_features,'sign_features':sign_features,'lane_features':lane_features}
+        query_features = {'boolean_features':boolean_features,'attr_features':attr_features,'sign_features':sign_features,'lane_features':lane_features}
 
         cfg = { 'route_type': route_type,
                 'routes_number':routes_num,
