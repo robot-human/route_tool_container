@@ -298,14 +298,14 @@ class Route:
                 start = False
         return start
     
-    def displayIntersection(self, gpx, loc, link_attributes, next_link_attributes, values, start, feat_name):
+    def displayIntersection(self, gpx, loc, next_loc, link_attributes, next_link_attributes, values, start, feat_name):
         if(link_attributes != None):
-            if((start==False) and (link_attributes in values) and (next_link_attributes in values)):
+            if((start==False) and (link_attributes in values)):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
                 start = True
                 self.n_features += 1
-            elif((start==True) and (link_attributes in values) and (next_link_attributes not in values)):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
+            if((start==True) and (link_attributes in values) and (next_link_attributes not in values)):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(next_loc[0],next_loc[1], name=f"End of {feat_name}"))
                 start = False
         return start
 
@@ -330,6 +330,7 @@ class Route:
         
         for i in range(1,len(self.route)):
             loc = G.nodes[self.route[i-1]]['LOC']
+            next_loc = G.nodes[self.route[i]]['LOC']
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
             if(i < len(self.route)-1):
@@ -355,9 +356,9 @@ class Route:
             if(cfg['query_features']['boolean_features']['ramp']):
                 start[7] = self.displayFeature(gpx, loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[7], "Ramp")
             if(cfg['query_features']['boolean_features']['manoeuvre']):
-                start[8] = self.displayIntersection(gpx, loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [2], start[8], "Manoeuvre")
+                start[8] = self.displayIntersection(gpx, loc, next_loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [2], start[8], "Manoeuvre")
             if(cfg['query_features']['boolean_features']['roundabout']):
-                start[9] = self.displayIntersection(gpx, loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [4], start[9], "Roundabout")
+                start[9] = self.displayIntersection(gpx, loc, next_loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [4], start[9], "Roundabout")
             if(cfg['query_features']['boolean_features']['one_lane']):
                 start[10] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
             if(cfg['query_features']['boolean_features']['multiple_lanes']):
