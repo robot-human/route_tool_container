@@ -489,8 +489,10 @@ class Route:
             feat_list[feature_dict['manoeuvre']] = 'Present'
         #Roundabout
         if(str(attributes['INTERSECTION']) == '4'):
-            self.feat_count[feature_dict['roundabout']] += 1
             feat_list[feature_dict['roundabout']] = 'Present'
+            if(str(next_attributes['INTERSECTION']) != '4'):
+                self.feat_count[feature_dict['roundabout']] += 1
+            
         #One lane
         if(str(attributes['LANE_CATEGORY']) == '1'):
             self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*0.001
