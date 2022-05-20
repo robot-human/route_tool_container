@@ -105,20 +105,16 @@ class Route:
         return nearest_cs   
     
     def setPathWeights(self, G, path):
-        increment = 2.8
+        increment = 1.8
         for i in range(1,len(path)):
             link_data = G.get_edge_data(path[i-1],path[i])
             link_attributes = link_data[list(link_data.keys())[0]]
             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
-            if(link_attributes['WEIGHT'] < 0):
-                link_attributes['WEIGHT'] = 0
         for i in range(len(path)-1,0,-1):
             link_data = G.get_edge_data(path[i],path[i-1])
             if(link_data != None):
                 link_attributes = link_data[list(link_data.keys())[0]]
                 link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
-                if(link_attributes['WEIGHT'] < 0):
-                    link_attributes['WEIGHT'] = 0
         return None
 
     def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
@@ -287,14 +283,24 @@ class Route:
         features_count_file.close()
         features_file.close()
 
-    def displayFeature(self, gpx, loc, link_attributes, next_link_attributes, values, start, feat_name):
+    # def displayFeature(self, gpx, loc, link_attributes, next_link_attributes, values, start, feat_name):
+    #     if(link_attributes != None):
+    #         if((start==False) and (link_attributes in values) and (next_link_attributes in values)):
+    #             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
+    #             start = True
+    #             self.n_features += 1
+    #         elif((start==True) and (link_attributes not in values) and (next_link_attributes not in values)):
+    #             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
+    #             start = False
+    #     return start
+    def displayFeature(self, gpx, loc, next_loc, link_attributes, next_link_attributes, values, start, feat_name):
         if(link_attributes != None):
-            if((start==False) and (link_attributes in values) and (next_link_attributes in values)):
+            if((start==False) and (link_attributes in values)):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
                 start = True
                 self.n_features += 1
-            elif((start==True) and (link_attributes not in values) and (next_link_attributes not in values)):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
+            elif((start==True) and (link_attributes in values) and (next_link_attributes not in values)):
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(next_loc[0],next_loc[1], name=f"End of {feat_name}"))
                 start = False
         return start
     
@@ -340,33 +346,33 @@ class Route:
                 next_link_attributes = link_data[list(link_data.keys())[0]]
             edge_dir = link_attributes['EDGE_DIRECTION']
             if(cfg['query_features']['boolean_features']['highway']):
-                start[0] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
+                start[0] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
             if(cfg['query_features']['boolean_features']['avoid_highway']):
-                start[1] = self.displayFeature(gpx, loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
+                start[1] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
             if(cfg['query_features']['boolean_features']['urban']):
-                start[2] = self.displayFeature(gpx, loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[2], "Urban")
+                start[2] = self.displayFeature(gpx, loc, next_loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[2], "Urban")
             if(cfg['query_features']['boolean_features']['oneway']):
-                start[3] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[3], "One way")
+                start[3] = self.displayFeature(gpx, loc, next_loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[3], "One way")
             if(cfg['query_features']['boolean_features']['both_ways']):
-                start[4] = self.displayFeature(gpx, loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[4], "Bothways")
+                start[4] = self.displayFeature(gpx, loc, next_loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[4], "Bothways")
             if(cfg['query_features']['boolean_features']['limited_access']):
-                start[5] = self.displayFeature(gpx, loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[5], "Limited access")
+                start[5] = self.displayFeature(gpx, loc, next_loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[5], "Limited access")
             if(cfg['query_features']['boolean_features']['paved']):
-                start[6] = self.displayFeature(gpx, loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[6], "Paved")
+                start[6] = self.displayFeature(gpx, loc, next_loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[6], "Paved")
             if(cfg['query_features']['boolean_features']['ramp']):
-                start[7] = self.displayFeature(gpx, loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[7], "Ramp")
+                start[7] = self.displayFeature(gpx, loc, next_loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[7], "Ramp")
             if(cfg['query_features']['boolean_features']['manoeuvre']):
                 start[8] = self.displayIntersection(gpx, loc, next_loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [2], start[8], "Manoeuvre")
             if(cfg['query_features']['boolean_features']['roundabout']):
                 start[9] = self.displayIntersection(gpx, loc, next_loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [4], start[9], "Roundabout")
             if(cfg['query_features']['boolean_features']['one_lane']):
-                start[10] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
+                start[10] = self.displayFeature(gpx, loc, next_loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
             if(cfg['query_features']['boolean_features']['multiple_lanes']):
-                start[11] = self.displayFeature(gpx, loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
+                start[11] = self.displayFeature(gpx, loc, next_loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
             if(cfg['query_features']['boolean_features']['overpass']):
-                start[12] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['1'], start[12], "Overpass")
+                start[12] = self.displayFeature(gpx, loc, next_loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['1'], start[12], "Overpass")
             if(cfg['query_features']['boolean_features']['underpass']):
-                start[13] = self.displayFeature(gpx, loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['2'], start[13], "Underpass")
+                start[13] = self.displayFeature(gpx, loc, next_loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['2'], start[13], "Underpass")
             
             if((cfg['query_features']['boolean_features']['variable_speed']) and (11 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[11]}")) 
@@ -412,9 +418,9 @@ class Route:
                 self.addSignWayPoint(gpx,loc,link_attributes,26,edge_dir)
 
             if(cfg['query_features']['boolean_features']['tunnel']):
-                start[14] = self.displayFeature(gpx, loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[14], "Tunnel")
+                start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[14], "Tunnel")
             if(cfg['query_features']['boolean_features']['bridge']):
-                start[15] = self.displayFeature(gpx, loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[15], "Bridge")
+                start[15] = self.displayFeature(gpx, loc, next_loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[15], "Bridge")
 
             if((cfg['query_features']['boolean_features']['speed_bumps']) and (3 == int(link_attributes[f"SPEED_BUMPS"]))):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"Speed_bump")) 
@@ -486,8 +492,10 @@ class Route:
                 start[0] = False
         #Manoeuvre
         if(str(attributes['INTERSECTION']) == '2'):
-            self.feat_count[feature_dict['manoeuvre']] += 1
             feat_list[feature_dict['manoeuvre']] = 'Present'
+            if(str(next_attributes['INTERSECTION']) != '2'):
+                self.feat_count[feature_dict['manoeuvre']] += 1
+            
         #Roundabout
         if(str(attributes['INTERSECTION']) == '4'):
             feat_list[feature_dict['roundabout']] = 'Present'
@@ -567,11 +575,15 @@ class Route:
             feat_list[feature_dict['hills']] = 'Present'
 
         if(attributes['TUNNEL'] == 'Y'):
-            self.feat_count[feature_dict['tunnel']] += 1
             feat_list[feature_dict['tunnel']] = 'Present'
+            if(next_attributes['TUNNEL'] != 'Y'):
+                self.feat_count[feature_dict['tunnel']] += 1
+            
         if(attributes['BRIDGE'] == 'Y'):
-            self.feat_count[feature_dict['bridge']] += 1
             feat_list[feature_dict['bridge']] = 'Present'
+            if(next_attributes['BRIDGE'] == 'Y'):
+                self.feat_count[feature_dict['bridge']] += 1
+            
         
         if(attributes[f'ROAD_ROUGHNESS_{edge_dir}'] == 'Good'):
             self.feat_count[feature_dict['road_roughness_good']] += attributes['LINK_LENGTH']*0.001

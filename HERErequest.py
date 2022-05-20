@@ -126,6 +126,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
             link_id = attr['LINK_ID']
+            links_dict[link_id]['ATTR_COUNT'] = 0
             links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
             links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
             links_dict[link_id]['URBAN'] = attr['URBAN']
@@ -174,7 +175,6 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestSpeedBumpsTile(links_dict, tile, query, session)
     links_dict = requestTollBoothTile(links_dict, tile, query, session)
     #links_dict = requestLaneTile(links_dict, tile, query, session)
-    
     return links_dict
 
 def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
