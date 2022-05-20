@@ -581,7 +581,7 @@ class Route:
             
         if(attributes['BRIDGE'] == 'Y'):
             feat_list[feature_dict['bridge']] = 'Present'
-            if(next_attributes['BRIDGE'] == 'Y'):
+            if(next_attributes['BRIDGE'] != 'Y'):
                 self.feat_count[feature_dict['bridge']] += 1
             
         
