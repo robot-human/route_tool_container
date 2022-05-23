@@ -3,10 +3,11 @@ feature_dict = {"highway":0,"avoid_highway":1,"urban":2,"oneway":3,"both_ways":4
                 "no_overtaking":17,"overtaking":18,"traffic_signs":19,"stop_signs":20,"school_zone":21,"icy_road":22,"crosswalk":23,
                 "animal_crossing":24,"two_way":25,"lane_merge_right":26,"lane_merge_left":27,"lane_merge_center":28,"falling_rocks":29,
                 "hills":30,"tunnel":31,"bridge":32,'road_roughness_good':33,'road_roughness_fair':34,'road_roughness_poor':35,
-                "speed_bump":36,"toll_station":37,'lane_marker_long_dashed':38,'lane_marker_short_dashed':39,'lane_marker_double_dashed':40,
+                "speed_bump":36,"toll_station":37,
+                'lane_marker_long_dashed':38,'lane_marker_short_dashed':39,'lane_marker_double_dashed':40,
                 'lane_marker_double_solid':41,'lane_marker_single_solid':42,'lane_marker_inner_solid_outter_dashed':43,
-                'lane_marker_inner_dashed_outter_solid':44,'lane_marker_no_divider':45,'lane_marker_physical_divider':46,'hov':47,
-                'reversible':48,'express':49,'slow':50,'auxiliary':51,'shoulder':52,'passing':53,'turn':54,'parking':55,
+                'lane_marker_inner_dashed_outter_solid':44,'lane_marker_no_divider':45,'lane_marker_physical_divider':46,
+                'hov':47,'reversible':48,'express':49,'slow':50,'auxiliary':51,'shoulder':52,'passing':53,'turn':54,'parking':55,
                 'center_turn':56,'bikelane':57}
 
 

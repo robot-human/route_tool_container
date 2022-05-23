@@ -174,7 +174,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestRoadRoughnessTile(links_dict, tile, query, session)
     links_dict = requestSpeedBumpsTile(links_dict, tile, query, session)
     links_dict = requestTollBoothTile(links_dict, tile, query, session)
-    #links_dict = requestLaneTile(links_dict, tile, query, session)
+    links_dict = requestLaneTile(links_dict, tile, query, session)
     return links_dict
 
 def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
@@ -436,7 +436,6 @@ def setTollBoothWeight(attributes: dict, features_query: dict, percentage = PERC
             weight *= percentage
     return weight
 
-"""
 def requestLaneTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
     lane_attributes = checkTileFromCache(tile, f'LANE_FC{level_layerID_map[tile[2]]}', session)
     if(str(lane_attributes) != "None"):
@@ -464,4 +463,3 @@ def setLanesWeight(attributes: dict, features_query: dict, percentage = PERCENTA
         if(int(attributes['LANE_TYPE']) in features_query['lane_features']['lane_markers']):
             weight *= percentage
     return weight
-"""

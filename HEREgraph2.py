@@ -16,9 +16,7 @@ from functools import partial
 #import random
 #level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 
-#This function uses the links attributes to construct a graph
-#   Input: Links attributes dictionary
-#   Output: Here graph
+
 def graphFromDict(links_dict: dict):
     g = HEREgraph()
     for link_id in links_dict:
@@ -44,18 +42,12 @@ def graphFromDict(links_dict: dict):
         g.add_node(nonref_node_id, LOC=((int(lat[0])+int(lat[1]))/(10.0**5), (int(lon[0])+int(lon[1]))/(10.0**5)))                           
     return g
     
-#This function request links attributes from tile coordinates
-#   Input: tile coordinates, desired features dictionary, session
-#   Output: HERE graph
 def getGraphFromTile(tile: tuple, query: dict, session: requests.Session=None):
     if not session: session = requests.Session() 
     links_dict = getLinksFromTile(tile, query, session)
     graph = graphFromDict(links_dict)
     return graph 
 
-#This function creates a HERE graph from tles list coordinates
-#   Input: tiles coordinates list, desired features dictionary, session
-#   Output: HERE graph
 def graphFromTileList(tiles: list, query: dict, session):
     ng = HEREgraph()
     #with Pool(processes=4) as p:

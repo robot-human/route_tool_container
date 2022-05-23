@@ -105,7 +105,7 @@ class Route:
         return nearest_cs   
     
     def setPathWeights(self, G, path):
-        increment = 1.8
+        increment = 1.0
         for i in range(1,len(path)):
             link_data = G.get_edge_data(path[i-1],path[i])
             link_attributes = link_data[list(link_data.keys())[0]]
@@ -192,7 +192,7 @@ class Route:
         return route
     
     def setRoute(self, G, start_point, end_point, mid_points):
-        increment = 1.8
+        increment = 1.15
         self.avg_speed = 0
         self.route = self.findRoute(G, start_point, end_point, mid_points)
         for i in range(1,len(self.route)):
@@ -602,5 +602,69 @@ class Route:
         if(attributes[f'TOLL_BOOTH'] != None):
             self.feat_count[feature_dict['toll_station']] += 1
             feat_list[feature_dict['toll_station']] = 'Present'
+        
+        #Lane dividers
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 1):
+            self.feat_count[feature_dict['lane_marker_long_dashed']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_long_dashed']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 6):
+            self.feat_count[feature_dict['lane_marker_short_dashed']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_short_dashed']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 10):
+            self.feat_count[feature_dict['lane_marker_double_dashed']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_double_dashed']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 2):
+            self.feat_count[feature_dict['lane_marker_double_solid']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_double_solid']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 3):
+            self.feat_count[feature_dict['lane_marker_single_solid']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_single_solid']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 4):
+            self.feat_count[feature_dict['lane_marker_inner_solid_outter_dashed']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_inner_solid_outter_dashed']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 5):
+            self.feat_count[feature_dict['lane_marker_inner_dashed_outter_solid']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_inner_dashed_outter_solid']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 11):
+            self.feat_count[feature_dict['lane_marker_no_divider']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_no_divider']] = 'Present'
+        if(attributes[f'LANE_DIVIDER_MARKER'] == 9):
+            self.feat_count[feature_dict['lane_marker_physical_divider']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['lane_marker_physical_divider']] = 'Present'
+
+        #Lane types
+        if(attributes[f'LANE_TYPE'] == 2):
+            self.feat_count[feature_dict['hov']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['hov']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 4):
+            self.feat_count[feature_dict['reversible']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['reversible']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 6):
+            self.feat_count[feature_dict['express']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['express']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 128):
+            self.feat_count[feature_dict['slow']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['slow']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 64):
+            self.feat_count[feature_dict['auxiliary']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['auxiliary']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 512):
+            self.feat_count[feature_dict['shoulder']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['shoulder']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 256):
+            self.feat_count[feature_dict['passing']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['passing']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 2048):
+            self.feat_count[feature_dict['turn']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['turn']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 16384):
+            self.feat_count[feature_dict['parking']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['parking']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 4096):
+            self.feat_count[feature_dict['center_turn']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['center_turn']] = 'Present'
+        if(attributes[f'LANE_TYPE'] == 65536):
+            self.feat_count[feature_dict['bikelane']] += attributes['LINK_LENGTH']*0.001
+            feat_list[feature_dict['bikelane']] = 'Present'
 
         return feat_list
