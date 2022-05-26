@@ -109,6 +109,8 @@ def checkTileFromCache(tile:tuple, layer:str, session:requests.Session=None):
             return None
 
 def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None): 
+    
+    not_navigable = []
     if not session: session = requests.Session() 
     links = checkTileFromCache(tile, f'LINK_FC{level_layerID_map[tile[2]]}', session)
     links_basic_attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)
@@ -122,12 +124,17 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                                            'LINK_LENGTH' : float(link['LINK_LENGTH']),
                                            'LAT': link['LAT'],
                                            'LON': link['LON'],
-                                           'WEIGHT': 1000}
+                                           'WEIGHT': 1000 + float(link['LINK_LENGTH'])}
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
             link_id = attr['LINK_ID']
             links_dict[link_id]['ATTR_COUNT'] = 0
             links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
+            links_dict[link_id]['VEHICLE_TYPES'] = attr['VEHICLE_TYPES']
+            if((int(links_dict[link_id]['VEHICLE_TYPES'])%2 != 1) or (attr['PUBLIC_ACCESS'] == 'N') or (attr['PRIVATE'] == 'Y')):
+                not_navigable.append(link_id)
+            if(int(attr['FUNCTIONAL_CLASS']) == 5):
+                links_dict[link_id]['WEIGHT'] += 200
             links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
             links_dict[link_id]['URBAN'] = attr['URBAN']
             links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']
@@ -140,7 +147,6 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                 if(int(attr['INTERSECTION_CATEGORY']) == 4): 
                     links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
             links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
-            links_dict[link_id]['OVERPASS_UNDERPASS'] = attr['OVERPASS_UNDERPASS']
             links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
 
             links_dict[link_id]['AVG_SPEED'] = 80
@@ -175,6 +181,9 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestSpeedBumpsTile(links_dict, tile, query, session)
     links_dict = requestTollBoothTile(links_dict, tile, query, session)
     links_dict = requestLaneTile(links_dict, tile, query, session)
+     
+    for link in not_navigable:
+        del links_dict[link]
     return links_dict
 
 def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
@@ -208,12 +217,6 @@ def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAG
             weight *= percentage
     if(features_query['boolean_features']['roundabout']):
         if(str(attributes['INTERSECTION_CATEGORY']) == '4'):
-            weight *= percentage
-    if(features_query['boolean_features']['overpass']):
-        if(str(attributes['OVERPASS_UNDERPASS']) == '1'):
-            weight *= percentage
-    if(features_query['boolean_features']['underpass']):
-        if(str(attributes['OVERPASS_UNDERPASS']) == '2'):
             weight *= percentage
     if(features_query['boolean_features']['one_lane']):
         if(int(attributes['LANE_CATEGORY']) == 1):
@@ -337,7 +340,7 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, se
 
 def setRoadGeomWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     weight = 1
-    if(features_query['boolean_features']['tunnel']):   
+    if(features_query['boolean_features']['tunnel']):  
         if(str(attributes['TUNNEL']) == 'Y'):
             weight *= percentage
     if(features_query['boolean_features']['bridge']): 

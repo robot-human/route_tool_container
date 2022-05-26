@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import requests 
 import time
@@ -12,7 +13,7 @@ import tracemalloc
 
 
 session = requests.Session()
-#UPDATED_CODE_05052022
+#UPDATED_CODE_25052022
 
 N_ROUTES = cfg.get('routes_number')
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
@@ -33,9 +34,11 @@ if __name__ == '__main__':
     createCSVFile()
     session = requests.Session()
 
+
     start_time_01 = time.time()
     tiles = getTiles(cfg.get('gps_locations'),9, 13)
     end_time_01 = time.time()
+    print("Get tiles time: ",end_time_01)
 
     start_time_02 = time.time()
     g = graphFromTileList(tiles, cfg['query_features'], session) 
@@ -43,6 +46,7 @@ if __name__ == '__main__':
     g.saveEdgesToNumpy()
     g.saveNodesToNumpy()
     end_time_02 = time.time()
+    print("Graph time: ",end_time_02)
     
     
     start_time_03 = time.time()
@@ -61,8 +65,8 @@ if __name__ == '__main__':
     routes_list = list()
     i = 0
         
-    best_route = 0
-    ref_rank_points = 0
+    dtype = [('route', int), ('points', int)]
+    values = []
     while(i < N_ROUTES):
         route_bool = False
         print(f"Route number {i}")
@@ -78,19 +82,14 @@ if __name__ == '__main__':
         
         route.setGPXFile(g, i, "./gpx", cfg)       
         route.setCSVFeatures(g, i, units=cfg.get('units'))
-        #rank_points = route.getRankPoints()
-        #print(100*tracemalloc.get_traced_memory()[0]/tracemalloc.get_traced_memory()[1])
-        #route.clean()
-        #print(100*tracemalloc.get_traced_memory()[0]/tracemalloc.get_traced_memory()[1])
-        #del route
-        #print(100*tracemalloc.get_traced_memory()[0]/tracemalloc.get_traced_memory()[1])
-        #if(rank_points > ref_rank_points):
-        #    ref_rank_points=rank_points
-        #    best_route=i
-        i+=1
-        #print("")
+        rank_points = route.getRankPoints()
+        values.append((i,rank_points))
 
-    #print(f"Best route was route number: {best_route}")
+        i+=1
+
+    routes_ranking_points = np.array(values, dtype=dtype)
+    routes_ranking_points = np.sort(routes_ranking_points, order='points')  
+    print(routes_ranking_points)
     end_time_03 = time.time()
   
     end_time = time.time()

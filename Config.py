@@ -3,8 +3,8 @@ import os
 from configparser import ConfigParser
 from Tools import Haversine, getRandomLocation
 
-sample_separation = 0.001
-margin = 0.02
+sample_separation = 0.0005
+margin = 0.05
 maximum_gps_coordinates = 500
 cfg = None
                          
@@ -104,80 +104,6 @@ else:
             for j in range(resolution[1]):
                 gps_locations.append((lat_min + lat_step * i, lon_min + lon_step * j))
         
-        #Highway feature list setup
-        if(cfgParser.getint('config', 'highway')):
-            functional_class_list = [1,2, 3]
-            speed_category_list = [1,2,3,4]
-        elif(cfgParser.getint('config', 'avoid_highway')):
-            functional_class_list = [4,5]
-            speed_category_list = [5,6,7,8]
-        else:
-            functional_class_list = [1,2,3,4,5]
-            speed_category_list = [1,2,3,4,5,6,7,8]
-
-        #Urban list setup
-        if(cfgParser.getint('config', 'urban')):
-            urban_list = ['S','Y']
-        else:
-            urban_list = ['Y','N']
-
-        #Bothways, oneway list setup
-        if((cfgParser.getint('config', 'oneway')==1) and (cfgParser.getint('config', 'both_ways')==0)):
-            direction_list = ['F','T']
-        elif((cfgParser.getint('config', 'oneway')==0) and (cfgParser.getint('config', 'both_ways')==1)):
-            direction_list = ['B']
-        else:
-            direction_list = ['F','T','B']
-
-        #Limited access list setup
-        if(cfgParser.getint('config', 'limited_access')):
-            limited_access_list = ['S','Y']
-        else:
-            limited_access_list = ['Y','N']
-    
-        #Paved list setup
-        if(cfgParser.getint('config', 'paved')):
-            paved_list = ['S','Y']
-        else:
-            paved_list = ['Y','N']
-        
-        #Ramp list setup        
-        if(cfgParser.getint('config', 'ramp')):
-            ramp_list = ['S','Y']
-        else:
-            ramp_list = ['Y','N']
-        
-        #Intersection list setup
-        intersection_list = []
-        if(cfgParser.getint('config', 'manoeuvre')):
-            intersection_list.append(2)
-        else:
-            intersection_list.append(-2)
-        if(cfgParser.getint('config', 'roundabout')):
-            intersection_list.append(4)
-        else:
-            intersection_list.append(-4)
-        if((cfgParser.getint('config', 'manoeuvre')==0) and (cfgParser.getint('config', 'roundabout')==0)):
-            intersection_list = [-2,-4,1,2,3,4,5,6]
-
-        #One lane road vs multi lane list setup
-        if(cfgParser.getint('config', 'one_lane')):
-            lane_list = [1]
-        elif(cfgParser.getint('config', 'multiple_lanes')):
-            lane_list = [2,3]
-        elif((cfgParser.getint('config', 'multiple_lanes')==0) and(cfgParser.getint('config', 'one_lane')==0)):
-            lane_list = [1,2,3]
-
-        #Overpass Underpass list setup
-        overpass_list = []
-        if(cfgParser.getint('config', 'overpass')):
-            overpass_list.append(1)
-        else:
-            overpass_list.append(-1)
-        if(cfgParser.getint('config', 'underpass')):
-            overpass_list.append(2)
-        else:
-            overpass_list.append(-2)
 
         #Speed category
         speed_category=[]
@@ -202,23 +128,17 @@ else:
         else:
             speed_category_bool=False
 
-        vs = cfgParser.getint('config', 'variable_speed')
         tl = cfgParser.getint('config', 'traffic_lights')
         rc = cfgParser.getint('config', 'railway_crossing')
         nover = cfgParser.getint('config', 'no_overtaking')
-        over = cfgParser.getint('config', 'overtaking')
         ts = cfgParser.getint('config', 'traffic_signs')
         traffic_condition_list = []
-        if(vs):
-            traffic_condition_list.append(11)
         if(tl):
             traffic_condition_list.append(16)
         if(rc):
             traffic_condition_list.append(18)
         if(nover):
             traffic_condition_list.append(19)
-        if(over):
-            traffic_condition_list.append(21)
         if(ts):
             traffic_condition_list.append(17)
             display_condition = True
@@ -241,15 +161,12 @@ else:
             crosswalk = cfgParser.getint('config', 'crosswalk')
             rocks = cfgParser.getint('config', 'falling_rocks')
             animal_crossing = cfgParser.getint('config', 'animal_crossing')
-            tway = cfgParser.getint('config', 'two_way')
             merge_r = cfgParser.getint('config', 'lane_merge_right')
             merge_l = cfgParser.getint('config', 'lane_merge_left')
-            merge_c = cfgParser.getint('config', 'lane_merge_center')
             hills = cfgParser.getint('config', 'hills')
             traffic_signs_list = []
-            if(stop==0 and icy==0 and rocks==0 and school==0 and crosswalk==0 and animal_crossing==0 and tway==0 and merge_r==0 and merge_l==0 and merge_c==0 and hills==0):   
-                traffic_signs_list = [i for i in range(66)]
-                display_signs = False
+            #if(stop==0 and icy==0 and rocks==0 and school==0 and crosswalk==0 and animal_crossing==0 and merge_r==0 and merge_l==0 and hills==0):   
+            #    display_signs = False
             if(stop):
                 traffic_signs_list.append(20)
             if(icy):
@@ -262,14 +179,10 @@ else:
                 traffic_signs_list.append(41)
             if(animal_crossing):
                 traffic_signs_list.append(27)
-            if(tway):
-                traffic_signs_list.append(46)
             if(merge_r):
                 traffic_signs_list.append(6)
             if(merge_l):
                 traffic_signs_list.append(7)
-            if(merge_c):
-                traffic_signs_list.append(8) 
             if(hills):
                 traffic_signs_list.extend([18,19,26])
         if(len(traffic_condition_list) > 0):
@@ -332,54 +245,10 @@ else:
             lane_type.append(16384)
         if(cfgParser.getint('config', 'center_turn')):
             lane_type.append(4096)
-        if(cfgParser.getint('config', 'bikelane')):
-            lane_type.append(65536)
         if(len(lane_type) > 0):
             lane_type_bool = 1
         else:
             lane_type_bool = 0
-
-        
-        
-        """
-        boolean_features = {'stop_signs':cfgParser.getint('config', 'stop_signs'),'icy_road':cfgParser.getint('config', 'icy_road'),
-                            'falling_rocks':cfgParser.getint('config', 'falling_rocks'),'school_zone':cfgParser.getint('config', 'school_zone'),
-                            'crosswalk':cfgParser.getint('config', 'crosswalk'),'speed_category':speed_category_bool,
-                            'animal_crossing':cfgParser.getint('config', 'animal_crossing'),'two_way':cfgParser.getint('config', 'two_way'),
-                            'urban':cfgParser.getint('config', 'urban'),'lane_merge_r':cfgParser.getint('config', 'lane_merge_right'),
-                            'lane_merge_l':cfgParser.getint('config', 'lane_merge_left'),'lane_merge_c':cfgParser.getint('config', 'lane_merge_center'),
-                            'hills':cfgParser.getint('config', 'hills'),'traffic_signs':cfgParser.getint('config', 'traffic_signs'),
-                            'highway':cfgParser.getint('config', 'highway'),'avoid_highway':cfgParser.getint('config', 'avoid_highway'),
-                            'tunnel':cfgParser.getint('config', 'tunnel'),'bridge':cfgParser.getint('config', 'bridge'),
-                            'variable_speed':cfgParser.getint('config', 'variable_speed'),'traffic_lights':cfgParser.getint('config', 'traffic_lights'),
-                            'railway_crossing':cfgParser.getint('config', 'railway_crossing'),'no_overtaking':cfgParser.getint('config', 'no_overtaking'),
-                            'overtaking':cfgParser.getint('config', 'overtaking'),'ramp':cfgParser.getint('config', 'ramp'),
-                            'paved':cfgParser.getint('config', 'paved'),'limited_access':cfgParser.getint('config', 'limited_access'),
-                            'both_ways':cfgParser.getint('config', 'both_ways'),'oneway':cfgParser.getint('config', 'oneway'),
-                            'urban':cfgParser.getint('config', 'urban'),'overpass':cfgParser.getint('config', 'overpass'),
-                            'underpass':cfgParser.getint('config', 'underpass'),'manoeuvre':cfgParser.getint('config', 'manoeuvre'),
-                            'roundabout':cfgParser.getint('config', 'roundabout'),'one_lane':cfgParser.getint('config', 'one_lane'),
-                            'multiple_lanes':cfgParser.getint('config', 'multiple_lanes'),'lane_markers_bool':lane_markers_bool,
-                            'road_roughness_good':road_roughness_good,'road_roughness_fair':road_roughness_fair,
-                            'road_roughness_poor':road_roughness_poor,'lane_type_bool':lane_type_bool,'speed_bumps':cfgParser.getint('config', 'speed_bumps'),
-                            'toll_booth':cfgParser.getint('config', 'toll_station')}
-
-        #, 'SPEED_CATEGORY':speed_category_list
-        attr_features = {'FUNCTIONAL_CLASS':functional_class_list, 'TRAVEL_DIRECTION':direction_list,  'URBAN':urban_list, 'LIMITED_ACCESS_ROAD':limited_access_list, 
-                         'PAVED':paved_list, 'RAMP':ramp_list, 'INTERSECTION_CATEGORY':intersection_list, 'LANE_CATEGORY':lane_list, 'OVERPASS_UNDERPASS':overpass_list,
-                         'SPEED_CAT':speed_category}
-        
-        
-        geom_features = {'TUNNEL':tunnel_list, 'BRIDGE':bridge_list}
-
-        speed_features = {'SPEED_MIN' : min_speed,'SPEED_MAX' : max_speed, 'boolean_speed_min':boolean_speed_min,'boolean_speed_max':boolean_speed_max}
-            
-        lane_features = {'LANE_MARKERS':lane_markers,'LANE_TYPE':lane_type}
-
-        query_features = {'boolean_features':boolean_features,'attr_features':attr_features, 'sign_features':sign_features, 'geom_features':geom_features, 
-                          'speed_features':speed_features, 'lane_features':lane_features}
-        
-        """
 
         boolean_features = {'highway':cfgParser.getint('config', 'highway'),'avoid_highway':cfgParser.getint('config', 'avoid_highway'),
                             'urban':cfgParser.getint('config', 'urban'),'oneway':cfgParser.getint('config', 'oneway'),
@@ -387,11 +256,10 @@ else:
                             'paved':cfgParser.getint('config', 'paved'), 'ramp':cfgParser.getint('config', 'ramp'),
                             'manoeuvre':cfgParser.getint('config', 'manoeuvre'),'roundabout':cfgParser.getint('config', 'roundabout'),
                             'one_lane':cfgParser.getint('config', 'one_lane'),'multiple_lanes':cfgParser.getint('config', 'multiple_lanes'),
-                            'overpass':cfgParser.getint('config', 'overpass'),'underpass':cfgParser.getint('config', 'underpass'),
-                            'speed_category':speed_category_bool,'variable_speed':vs,'traffic_light':tl,'railway_crossing':rc,
-                            'no_overtaking':nover,'overtaking':over,'traffic_sign':ts,'stop_sign':stop,'school_sign':school,'icy_sign':icy,
+                            'speed_category':speed_category_bool,'traffic_light':tl,'railway_crossing':rc,
+                            'no_overtaking':nover,'traffic_sign':ts,'stop_sign':stop,'school_sign':school,'icy_sign':icy,
                             'crosswalk_sign':crosswalk,'falling_rocks_sign':rocks,'animal_crossing_sign':animal_crossing,
-                            'tway_sign':tway,'merge_r_sign':merge_r,'merge_l_sign':merge_l,'merge_c_sign':merge_c,'hills_sign':hills,
+                            'merge_r_sign':merge_r,'merge_l_sign':merge_l,'hills_sign':hills,
                             'tunnel':cfgParser.getint('config', 'tunnel'),'bridge':cfgParser.getint('config', 'bridge'),
                             'road_roughness_good':cfgParser.getint('config', 'road_good'),'road_roughness_fair':cfgParser.getint('config', 'road_fair'),
                             'road_roughness_poor':cfgParser.getint('config', 'road_poor'), 'speed_bumps':cfgParser.getint('config', 'speed_bumps'),

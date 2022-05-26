@@ -104,18 +104,18 @@ class Route:
                 self.c_station = cs
         return nearest_cs   
     
-    def setPathWeights(self, G, path):
-        increment = 1.0
-        for i in range(1,len(path)):
-            link_data = G.get_edge_data(path[i-1],path[i])
-            link_attributes = link_data[list(link_data.keys())[0]]
-            link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
-        for i in range(len(path)-1,0,-1):
-            link_data = G.get_edge_data(path[i],path[i-1])
-            if(link_data != None):
-                link_attributes = link_data[list(link_data.keys())[0]]
-                link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
-        return None
+    # def setPathWeights(self, G, path):
+    #     increment = 1.0
+    #     for i in range(1,len(path)):
+    #         link_data = G.get_edge_data(path[i-1],path[i])
+    #         link_attributes = link_data[list(link_data.keys())[0]]
+    #         link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
+    #     for i in range(len(path)-1,0,-1):
+    #         link_data = G.get_edge_data(path[i],path[i-1])
+    #         if(link_data != None):
+    #             link_attributes = link_data[list(link_data.keys())[0]]
+    #             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
+    #     return None
 
     def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
         path = nx.shortest_path(G, start_node, mid_point, weight='WEIGHT')
@@ -201,6 +201,7 @@ class Route:
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
+            print(link_attributes['WEIGHT'])
             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000
@@ -211,12 +212,6 @@ class Route:
         if(str(station) != "None"):
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(int(self.charging_stations[station]['LAT'])/100000,int(self.charging_stations[station]['LON'])/100000, name=self.charging_stations[station]['CONNECTORTYPE'])) 
         return None
-
-    def routeRankPoints(self):
-        self.rank_points = (self.desired_length - abs(self.desired_length - self.route_length)) + self.n_features
-        print(f"Desired distance difference {self.desired_length - abs(self.desired_length - self.route_length)}")
-        print(f"Number of desired features {self.n_features}")
-        return None
     
     def getRankPoints(self):
         return self.n_features
@@ -226,7 +221,7 @@ class Route:
         print(f"Average speed km/h = {self.avg_speed}")
         print(f"Driving time in hrs = {self.driving_time}")
         print(f"Number of desired features = {self.n_features}")
-        print(f"Query points = {self.rank_points}")
+        print("")
         return None
 
     def setCSVFeatures(self, G, route_num, units="km"):
@@ -331,7 +326,7 @@ class Route:
         gpx.tracks.append(gpx_track)
         gpx_segment = gpxpy.gpx.GPXTrackSegment()
         gpx_track.segments.append(gpx_segment)
-        start = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+        start = [False,False,False,False,False,False,False,False,False,False,False,False,False,False]
         ref_speed_limit = None
         
         for i in range(1,len(self.route)):
@@ -344,6 +339,8 @@ class Route:
                 next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
             else:
                 next_link_attributes = link_data[list(link_data.keys())[0]]
+            if(int(link_attributes['VEHICLE_TYPES']) == 16):
+                print(link_attributes['VEHICLE_TYPES'])
             edge_dir = link_attributes['EDGE_DIRECTION']
             if(cfg['query_features']['boolean_features']['highway']):
                 start[0] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
@@ -369,14 +366,8 @@ class Route:
                 start[10] = self.displayFeature(gpx, loc, next_loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
             if(cfg['query_features']['boolean_features']['multiple_lanes']):
                 start[11] = self.displayFeature(gpx, loc, next_loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
-            if(cfg['query_features']['boolean_features']['overpass']):
-                start[12] = self.displayFeature(gpx, loc, next_loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['1'], start[12], "Overpass")
-            if(cfg['query_features']['boolean_features']['underpass']):
-                start[13] = self.displayFeature(gpx, loc, next_loc, link_attributes['OVERPASS_UNDERPASS'], next_link_attributes['OVERPASS_UNDERPASS'], ['2'], start[13], "Underpass")
+           
             
-            if((cfg['query_features']['boolean_features']['variable_speed']) and (11 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[11]}")) 
-                self.n_features += 1
             if((cfg['query_features']['boolean_features']['traffic_light']) and (16 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[16]}")) 
                 self.n_features += 1
@@ -385,9 +376,6 @@ class Route:
                 self.n_features += 1
             if((cfg['query_features']['boolean_features']['no_overtaking']) and (19 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[19]}")) 
-                self.n_features += 1
-            if((cfg['query_features']['boolean_features']['overtaking']) and (21 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[21]}")) 
                 self.n_features += 1
 
             if(cfg['query_features']['boolean_features']['stop_sign']):
@@ -402,14 +390,10 @@ class Route:
                 self.addSignWayPoint(gpx,loc,link_attributes,30,edge_dir)
             if(cfg['query_features']['boolean_features']['animal_crossing_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,27,edge_dir)
-            if(cfg['query_features']['boolean_features']['tway_sign']):
-                self.addSignWayPoint(gpx,loc,link_attributes,46,edge_dir)
             if(cfg['query_features']['boolean_features']['merge_r_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,6,edge_dir)
             if(cfg['query_features']['boolean_features']['merge_l_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,7,edge_dir)
-            if(cfg['query_features']['boolean_features']['merge_c_sign']):
-                self.addSignWayPoint(gpx,loc,link_attributes,8,edge_dir)
             if(cfg['query_features']['boolean_features']['hills_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,18,edge_dir)
             if(cfg['query_features']['boolean_features']['hills_sign']):
@@ -441,8 +425,7 @@ class Route:
         with open(gpx_file_name, "w") as f:
             f.write(gpx.to_xml())   
         f.close()
-        #self.routeRankPoints()
-        #self.displayRouteInfo()
+        self.displayRouteInfo()
         del gpx
         return None
     
@@ -510,19 +493,8 @@ class Route:
         if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
             self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*0.001
             feat_list[feature_dict['multiple_lanes']] = 'Present'
-        #Overpass
-        if(str(attributes['OVERPASS_UNDERPASS']) == '1'):
-            self.feat_count[feature_dict['overpass']] += 1
-            feat_list[feature_dict['overpass']] = 'Present'
-        #Underpass
-        if(str(attributes['OVERPASS_UNDERPASS']) == '2'):
-            self.feat_count[feature_dict['underpass']] += 1
-            feat_list[feature_dict['underpass']] = 'Present'
         
         #Traffic conditions
-        if(11 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[feature_dict['variable_speed']] += 1
-            feat_list[feature_dict['variable_speed']] = 'Present'
         if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[feature_dict['traffic_lights']] += 1
             feat_list[feature_dict['traffic_lights']] = 'Present'
@@ -532,9 +504,6 @@ class Route:
         if(19 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[feature_dict['no_overtaking']] += 1
             feat_list[feature_dict['no_overtaking']] = 'Present'
-        if(21 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
-            self.feat_count[feature_dict['overtaking']] += 1
-            feat_list[feature_dict['overtaking']] = 'Present'
         if(17 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[feature_dict['traffic_signs']] += 1
             feat_list[feature_dict['traffic_signs']] = 'Present'
@@ -555,18 +524,12 @@ class Route:
         if(27 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[feature_dict['animal_crossing']] += 1
             feat_list[feature_dict['animal_crossing']] = 'Present'
-        if(46 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[feature_dict['two_way']] += 1
-            feat_list[feature_dict['two_way']] = 'Present'
         if(6 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[feature_dict['lane_merge_right']] += 1
             feat_list[feature_dict['lane_merge_right']] = 'Present'
         if(7 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[feature_dict['lane_merge_left']] += 1
             feat_list[feature_dict['lane_merge_left']] = 'Present'
-        if(8 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
-            self.feat_count[feature_dict['lane_merge_center']] += 1
-            feat_list[feature_dict['lane_merge_center']] = 'Present'
         if(30 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[feature_dict['falling_rocks']] += 1
             feat_list[feature_dict['falling_rocks']] = 'Present'
@@ -663,8 +626,5 @@ class Route:
         if(attributes[f'LANE_TYPE'] == 4096):
             self.feat_count[feature_dict['center_turn']] += attributes['LINK_LENGTH']*0.001
             feat_list[feature_dict['center_turn']] = 'Present'
-        if(attributes[f'LANE_TYPE'] == 65536):
-            self.feat_count[feature_dict['bikelane']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['bikelane']] = 'Present'
 
         return feat_list
