@@ -77,7 +77,8 @@ default_dict = {
     'speed_bumps':'0',
     'toll_station':'0',
     'manoeuvre': '0', 
-    'roundabout': '0'
+    'roundabout': '0',
+    'parking_lot':'0'
     }
 
 if not isfile(os.path.join(os.getcwd(), input_file_name)):
