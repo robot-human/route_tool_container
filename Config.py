@@ -264,7 +264,7 @@ else:
                             'road_roughness_good':cfgParser.getint('config', 'road_good'),'road_roughness_fair':cfgParser.getint('config', 'road_fair'),
                             'road_roughness_poor':cfgParser.getint('config', 'road_poor'), 'speed_bumps':cfgParser.getint('config', 'speed_bumps'),
                             'toll_booth':cfgParser.getint('config', 'toll_station'),'lane_markers_bool':lane_markers_bool,
-                            'lane_type_bool':lane_type_bool}
+                            'lane_type_bool':lane_type_bool,'parking_lot':cfgParser.getint('config', 'parking_lot')}
 
         attr_features = {'SPEED_CAT':speed_category}
         sign_features = {'CONDITION_TYPE':traffic_condition_list,'SIGN_TYPE':traffic_signs_list}

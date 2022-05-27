@@ -26,7 +26,8 @@ def graphFromDict(links_dict: dict):
         lat = attr['LAT'].split(',')
         lon = attr['LON'].split(',')
         link_direction = attr['TRAVEL_DIRECTION']
-
+        if(len(lat) > 2):
+            print(len(lat),len(lon))
         if link_direction == 'B':
             attr['EDGE_DIRECTION'] = 'F'
             g.add_edge(ref_node_id, nonref_node_id, int(link_id), **attr)
@@ -39,6 +40,7 @@ def graphFromDict(links_dict: dict):
             attr['EDGE_DIRECTION'] = 'T'
             g.add_edge(nonref_node_id, ref_node_id, int(link_id), **attr)
         g.add_node(ref_node_id, LOC=(int(lat[0])/(10.0**5),int(lon[0])/(10.0**5)))
+        #for i in range(1,len(lat)):
         g.add_node(nonref_node_id, LOC=((int(lat[0])+int(lat[1]))/(10.0**5), (int(lon[0])+int(lon[1]))/(10.0**5)))                           
     return g
     

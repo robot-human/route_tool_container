@@ -14,7 +14,7 @@ resource_url = {'get_specific_layer_tile':'/1/tile.json',
                 'list_layer_attributes':'/1/doc/layer.json',
                 'list_available_layers':'/1/doc/layers.json'}
 
-APP_CODE = 'm2Bk_Yc8VolukAoHJZL_KHrNCBnWxhZPVrWkVtJILFg'
+APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
 
 level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 api_usage_count = 0
@@ -109,11 +109,11 @@ def checkTileFromCache(tile:tuple, layer:str, session:requests.Session=None):
             return None
 
 def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None): 
-    
     not_navigable = []
     if not session: session = requests.Session() 
     links = checkTileFromCache(tile, f'LINK_FC{level_layerID_map[tile[2]]}', session)
     links_basic_attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)
+    links_basic_attributes2 = checkTileFromCache(tile, f'LINK_ATTRIBUTE2_FC{level_layerID_map[tile[2]]}', session)
     links_dict = {}
     wMax=0
     wMin=500
@@ -124,7 +124,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                                            'LINK_LENGTH' : float(link['LINK_LENGTH']),
                                            'LAT': link['LAT'],
                                            'LON': link['LON'],
-                                           'WEIGHT': 1000 + float(link['LINK_LENGTH'])}
+                                           'WEIGHT': 100*float(link['LINK_LENGTH'])}
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
             link_id = attr['LINK_ID']
@@ -133,8 +133,6 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['VEHICLE_TYPES'] = attr['VEHICLE_TYPES']
             if((int(links_dict[link_id]['VEHICLE_TYPES'])%2 != 1) or (attr['PUBLIC_ACCESS'] == 'N') or (attr['PRIVATE'] == 'Y')):
                 not_navigable.append(link_id)
-            if(int(attr['FUNCTIONAL_CLASS']) == 5):
-                links_dict[link_id]['WEIGHT'] += 200
             links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
             links_dict[link_id]['URBAN'] = attr['URBAN']
             links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']
@@ -148,6 +146,11 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                     links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
             links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
             links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
+            if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
+                links_dict[link_id]['WEIGHT'] *= 1.1
+
+            links_dict[link_id]['PARKING_LOT_ROAD'] = None
+            links_dict[link_id]['SURFACE_TYPE'] = None
 
             links_dict[link_id]['AVG_SPEED'] = 80
             links_dict[link_id]['SPEED_LIMIT'] = None
@@ -173,6 +176,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
             links_dict[link_id]['WIDTH'] = None
 
+    links_dict,not_navigable = requestAttributesTile(links_dict, tile, query, not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
     links_dict = requestSpeedLimitTile(links_dict, tile, session)
     links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
@@ -183,7 +187,10 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestLaneTile(links_dict, tile, query, session)
      
     for link in not_navigable:
-        del links_dict[link]
+        try:
+            del links_dict[link]
+        except:
+            continue
     return links_dict
 
 def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
@@ -229,29 +236,27 @@ def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAG
             weight *= percentage
     return weight
 
-def getChargingStationsList(tiles: tuple, session): 
-    stations_dict ={}
-    filt=False
-    for tile in tiles:
-        stations = checkTileFromCache(tile, f'EVCHARGING_POI', session)
-        try:
-            for s in stations:
-                if(str(s['CONNECTORTYPE']) != str(None)):
-                    if(filt==False):
-                        stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
-                    else:
-                        string = s['CONNECTORTYPE'].split("                   ")
-                        if('combo' in string[0]):
-                            if(len(string) == 1):
-                                alt_string = string[0].split(";")
-                                cs_type = alt_string[len(alt_string) - 1]
-                            else:
-                                cs_type = string[7]
-                            if((cs_type == "ChargePoint") or (cs_type == "Electrify America")):
-                                stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
-        except:
-            continue
-    return stations_dict
+def requestAttributesTile(links_dict: dict,  tile: tuple, features_query, not_navigable, session: requests.Session=None):
+    attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE2_FC{level_layerID_map[tile[2]]}', session)
+    if(str(attributes) != "None"):
+        for attr in attributes:
+            try:
+                link_id = attr['LINK_ID']   
+                links_dict[link_id]['PARKING_LOT_ROAD'] = attr['PARKING_LOT_ROAD']
+                links_dict[link_id]['SURFACE_TYPE'] = attr['SURFACE_TYPE']
+                if(str(features_query['boolean_features']['parking_lot']) == '0'):
+                    if(attr['PARKING_LOT_ROAD'] == 'Y'):
+                        not_navigable.append(link_id)
+                links_dict[link_id]['WEIGHT'] *= setAttr2Weight(attr, features_query)
+            except:
+                continue
+    return links_dict, not_navigable
+def setAttr2Weight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
+    weight = 1
+    if(features_query['boolean_features']['parking_lot']):
+        if(attributes['PARKING_LOT_ROAD'] == 'Y'):
+            weight *= percentage
+    return weight
 
 def requestTrafficPatternTile(links_dict: dict,  tile: tuple, session: requests.Session=None):
     traffic_pattern = checkTileFromCache(tile, f'TRAFFIC_PATTERN_FC{level_layerID_map[tile[2]]}', session)
@@ -466,3 +471,27 @@ def setLanesWeight(attributes: dict, features_query: dict, percentage = PERCENTA
         if(int(attributes['LANE_TYPE']) in features_query['lane_features']['lane_markers']):
             weight *= percentage
     return weight
+
+def getChargingStationsList(tiles: tuple, session): 
+    stations_dict ={}
+    filt=False
+    for tile in tiles:
+        stations = checkTileFromCache(tile, f'EVCHARGING_POI', session)
+        try:
+            for s in stations:
+                if(str(s['CONNECTORTYPE']) != str(None)):
+                    if(filt==False):
+                        stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
+                    else:
+                        string = s['CONNECTORTYPE'].split("                   ")
+                        if('combo' in string[0]):
+                            if(len(string) == 1):
+                                alt_string = string[0].split(";")
+                                cs_type = alt_string[len(alt_string) - 1]
+                            else:
+                                cs_type = string[7]
+                            if((cs_type == "ChargePoint") or (cs_type == "Electrify America")):
+                                stations_dict[s['LINK_ID']] = {'CONNECTORTYPE':s['CONNECTORTYPE'],'SIDE_OF_STREET':s['SIDE_OF_STREET'],'LAT':s['LAT'],'LON':s['LON']}
+        except:
+            continue
+    return stations_dict

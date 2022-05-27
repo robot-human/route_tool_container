@@ -20,16 +20,17 @@ s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
 chargingStations = getChargingStationsList(s_tiles, session)
 
 def createCSVFile():
-    features_file_name = f"./gpx/summary.csv"
+    features_file_name = f"./temp/summary.csv"
     head = ",".join([str(item) for item in feature_dict])
     features_file = open(features_file_name, "w")
-    features_file.write("route_num,route_length,route_estimated_time(hrs),"+head+"\n")
+    features_file.write("route_length,route_estimated_time(hrs),"+head+"\n")
     features_file.close()
 
 if __name__ == '__main__':
     tracemalloc.start()
     start_time = time.time()
     
+    removeGPXFiles("./temp/")
     removeGPXFiles("./gpx/")
     createCSVFile()
     session = requests.Session()
@@ -80,7 +81,7 @@ if __name__ == '__main__':
             #    end_loc = getRandomLocation(cfg.get('start_location'), cfg.get('desired_route_length'))
             #    end_node, _ = g.findNodeFromCoord(end_loc)
         
-        route.setGPXFile(g, i, "./gpx", cfg)       
+        route.setGPXFile(g, i, "./temp", cfg)       
         route.setCSVFeatures(g, i, units=cfg.get('units'))
         rank_points = route.getRankPoints()
         values.append((i,rank_points))
@@ -89,7 +90,33 @@ if __name__ == '__main__':
 
     routes_ranking_points = np.array(values, dtype=dtype)
     routes_ranking_points = np.sort(routes_ranking_points, order='points')  
-    print(routes_ranking_points)
+    summary_file = open(f'./temp/summary.csv', "r")
+    summary =  open(f'./gpx/summary.csv', "w")
+    lines = summary_file.readlines()
+    lines_array = []
+    for line in lines:
+        lines_array.append(line)
+    summary_file.close()
+    summary.write('route_num,'+lines_array[0])
+    for i in range(N_ROUTES):
+        n = routes_ranking_points[len(routes_ranking_points)-i-1][0]
+        summary.write(str(i)+','+lines_array[n+1])
+        csv_file = open(f'./temp/route{n}_staticfeaturesfile.csv', "r")
+        f =  open(f'./gpx/route{i}_staticfeaturesfile.csv', "w")
+        f.write(csv_file.read())
+        f.close()
+        csv_file.close()
+
+        gpx_file = open(f'./temp/route{n}_staticfeaturesfile.gpx', "r")
+        f =  open(f'./gpx/route{i}_staticfeaturesfile.gpx', "w")
+        f.write(gpx_file.read())
+        f.close()
+        gpx_file.close()
+    summary.close()
+
+    
+
+
     end_time_03 = time.time()
   
     end_time = time.time()

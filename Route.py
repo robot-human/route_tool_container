@@ -68,7 +68,7 @@ class Route:
         self.n_features = 0
         self.rank_points = 0
         self.output_path = os.path.join(os.getcwd(), 'gpx/')
-        self.features_file_name = f"./gpx/summary.csv"
+        self.features_file_name = f"./temp/summary.csv"
         return None
 
     def clean(self):
@@ -201,7 +201,6 @@ class Route:
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
-            print(link_attributes['WEIGHT'])
             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000
@@ -225,10 +224,10 @@ class Route:
         return None
 
     def setCSVFeatures(self, G, route_num, units="km"):
-        file_name = f"./gpx/route{route_num}_staticfeaturesfile.csv"
+        file_name = f"./temp/route{route_num}_staticfeaturesfile.csv"
         feat_line = ",".join([str(item) for item in feature_dict])
         #head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time(hrs),Accum_len,Accum_time(hrs),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
-        head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time(hrs),"+feat_line+"\n"
+        head = "LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time(hrs),"+feat_line+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
@@ -236,11 +235,11 @@ class Route:
         len_accum = 0
         time_accum = 0
         self.feat_count = []
-        start = [False]
+        start = [False,False]
         for feat in feature_dict:
             self.feat_count.append(0)
         for i in range(1,len((self.route))):
-            str_line = str(route_num)
+            #str_line = str(route_num)
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
             if(i < len(self.route)-1):
@@ -267,13 +266,13 @@ class Route:
             len_accum = len_accum + link_length
             time_accum = time_accum + time
             feat_line = ",".join([str(item) for item in feat_list])
-            str_line = str_line + "," + lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+ "," + str(link_attributes['SPEED_LIMIT'])
+            str_line = lat + "," + lon + "," + str(link_attributes['LINK_LENGTH']) + "," + str(link_attributes['AVG_SPEED'])+ "," + str(link_attributes['SPEED_LIMIT'])
             str_line = str_line + "," + str(time) + "," + str(len_accum) + "," + str(time_accum) + "," + feat_line + "\n"
             features_file.write(str_line)
 
         feat_count_line = ",".join([str(item) for item in self.feat_count])
         features_count_file = open(self.features_file_name, "a")
-        summary = str(route_num)+","+str(len_accum)+","+str(time_accum) 
+        summary = str(len_accum)+","+str(time_accum) 
         features_count_file.write(summary+","+feat_count_line+"\n")
         features_count_file.close()
         features_file.close()
@@ -326,7 +325,7 @@ class Route:
         gpx.tracks.append(gpx_track)
         gpx_segment = gpxpy.gpx.GPXTrackSegment()
         gpx_track.segments.append(gpx_segment)
-        start = [False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+        start = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
         ref_speed_limit = None
         
         for i in range(1,len(self.route)):
@@ -339,8 +338,6 @@ class Route:
                 next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
             else:
                 next_link_attributes = link_data[list(link_data.keys())[0]]
-            if(int(link_attributes['VEHICLE_TYPES']) == 16):
-                print(link_attributes['VEHICLE_TYPES'])
             edge_dir = link_attributes['EDGE_DIRECTION']
             if(cfg['query_features']['boolean_features']['highway']):
                 start[0] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
@@ -402,9 +399,9 @@ class Route:
                 self.addSignWayPoint(gpx,loc,link_attributes,26,edge_dir)
 
             if(cfg['query_features']['boolean_features']['tunnel']):
-                start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[14], "Tunnel")
+                start[12] = self.displayFeature(gpx, loc, next_loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[14], "Tunnel")
             if(cfg['query_features']['boolean_features']['bridge']):
-                start[15] = self.displayFeature(gpx, loc, next_loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[15], "Bridge")
+                start[13] = self.displayFeature(gpx, loc, next_loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[15], "Bridge")
 
             if((cfg['query_features']['boolean_features']['speed_bumps']) and (3 == int(link_attributes[f"SPEED_BUMPS"]))):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"Speed_bump")) 
@@ -413,6 +410,9 @@ class Route:
             if((cfg['query_features']['boolean_features']['toll_booth']) and (link_attributes[f"TOLL_BOOTH"] != None)):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"Toll_booth")) 
                 self.n_features += 1
+            
+            if(cfg['query_features']['boolean_features']['parking_lot']):
+                start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['PARKING_LOT_ROAD'], next_link_attributes['PARKING_LOT_ROAD'], ['Y'], start[14], "Parking lot")            
 
             gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
@@ -466,8 +466,8 @@ class Route:
             feat_list[feature_dict['paved']] = 'Present'
         #Ramp
         if(str(attributes['RAMP']) == 'Y'):
+            feat_list[feature_dict['ramp']] = 'Present'
             if(str(next_attributes['RAMP']) == 'Y'):
-                feat_list[feature_dict['ramp']] = 'Present'
                 if(start[0] == False):
                     self.feat_count[feature_dict['ramp']] += 1
                     start[0] = True
@@ -627,4 +627,13 @@ class Route:
             self.feat_count[feature_dict['center_turn']] += attributes['LINK_LENGTH']*0.001
             feat_list[feature_dict['center_turn']] = 'Present'
 
+        feat_list[feature_dict['surface']] = attributes[f'SURFACE_TYPE']
+        if(attributes[f'PARKING_LOT_ROAD'] == 'Y'):
+            feat_list[feature_dict['parking_lot']] = 'Present'
+            if(str(next_attributes['PARKING_LOT_ROAD']) == 'Y'):
+                if(start[1] == False):
+                    self.feat_count[feature_dict['parking_lot']] += 1
+                    start[1] = True
+            else:
+                start[1] = False
         return feat_list
