@@ -34,7 +34,7 @@ output_files = os.listdir(output_files_path)
 def on_connect(client, userdata, flags, rc, properties=None):
     print("on connect %s." % rc)
 def on_disconnect(client, userdata, flags, rc):
-   print("client disconnected")
+    print("client disconnected")
 def on_subscribe(client, userdata, mid, granted_qos, properties=None):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 def on_publish(client, userdata, mid, properties=None):
@@ -63,10 +63,11 @@ if __name__ == '__main__':
         print(name)
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=0)
+        time.sleep(1)
         f = open(file_name_path, "r")
         content = f.read()
-        f.close()
         client.publish(topic, payload=content, qos=0)
+        f.close()
         time.sleep(2)
         
     client.on_disconnect = on_disconnect
