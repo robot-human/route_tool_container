@@ -62,11 +62,11 @@ if __name__ == '__main__':
     for name in output_files:
         print(name)
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=0)
+        client.publish(topic, payload=f"{name}", qos=1)
         time.sleep(2)
         f = open(file_name_path, "r")
         content = f.read()
-        client.publish(topic, payload=content, qos=0)
+        client.publish(topic, payload=content, qos=1)
         time.sleep(2)
         f.close()
         
