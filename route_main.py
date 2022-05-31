@@ -22,6 +22,7 @@ chargingStations = getChargingStationsList(s_tiles, session)
 def createCSVFile():
     features_file_name = f"./temp/summary.csv"
     head = ",".join([str(item) for item in feature_dict])
+    head = head +',functional_class_1_time'+',functional_class_2_time'+',functional_class_3_time'+',functional_class_4_time'+',functional_class_5_time'
     features_file = open(features_file_name, "w")
     features_file.write("route_length,route_estimated_time(hrs),"+head+"\n")
     features_file.close()

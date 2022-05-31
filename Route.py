@@ -226,8 +226,7 @@ class Route:
     def setCSVFeatures(self, G, route_num, units="km"):
         file_name = f"./temp/route{route_num}_staticfeaturesfile.csv"
         feat_line = ",".join([str(item) for item in feature_dict])
-        #head = "Route_name,LAT,LON,Link_length,Avg_speed,Speed_limit,Time(hrs),Accum_len,Accum_time(hrs),"+feat_line+",Road_roughness,Lane_divider_marker,Toll_booth,Functional_class"+"\n"
-        head = "LAT,LON,Link_length,Avg_speed,Speed_limit,Time,Accum_len,Accum_time(hrs),"+feat_line+"\n"
+        head = "LAT,LON,Link_length,Avg_speed,Speed_limit,Time(hrs),Accum_len,Accum_time(hrs),"+feat_line+"\n"
         features_file = open(file_name, "w")
         features_file.write(head)
         features_file.close()
@@ -236,10 +235,9 @@ class Route:
         time_accum = 0
         self.feat_count = []
         start = [False,False]
-        for feat in feature_dict:
+        for feat in range(len(feature_dict)+5):
             self.feat_count.append(0)
         for i in range(1,len((self.route))):
-            #str_line = str(route_num)
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
             if(i < len(self.route)-1):
@@ -247,22 +245,24 @@ class Route:
                 next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
             else:
                 next_link_attributes = link_data[list(link_data.keys())[0]]
-            feat_list = self.fillFeaturesCSV(link_attributes, next_link_attributes, start)
+
             lat = str(int(link_attributes['LAT'].split(",")[0])/100000)
             lon = str(int(link_attributes['LON'].split(",")[0])/100000)
-            if(units == "Mi"):
-                link_length = 0.000621371*float(link_attributes['LINK_LENGTH'])
+            if(units == "mi"):
+                unit_coef = 0.000621371
+                link_length = unit_coef*float(link_attributes['LINK_LENGTH'])
                 if(str(link_attributes['SPEED_LIMIT']) == 'None'):
-                    time = link_length/(0.621371*float(link_attributes['AVG_SPEED']))
+                    time = 0.001*float(link_attributes['LINK_LENGTH'])/float(link_attributes['AVG_SPEED'])
                 else:
-                    time = link_length/(0.621371*float(link_attributes['SPEED_LIMIT']))
+                    time = 0.001*float(link_attributes['LINK_LENGTH'])/float(link_attributes['SPEED_LIMIT'])
             else:
-                link_length = 0.001*float(link_attributes['LINK_LENGTH'])
+                unit_coef = 0.001
+                link_length = unit_coef*float(link_attributes['LINK_LENGTH'])
                 if(str(link_attributes['SPEED_LIMIT']) == 'None'):
                     time = link_length/float(link_attributes['AVG_SPEED'])
                 else:
                     time = link_length/float(link_attributes['SPEED_LIMIT'])
-
+            feat_list = self.fillFeaturesCSV(link_attributes, next_link_attributes, start, unit_coef)
             len_accum = len_accum + link_length
             time_accum = time_accum + time
             feat_line = ",".join([str(item) for item in feat_list])
@@ -434,35 +434,35 @@ class Route:
             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffics_sign_dict[signNumber]}")) 
             self.n_features += 1
 
-    def fillFeaturesCSV(self, attributes, next_attributes, start):
+    def fillFeaturesCSV(self, attributes, next_attributes, start, unit_coef):
         feat_list = ['Not present' for i in range(len(feature_dict))]
         edge_dir = attributes['EDGE_DIRECTION']
         #highway
         if(int(attributes[f'FUNCTIONAL_CLASS']) <= 3):
-            self.feat_count[feature_dict['highway']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['highway']] = 'Present'
         #avoid highway
         if(int(attributes[f'FUNCTIONAL_CLASS']) >= 4):
-            self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['avoid_highway']] = 'Present'
         if(attributes['URBAN'] == 'Y'):
-            self.feat_count[feature_dict['urban']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['urban']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['urban']] = 'Present'
         #One way
         if(attributes[f'TRAVEL_DIRECTION'] != "B"):
-            self.feat_count[feature_dict['oneway']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['oneway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['oneway']] = 'Present'
         #Both ways
         if(attributes[f'TRAVEL_DIRECTION'] == "B"):
-            self.feat_count[feature_dict['both_ways']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['both_ways']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['both_ways']] = 'Present'
         #Limited acces
         if(attributes['LIMITED_ACCESS_ROAD'] == 'Y'):
-            self.feat_count[feature_dict['limited_access']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['limited_access']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['limited_access']] = 'Present'
         #Paved
         if(attributes['PAVED'] == 'Y'):
-            self.feat_count[feature_dict['paved']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['paved']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['paved']] = 'Present'
         #Ramp
         if(str(attributes['RAMP']) == 'Y'):
@@ -487,11 +487,11 @@ class Route:
             
         #One lane
         if(str(attributes['LANE_CATEGORY']) == '1'):
-            self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['one_lane']] = 'Present'
         #Multiple lanes
         if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
-            self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['multiple_lanes']] = 'Present'
         
         #Traffic conditions
@@ -549,13 +549,13 @@ class Route:
             
         
         if(attributes[f'ROAD_ROUGHNESS_{edge_dir}'] == 'Good'):
-            self.feat_count[feature_dict['road_roughness_good']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['road_roughness_good']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['road_roughness_good']] = 'Present'
         if(attributes[f'ROAD_ROUGHNESS_{edge_dir}'] == "Fair"):
-            self.feat_count[feature_dict['road_roughness_fair']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['road_roughness_fair']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['road_roughness_fair']] = 'Present'
         if(attributes[f'ROAD_ROUGHNESS_{edge_dir}'] == "Poor"):
-            self.feat_count[feature_dict['road_roughness_poor']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['road_roughness_poor']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['road_roughness_poor']] = 'Present'
 
         if(attributes[f'SPEED_BUMPS'] == 3):
@@ -568,72 +568,83 @@ class Route:
         
         #Lane dividers
         if(attributes[f'LANE_DIVIDER_MARKER'] == 1):
-            self.feat_count[feature_dict['lane_marker_long_dashed']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_long_dashed']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_long_dashed']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 6):
-            self.feat_count[feature_dict['lane_marker_short_dashed']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_short_dashed']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_short_dashed']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 10):
-            self.feat_count[feature_dict['lane_marker_double_dashed']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_double_dashed']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_double_dashed']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 2):
-            self.feat_count[feature_dict['lane_marker_double_solid']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_double_solid']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_double_solid']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 3):
-            self.feat_count[feature_dict['lane_marker_single_solid']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_single_solid']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_single_solid']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 4):
-            self.feat_count[feature_dict['lane_marker_inner_solid_outter_dashed']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_inner_solid_outter_dashed']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_inner_solid_outter_dashed']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 5):
-            self.feat_count[feature_dict['lane_marker_inner_dashed_outter_solid']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_inner_dashed_outter_solid']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_inner_dashed_outter_solid']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 11):
-            self.feat_count[feature_dict['lane_marker_no_divider']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_no_divider']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_no_divider']] = 'Present'
         if(attributes[f'LANE_DIVIDER_MARKER'] == 9):
-            self.feat_count[feature_dict['lane_marker_physical_divider']] += attributes['LINK_LENGTH']*0.001
+            self.feat_count[feature_dict['lane_marker_physical_divider']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['lane_marker_physical_divider']] = 'Present'
 
         #Lane types
         if(attributes[f'LANE_TYPE'] == 2):
-            self.feat_count[feature_dict['hov']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['hov']] = 'Present'
+            self.feat_count[feature_dict['hov_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['hov_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 4):
-            self.feat_count[feature_dict['reversible']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['reversible']] = 'Present'
+            self.feat_count[feature_dict['reversible_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['reversible_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 6):
-            self.feat_count[feature_dict['express']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['express']] = 'Present'
+            self.feat_count[feature_dict['express_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['express_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 128):
-            self.feat_count[feature_dict['slow']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['slow']] = 'Present'
+            self.feat_count[feature_dict['slow_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['slow_lane_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 64):
-            self.feat_count[feature_dict['auxiliary']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['auxiliary']] = 'Present'
+            self.feat_count[feature_dict['auxiliary_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['auxiliary_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 512):
-            self.feat_count[feature_dict['shoulder']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['shoulder']] = 'Present'
+            self.feat_count[feature_dict['shoulder_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['shoulder_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 256):
-            self.feat_count[feature_dict['passing']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['passing']] = 'Present'
+            self.feat_count[feature_dict['passing_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['passing_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 2048):
-            self.feat_count[feature_dict['turn']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['turn']] = 'Present'
+            self.feat_count[feature_dict['turn_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['turn_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 16384):
-            self.feat_count[feature_dict['parking']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['parking']] = 'Present'
+            self.feat_count[feature_dict['parking_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['parking_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 4096):
-            self.feat_count[feature_dict['center_turn']] += attributes['LINK_LENGTH']*0.001
-            feat_list[feature_dict['center_turn']] = 'Present'
-
-        feat_list[feature_dict['surface']] = attributes[f'SURFACE_TYPE']
-        if(attributes[f'PARKING_LOT_ROAD'] == 'Y'):
-            feat_list[feature_dict['parking_lot']] = 'Present'
-            if(str(next_attributes['PARKING_LOT_ROAD']) == 'Y'):
-                if(start[1] == False):
-                    self.feat_count[feature_dict['parking_lot']] += 1
-                    start[1] = True
-            else:
-                start[1] = False
+            self.feat_count[feature_dict['center_turn_lane']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['center_turn_lane']] = 'Present'
+        
+        if(attributes[f'FUNCTIONAL_CLASS'] == 1):
+            feat_list[feature_dict['functional_class_1']] = 'Present'
+            self.feat_count[feature_dict['functional_class_1']] += attributes['LINK_LENGTH']*unit_coef
+            self.feat_count[feature_dict['functional_class_1']+5] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 2):
+            feat_list[feature_dict['functional_class_2']] = 'Present'
+            self.feat_count[feature_dict['functional_class_2']] += attributes['LINK_LENGTH']*unit_coef
+            self.feat_count[feature_dict['functional_class_2']+5] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 3):
+            feat_list[feature_dict['functional_class_3']] = 'Present'
+            self.feat_count[feature_dict['functional_class_3']] += attributes['LINK_LENGTH']*unit_coef
+            self.feat_count[feature_dict['functional_class_3']+5] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 4):
+            feat_list[feature_dict['functional_class_4']] = 'Present'
+            self.feat_count[feature_dict['functional_class_4']] += attributes['LINK_LENGTH']*unit_coef
+            self.feat_count[feature_dict['functional_class_4']+5] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
+        if(attributes[f'FUNCTIONAL_CLASS'] == 5):
+            feat_list[feature_dict['functional_class_5']] = 'Present'
+            self.feat_count[feature_dict['functional_class_5']] += attributes['LINK_LENGTH']*unit_coef
+            self.feat_count[feature_dict['functional_class_5']+5] += 0.001*attributes['LINK_LENGTH']/float(attributes['AVG_SPEED'])
         return feat_list

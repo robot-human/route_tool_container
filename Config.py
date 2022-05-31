@@ -129,8 +129,8 @@ else:
             speed_category_bool=False
 
         tl = cfgParser.getint('config', 'traffic_lights')
-        rc = cfgParser.getint('config', 'railway_crossing')
-        nover = cfgParser.getint('config', 'no_overtaking')
+        rc = cfgParser.getint('config', 'railway_crossing_signs')
+        nover = cfgParser.getint('config', 'no_overtaking_signs')
         ts = cfgParser.getint('config', 'traffic_signs')
         traffic_condition_list = []
         if(tl):
@@ -142,6 +142,8 @@ else:
         if(ts):
             traffic_condition_list.append(17)
             display_condition = True
+            rc = 1
+            nover = 1
             stop = 1
             school = 1
             icy = 1
@@ -156,14 +158,14 @@ else:
             traffic_signs_list = [i for i in range(66)]
         else:
             stop = cfgParser.getint('config', 'stop_signs')
-            school = cfgParser.getint('config', 'school_zone')
-            icy = cfgParser.getint('config', 'icy_road')
-            crosswalk = cfgParser.getint('config', 'crosswalk')
-            rocks = cfgParser.getint('config', 'falling_rocks')
-            animal_crossing = cfgParser.getint('config', 'animal_crossing')
-            merge_r = cfgParser.getint('config', 'lane_merge_right')
-            merge_l = cfgParser.getint('config', 'lane_merge_left')
-            hills = cfgParser.getint('config', 'hills')
+            school = cfgParser.getint('config', 'school_zone_signs')
+            icy = cfgParser.getint('config', 'icy_road_signs')
+            crosswalk = cfgParser.getint('config', 'crosswalk_signs')
+            rocks = cfgParser.getint('config', 'falling_rocks_signs')
+            animal_crossing = cfgParser.getint('config', 'animal_crossing_signs')
+            merge_r = cfgParser.getint('config', 'lane_merge_right_signs')
+            merge_l = cfgParser.getint('config', 'lane_merge_left_signs')
+            hills = cfgParser.getint('config', 'hills_signs')
             traffic_signs_list = []
             #if(stop==0 and icy==0 and rocks==0 and school==0 and crosswalk==0 and animal_crossing==0 and merge_r==0 and merge_l==0 and hills==0):   
             #    display_signs = False
@@ -225,25 +227,25 @@ else:
             lane_type.append(1)
         if(cfgParser.getint('config', 'lane_marker_short_dashed')):
             lane_type.append(6)
-        if(cfgParser.getint('config', 'hov')):
+        if(cfgParser.getint('config', 'hov_lane')):
             lane_type.append(2)
-        if(cfgParser.getint('config', 'reversible')):
+        if(cfgParser.getint('config', 'reversible_lane')):
             lane_type.append(4)
-        if(cfgParser.getint('config', 'express')):
+        if(cfgParser.getint('config', 'express_lane')):
             lane_type.append(8)
-        if(cfgParser.getint('config', 'slow')):
+        if(cfgParser.getint('config', 'slow_lane')):
             lane_type.append(128)
-        if(cfgParser.getint('config', 'auxiliary')):
+        if(cfgParser.getint('config', 'auxiliary_lane')):
             lane_type.append(64)
-        if(cfgParser.getint('config', 'shoulder')):
+        if(cfgParser.getint('config', 'shoulder_lane')):
             lane_type.append(512)
-        if(cfgParser.getint('config', 'passing')):
+        if(cfgParser.getint('config', 'passing_lane')):
             lane_type.append(256)
-        if(cfgParser.getint('config', 'turn')):
+        if(cfgParser.getint('config', 'turn_lane')):
             lane_type.append(2048)
-        if(cfgParser.getint('config', 'parking')):
+        if(cfgParser.getint('config', 'parking_lane')):
             lane_type.append(16384)
-        if(cfgParser.getint('config', 'center_turn')):
+        if(cfgParser.getint('config', 'center_turn_lane')):
             lane_type.append(4096)
         if(len(lane_type) > 0):
             lane_type_bool = 1
