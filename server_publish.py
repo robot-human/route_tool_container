@@ -63,12 +63,12 @@ if __name__ == '__main__':
         print(name)
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=0)
-        time.sleep(1)
+        time.sleep(2)
         f = open(file_name_path, "r")
         content = f.read()
         client.publish(topic, payload=content, qos=0)
-        f.close()
         time.sleep(2)
+        f.close()
         
     client.on_disconnect = on_disconnect
     client.disconnect()
