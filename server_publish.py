@@ -58,7 +58,7 @@ if __name__ == '__main__':
         n_files += 1
     
     print(f"Number of files {n_files}")
-    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=0)
+    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=2)
     for name in output_files:
         print(name)
         file_name_path = output_files_path+name
