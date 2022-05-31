@@ -204,8 +204,8 @@ class Route:
             link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
             
             link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
-            link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
-            if(link_attributes_r != None):
+            if(link_data_r != None):
+                link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
                 link_attributes_r['WEIGHT'] = increment*link_attributes_r['WEIGHT']
 
         self.avg_speed /= len(self.route)
