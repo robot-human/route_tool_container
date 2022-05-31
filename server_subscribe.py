@@ -53,6 +53,6 @@ if __name__ == '__main__':
     client.connect(host, port)
 
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=0)
+    client.subscribe(topic, qos=2)
     client.on_message = on_message
     client.loop_forever()

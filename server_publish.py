@@ -48,9 +48,9 @@ if __name__ == '__main__':
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         client.username_pw_set(userName, password)
-    client.connect(host, port, keepalive=60)
+    client.connect(host, port, keepalive=120)
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=0)
+    client.subscribe(topic, qos=2)
     client.on_publish = on_publish
     
     n_files = 0
@@ -62,11 +62,11 @@ if __name__ == '__main__':
     for name in output_files:
         print(name)
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=1)
+        client.publish(topic, payload=f"{name}", qos=2)
         time.sleep(2)
         f = open(file_name_path, "r")
         content = f.read()
-        client.publish(topic, payload=content, qos=1)
+        client.publish(topic, payload=content, qos=2)
         time.sleep(2)
         f.close()
         
