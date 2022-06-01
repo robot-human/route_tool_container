@@ -63,12 +63,12 @@ if __name__ == '__main__':
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=0)
         print(name)
-        time.sleep(2)
+        time.sleep(3)
         f = open(file_name_path, "r")
         content = f.read()
         client.publish(topic, payload=content, qos=0)
         print("content sent")
-        time.sleep(2)
+        time.sleep(3)
         f.close()
         print(f"{name} closed")
         
