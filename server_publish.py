@@ -39,7 +39,6 @@ def on_subscribe(client, userdata, mid, granted_qos, properties=None):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 def on_publish(client, userdata, mid, properties=None):
     print("mid: " + str(mid))
-    time.sleep(2)
 
 if __name__ == '__main__':
     print("start sending files")
@@ -62,10 +61,12 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=0)
+        time.sleep(2)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         client.publish(topic, payload=content, qos=0)
+        time.sleep(2)
         f.close()
         print(f"{name} closed")
         
