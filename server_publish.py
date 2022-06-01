@@ -39,10 +39,10 @@ def on_subscribe(client, userdata, mid, granted_qos, properties=None):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 def on_publish(client, userdata, mid, properties=None):
     print("mid: " + str(mid))
-    time.sleep(3)
+    time.sleep(2)
 
 if __name__ == '__main__':
-    print("publish files")
+    print("start sending files")
     client = paho.Client(client_id=clientID, userdata=None, protocol=paho.MQTTv5)
     client.on_connect = on_connect
     if(SERVER != 0):

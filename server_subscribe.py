@@ -44,7 +44,7 @@ def on_message(client, userdata, msg):
     client.loop_stop()
 
 if __name__ == '__main__':
-    print("subscribe file")
+    print("start receving files")
     client = paho.Client(client_id=clientID, userdata=None, protocol=paho.MQTTv5)
     client.on_connect = on_connect
     if(SERVER != 0):

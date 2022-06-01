@@ -22,5 +22,5 @@ if __name__ == '__main__':
             subprocess.run(f'python3 {main_file_path}',shell=True)
             time.sleep(1)
             subprocess.run(f'python3 {publish_file_path}',shell=True)
-            time.sleep(1)
+            time.sleep(0.5)
             #LOOP=False
