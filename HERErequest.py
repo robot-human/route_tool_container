@@ -124,7 +124,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                                            'LINK_LENGTH' : float(link['LINK_LENGTH']),
                                            'LAT': link['LAT'],
                                            'LON': link['LON'],
-                                           'WEIGHT': 100*float(link['LINK_LENGTH'])}
+                                           'WEIGHT': 100*float(link['LINK_LENGTH']),
+                                           'N_ATTRIBUTES': 0}
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
             link_id = attr['LINK_ID']
@@ -154,7 +155,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
 
             links_dict[link_id]['AVG_SPEED'] = 80
             links_dict[link_id]['SPEED_LIMIT'] = None
-            links_dict[link_id]['WEIGHT'] *= setAttrWeight(attr, query)
+            setAttrWeight(links_dict[link_id], attr, query)
 
             links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
             links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
@@ -193,48 +194,60 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             continue
     return links_dict
 
-def setAttrWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['highway']):
         if((int(attributes['FUNCTIONAL_CLASS']) in [1,2,3]) and (int(attributes['SPEED_CATEGORY']) in [1,2,3,4])):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['avoid_highway']):
         if((int(attributes['FUNCTIONAL_CLASS']) in [4,5,6]) and (int(attributes['SPEED_CATEGORY']) in [5,6,7,8])):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['urban']):
         if(attributes['URBAN'] == 'Y'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['oneway']):
         if((str(attributes['TRAVEL_DIRECTION']) == 'F') or (str(attributes['TRAVEL_DIRECTION']) == 'T')):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['both_ways']):
         if(str(attributes['TRAVEL_DIRECTION']) == 'B'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['limited_access']):
         if(attributes['LIMITED_ACCESS_ROAD'] == 'Y'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['paved']):
         if(attributes['PAVED'] == 'Y'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['ramp']):
         if(attributes['RAMP']=='Y'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['manoeuvre']):
         if(str(attributes['INTERSECTION_CATEGORY']) == '2'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['roundabout']):
         if(str(attributes['INTERSECTION_CATEGORY']) == '4'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['one_lane']):
         if(int(attributes['LANE_CATEGORY']) == 1):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['multiple_lanes']):
         if(int(attributes['LANE_CATEGORY']) > 1):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['speed_category']):
         if(int(attributes['SPEED_CATEGORY']) in features_query['attr_features']['SPEED_CAT']):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 def requestAttributesTile(links_dict: dict,  tile: tuple, features_query, not_navigable, session: requests.Session=None):
     attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE2_FC{level_layerID_map[tile[2]]}', session)
@@ -247,16 +260,17 @@ def requestAttributesTile(links_dict: dict,  tile: tuple, features_query, not_na
                 if(str(features_query['boolean_features']['parking_lot']) == '0'):
                     if(attr['PARKING_LOT_ROAD'] == 'Y'):
                         not_navigable.append(link_id)
-                links_dict[link_id]['WEIGHT'] *= setAttr2Weight(attr, features_query)
+                setAttr2Weight(links_dict[link_id], attr, features_query)
             except:
                 continue
     return links_dict, not_navigable
-def setAttr2Weight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+
+def setAttr2Weight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['parking_lot']):
         if(attributes['PARKING_LOT_ROAD'] == 'Y'):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 def requestTrafficPatternTile(links_dict: dict,  tile: tuple, session: requests.Session=None):
     traffic_pattern = checkTileFromCache(tile, f'TRAFFIC_PATTERN_FC{level_layerID_map[tile[2]]}', session)
@@ -315,20 +329,21 @@ def requestSignsTile(links_dict: dict, tile: tuple, features_query: dict, sessio
                     else:
                         links_dict[link_id]['TRAFFIC_SIGNS_F'].append(int(attr['TRAFFIC_SIGN_TYPE']))
                         links_dict[link_id]['TRAFFIC_SIGNS_T'].append(int(attr['TRAFFIC_SIGN_TYPE']))
-                links_dict[link_id]['WEIGHT'] *= setSignsWeight(attr, features_query)
+                setSignsWeight(links_dict[link_id], attr, features_query)
             except:
                 continue
     return links_dict
 
-def setSignsWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setSignsWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(attributes['CONDITION_TYPE'] != None):
         if(int(attributes['CONDITION_TYPE']) in features_query['CONDITION_TYPE']):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(attributes['TRAFFIC_SIGN_TYPE'] != None):
         if(int(attributes['TRAFFIC_SIGN_TYPE']) in features_query['SIGN_TYPE']):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     road_geom = checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
@@ -338,20 +353,21 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, se
                 link_id = geom['LINK_ID']   
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
-                links_dict[link_id]['WEIGHT'] *= setRoadGeomWeight(geom, features_query)
+                setRoadGeomWeight(links_dict[link_id], geom, features_query)
             except:
                 continue
     return links_dict
 
-def setRoadGeomWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['tunnel']):  
         if(str(attributes['TUNNEL']) == 'Y'):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['bridge']): 
         if(str(attributes['BRIDGE']) == 'Y'):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 
 def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
@@ -364,23 +380,25 @@ def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dic
                     links_dict[link_id]['ROAD_ROUGHNESS_F'] = road_roughn_cat[int(layer['FROM_AVG_ROUGHN_CAT'])]
                 if(layer['TO_AVG_ROUGHN_CAT'] != None):
                     links_dict[link_id]['ROAD_ROUGHNESS_T'] = road_roughn_cat[int(layer['TO_AVG_ROUGHN_CAT'])]
-                links_dict[link_id]['WEIGHT'] *= setRoadRoughnessWeight(layer, features_query)
+                setRoadRoughnessWeight(links_dict[link_id], layer, features_query)
             except:
                 continue
     return links_dict
 
-def setRoadRoughnessWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setRoadRoughnessWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['road_roughness_good']): 
         if((1 in attributes['ROAD_ROUGHNESS_T']) or (1 in attributes['ROAD_ROUGHNESS_F'])):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['road_roughness_fair']): 
         if((2 in attributes['ROAD_ROUGHNESS_T']) or (2 in attributes['ROAD_ROUGHNESS_F'])):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['road_roughness_poor']): 
         if((3 in attributes['ROAD_ROUGHNESS_T']) or (3 in attributes['ROAD_ROUGHNESS_F'])):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 def requestSpeedBumpsTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     links_speed_limit = checkTileFromCache(tile, f'SPEED_LIMITS_COND_FC{level_layerID_map[tile[2]]}', session)
@@ -389,17 +407,17 @@ def requestSpeedBumpsTile(links_dict: dict,  tile: tuple, features_query: dict, 
             try:
                 link_id = limit['LINK_ID']
                 links_dict[link_id]['SPEED_BUMPS'] = int(limit['SPEED_LIMIT_TYPE'])
-                links_dict[link_id]['WEIGHT'] *= setSpeedBumpsWeight(limit, features_query)
+                setSpeedBumpsWeight(links_dict[link_id], limit, features_query)
             except:
                 continue
     return links_dict
 
-def setSpeedBumpsWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setSpeedBumpsWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['speed_bumps']): 
         if(int(attributes['SPEED_LIMIT_TYPE']) == 3):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     toll_layer = checkTileFromCache(tile, f'TOLL_BOOTH_FC{level_layerID_map[tile[2]]}', session)
@@ -422,8 +440,8 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, s
                     links_dict[link_id_2]['TOLL_LOC'] = str(int(layer['LAT'])/100000)+","+str(int(layer['LON'])/100000)
                     links_dict[link_id_1]['TOLL_BOOTH'] = layer['NAME']
                     links_dict[link_id_2]['TOLL_BOOTH'] = layer['NAME']
-                    links_dict[link_id_1]['WEIGHT'] *= setTollBoothWeight(layer, features_query)
-                    links_dict[link_id_2]['WEIGHT'] *= setTollBoothWeight(layer, features_query)
+                    setTollBoothWeight(links_dict[link_id_1], layer, features_query)
+                    setTollBoothWeight(links_dict[link_id_2], layer, features_query)
                 elif(len(link_ids) == 1):
                     link_1 = link_ids[0]
                     if(link_1.find('-') == 0):
@@ -432,16 +450,16 @@ def requestTollBoothTile(links_dict: dict,  tile: tuple, features_query: dict, s
                         link_id_1 = link_1
                     links_dict[link_id_1]['TOLL_LOC'] = str(int(layer['LAT'])/100000)+","+str(int(layer['LON'])/100000)
                     links_dict[link_id_1]['TOLL_BOOTH'] = layer['NAME']
-                    links_dict[link_id_1]['WEIGHT'] *= setTollBoothWeight(layer, features_query)
+                    setTollBoothWeight(links_dict[link_id_1], layer, features_query)
             except:
                 continue
     return links_dict
 
-def setTollBoothWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setTollBoothWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['toll_booth']): 
         if(attributes['NAME'] != None):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     return weight
 
 def requestLaneTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
@@ -457,20 +475,21 @@ def requestLaneTile(links_dict: dict, tile: tuple, features_query: dict, session
                     links_dict[link_id]['LANE_DIVIDER_MARKER'] = int(attr['LANE_DIVIDER_MARKER'])
                 if(str(attr['WIDTH']) != 'None'): 
                     links_dict[link_id]['WIDTH'] = float(attr['WIDTH'])
-                links_dict[link_id]['WEIGHT'] *= setLanesWeight(attr, features_query)
+                setLanesWeight(links_dict[link_id], attr, features_query)
             except:
                 continue
     return links_dict
 
-def setLanesWeight(attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    weight = 1
+def setLanesWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
     if(features_query['boolean_features']['lane_markers_bool']): 
         if(int(attributes['LANE_DIVIDER_MARKER']) in features_query['lane_features']['lane_markers']):
-            weight *= percentage
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['lane_type_bool']): 
         if(int(attributes['LANE_TYPE']) in features_query['lane_features']['lane_markers']):
-            weight *= percentage
-    return weight
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
 
 def getChargingStationsList(tiles: tuple, session): 
     stations_dict ={}

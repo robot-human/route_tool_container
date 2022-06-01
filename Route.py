@@ -201,12 +201,13 @@ class Route:
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
-            link_attributes['WEIGHT'] = increment*link_attributes['WEIGHT']
+            if(link_attributes['N_ATTRIBUTES'] == 0):
+                link_attributes['WEIGHT'] *= increment
             
             link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
             if(link_data_r != None):
                 link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
-                link_attributes_r['WEIGHT'] = increment*link_attributes_r['WEIGHT']
+                link_attributes_r['WEIGHT'] *= increment
 
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000

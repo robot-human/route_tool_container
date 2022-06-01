@@ -13,7 +13,7 @@ import tracemalloc
 
 
 session = requests.Session()
-#UPDATED_CODE_25052022
+#UPDATED_CODE_01062022
 
 N_ROUTES = cfg.get('routes_number')
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
