@@ -86,7 +86,6 @@ if __name__ == '__main__':
         route.setCSVFeatures(g, i, units=cfg.get('units'))
         rank_points = route.getRankPoints()
         values.append((i,rank_points))
-
         i+=1
 
     routes_ranking_points = np.array(values, dtype=dtype)

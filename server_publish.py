@@ -42,15 +42,15 @@ def on_publish(client, userdata, mid, properties=None):
     return None
 
 if __name__ == '__main__':
-    print("publish file")
+    print("publish files")
     client = paho.Client(client_id=clientID, userdata=None, protocol=paho.MQTTv5)
     client.on_connect = on_connect
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         client.username_pw_set(userName, password)
-    client.connect(host, port, keepalive=120)
+    client.connect(host, port, keepalive=60)
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=2)
+    client.subscribe(topic, qos=0)
     client.on_publish = on_publish
     
     n_files = 0
@@ -58,17 +58,19 @@ if __name__ == '__main__':
         n_files += 1
     
     print(f"Number of files {n_files}")
-    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=2)
+    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=0)
     for name in output_files:
-        print(name)
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=2)
+        client.publish(topic, payload=f"{name}", qos=0)
+        print(name)
         time.sleep(2)
         f = open(file_name_path, "r")
         content = f.read()
-        client.publish(topic, payload=content, qos=2)
+        client.publish(topic, payload=content, qos=0)
+        print("content sent")
         time.sleep(2)
         f.close()
+        print(f"{name} closed")
         
     client.on_disconnect = on_disconnect
     client.disconnect()
