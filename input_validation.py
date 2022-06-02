@@ -18,7 +18,7 @@ default_dict = {
     'oneway': '0', 
     'both_ways': '0', 
     'limited_access': '0', 
-    'paved': '0', 
+    'not_paved': '0', 
     'ramp': '0', 
     'manoeuvre': '0', 
     'roundabout': '0',

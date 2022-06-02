@@ -150,10 +150,8 @@ else:
             crosswalk = 1
             rocks = 1
             animal_crossing = 1
-            tway = 1
             merge_r = 1
             merge_l = 1
-            merge_c = 1
             hills = 1
             traffic_signs_list = [i for i in range(66)]
         else:
@@ -255,7 +253,7 @@ else:
         boolean_features = {'highway':cfgParser.getint('config', 'highway'),'avoid_highway':cfgParser.getint('config', 'avoid_highway'),
                             'urban':cfgParser.getint('config', 'urban'),'oneway':cfgParser.getint('config', 'oneway'),
                             'both_ways':cfgParser.getint('config', 'both_ways'),'limited_access':cfgParser.getint('config', 'limited_access'),
-                            'paved':cfgParser.getint('config', 'paved'), 'ramp':cfgParser.getint('config', 'ramp'),
+                            'not_paved':cfgParser.getint('config', 'not_paved'), 'ramp':cfgParser.getint('config', 'ramp'),
                             'manoeuvre':cfgParser.getint('config', 'manoeuvre'),'roundabout':cfgParser.getint('config', 'roundabout'),
                             'one_lane':cfgParser.getint('config', 'one_lane'),'multiple_lanes':cfgParser.getint('config', 'multiple_lanes'),
                             'speed_category':speed_category_bool,'traffic_light':tl,'railway_crossing':rc,

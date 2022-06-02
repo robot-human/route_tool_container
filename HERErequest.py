@@ -149,7 +149,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
             if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
                 links_dict[link_id]['WEIGHT'] *= 1.1
-            if(attr['PAVED'] == 'N'):
+            if((str(query['boolean_features']['not_paved']) == '0') and (attr['PAVED'] == 'N')):
                 links_dict[link_id]['WEIGHT'] *= 2.5
             links_dict[link_id]['PARKING_LOT_ROAD'] = None
             links_dict[link_id]['SURFACE_TYPE'] = None
