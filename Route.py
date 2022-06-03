@@ -201,33 +201,31 @@ class Route:
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
-            print(link_attributes['PAVED'])
             if(link_attributes['N_ATTRIBUTES'] == 0):
                 link_attributes['WEIGHT'] *= increment
             
-        for i in range(len(self.route)-1,0,-1):
-            link_data = G.get_edge_data(self.route[i],self.route[i-1])
-            if(link_data != None):
-                link_attributes = link_data[list(link_data.keys())[0]]
-                link_attributes['WEIGHT'] = 1000
+            #if(i > len(self.route) - 5):
+            #    coeff = 2000000
+            #else:
+            #if(list(link_data.keys())[0] in mid_points):
+            #    print(list(link_data.keys())[0])
+            #coeff = 100000
+            link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
+            if(link_data_r != None):
+                link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
+                link_attributes_r['WEIGHT'] *= increment
+
+        #for i in range(len(self.route)-1,0,-1):
+        #    link_data = G.get_edge_data(self.route[i],self.route[i-1])
+        #    if(link_data != None):
+        #        link_attributes['WEIGHT'] = 1000
+        #        link_attributes = link_data[list(link_data.keys())[0]]
         
         #for i in range(len(path)-1,0,-1):
     #         link_data = G.get_edge_data(path[i],path[i-1])
     #         if(link_data != None):
     #             link_attributes = link_data[list(link_data.keys())[0]]
     #             link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
-
-
-            #link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
-            #if(i > len(self.route) - 5):
-            #    coeff = 2000000
-            #else:
-            #    coeff = 100
-            #    if(link_data_r != None):
-            #        link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
-            #        link_attributes_r['WEIGHT'] = coeff
-            #        print(link_attributes_r['WEIGHT'])
-
 
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000
