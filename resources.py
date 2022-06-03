@@ -1,4 +1,4 @@
-feature_dict = {"highway":0,"avoid_highway":1,"urban":2,"oneway":3,"both_ways":4,"limited_access":5,"paved":6,"ramp":7,"manoeuvre":8,
+feature_dict = {"highway":0,"avoid_highway":1,"urban":2,"oneway":3,"both_ways":4,"limited_access":5,"not_paved":6,"ramp":7,"manoeuvre":8,
                 "roundabout":9,"one_lane":10,"multiple_lanes":11,"traffic_lights":12,"railway_crossing":13,"no_overtaking":14,
                 "traffic_signs":15,"stop_signs":16,"school_zone":17,"icy_road":18,"crosswalk":19,
                 "animal_crossing":20,"lane_merge_right":21,"lane_merge_left":22,"falling_rocks":23,

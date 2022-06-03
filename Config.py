@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from Tools import Haversine, getRandomLocation
 
 sample_separation = 0.0005
-margin = 0.05
+margin = 0.1
 maximum_gps_coordinates = 500
 cfg = None
                          
@@ -84,7 +84,7 @@ else:
         lon_min = lon_min - margin
 
         distance = Haversine(start_gps,end_gps)
-        if((distance < 0.5) and (len(mid_gps) == 0)):
+        if((distance < 0.05) and (len(mid_gps) == 0)):
             mid_gps.append(getRandomLocation(start_gps, desired_route_length/3.0))
 
         if(route_type == 'point_to_anywhere'):
@@ -196,6 +196,8 @@ else:
         
         #Lane markers
         lane_markers = []
+        if(cfgParser.getint('config', 'lane_marker_no_marker')):
+            lane_type.append(0)
         if(cfgParser.getint('config', 'lane_marker_long_dashed')):
             lane_markers.append(1)
         if(cfgParser.getint('config', 'lane_marker_short_dashed')):
@@ -221,10 +223,6 @@ else:
         
         #Lane type
         lane_type = []
-        if(cfgParser.getint('config', 'lane_marker_long_dashed')):
-            lane_type.append(1)
-        if(cfgParser.getint('config', 'lane_marker_short_dashed')):
-            lane_type.append(6)
         if(cfgParser.getint('config', 'hov_lane')):
             lane_type.append(2)
         if(cfgParser.getint('config', 'reversible_lane')):

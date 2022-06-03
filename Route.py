@@ -201,13 +201,33 @@ class Route:
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
+            print(link_attributes['PAVED'])
             if(link_attributes['N_ATTRIBUTES'] == 0):
                 link_attributes['WEIGHT'] *= increment
             
-            link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
-            if(link_data_r != None):
-                link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
-                link_attributes_r['WEIGHT'] *= increment
+        for i in range(len(self.route)-1,0,-1):
+            link_data = G.get_edge_data(self.route[i],self.route[i-1])
+            if(link_data != None):
+                link_attributes = link_data[list(link_data.keys())[0]]
+                link_attributes['WEIGHT'] = 1000
+        
+        #for i in range(len(path)-1,0,-1):
+    #         link_data = G.get_edge_data(path[i],path[i-1])
+    #         if(link_data != None):
+    #             link_attributes = link_data[list(link_data.keys())[0]]
+    #             link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
+
+
+            #link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
+            #if(i > len(self.route) - 5):
+            #    coeff = 2000000
+            #else:
+            #    coeff = 100
+            #    if(link_data_r != None):
+            #        link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
+            #        link_attributes_r['WEIGHT'] = coeff
+            #        print(link_attributes_r['WEIGHT'])
+
 
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000
@@ -358,8 +378,8 @@ class Route:
                 start[4] = self.displayFeature(gpx, loc, next_loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[4], "Bothways")
             if(cfg['query_features']['boolean_features']['limited_access']):
                 start[5] = self.displayFeature(gpx, loc, next_loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[5], "Limited access")
-            if(cfg['query_features']['boolean_features']['paved']):
-                start[6] = self.displayFeature(gpx, loc, next_loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[6], "Paved")
+            if(cfg['query_features']['boolean_features']['not_paved']):
+                start[6] = self.displayFeature(gpx, loc, next_loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[6], "Not Paved")
             if(cfg['query_features']['boolean_features']['ramp']):
                 start[7] = self.displayFeature(gpx, loc, next_loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[7], "Ramp")
             if(cfg['query_features']['boolean_features']['manoeuvre']):
@@ -468,9 +488,9 @@ class Route:
             self.feat_count[feature_dict['limited_access']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['limited_access']] = 'Present'
         #Paved
-        if(attributes['PAVED'] == 'Y'):
-            self.feat_count[feature_dict['paved']] += attributes['LINK_LENGTH']*unit_coef
-            feat_list[feature_dict['paved']] = 'Present'
+        if(attributes['PAVED'] == 'N'):
+            self.feat_count[feature_dict['not_paved']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['not_paved']] = 'Present'
         #Ramp
         if(str(attributes['RAMP']) == 'Y'):
             feat_list[feature_dict['ramp']] = 'Present'

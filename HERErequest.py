@@ -150,7 +150,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
                 links_dict[link_id]['WEIGHT'] *= 1.1
             if((str(query['boolean_features']['not_paved']) == '0') and (attr['PAVED'] == 'N')):
-                links_dict[link_id]['WEIGHT'] *= 2.5
+                links_dict[link_id]['WEIGHT'] *= 10
             links_dict[link_id]['PARKING_LOT_ROAD'] = None
             links_dict[link_id]['SURFACE_TYPE'] = None
 
@@ -220,8 +220,8 @@ def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage
         if(attributes['LIMITED_ACCESS_ROAD'] == 'Y'):
             links_dict['WEIGHT'] *= percentage
             links_dict['N_ATTRIBUTES'] += 1
-    if(features_query['boolean_features']['paved']):
-        if(attributes['PAVED'] == 'Y'):
+    if(features_query['boolean_features']['not_paved']):
+        if(attributes['PAVED'] == 'N'):
             links_dict['WEIGHT'] *= percentage
             links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['ramp']):
