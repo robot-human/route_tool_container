@@ -104,18 +104,18 @@ class Route:
                 self.c_station = cs
         return nearest_cs   
     
-    # def setPathWeights(self, G, path):
-    #     increment = 1.0
-    #     for i in range(1,len(path)):
-    #         link_data = G.get_edge_data(path[i-1],path[i])
-    #         link_attributes = link_data[list(link_data.keys())[0]]
-    #         link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
-    #     for i in range(len(path)-1,0,-1):
-    #         link_data = G.get_edge_data(path[i],path[i-1])
-    #         if(link_data != None):
-    #             link_attributes = link_data[list(link_data.keys())[0]]
-    #             link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
-    #     return None
+    def setPathWeights(self, G, path):
+        increment = 1.25
+        for i in range(1,len(path)):
+            link_data = G.get_edge_data(path[i-1],path[i])
+            link_attributes = link_data[list(link_data.keys())[0]]
+            link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
+        for i in range(len(path)-1,0,-1):
+            link_data = G.get_edge_data(path[i],path[i-1])
+            if(link_data != None):
+                link_attributes = link_data[list(link_data.keys())[0]]
+                link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
+        return None
 
     def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
         path = nx.shortest_path(G, start_node, mid_point, weight='WEIGHT')
@@ -132,10 +132,12 @@ class Route:
             for next_node in mid_points:
                 path_cont = nx.shortest_path(G, prev_node, next_node, weight='WEIGHT')
                 last_node = path_cont.pop(len(path_cont)-1)
+                self.setPathWeights(G, path_cont)
                 full_path.extend(path_cont)
                 prev_node = next_node
             path_cont = nx.shortest_path(G, prev_node, end_node, weight='WEIGHT')
             last_node = path_cont.pop(len(path_cont)-1)
+            self.setPathWeights(G, path_cont)
             full_path.extend(path_cont)
             return full_path
         else:
@@ -192,7 +194,6 @@ class Route:
         return route
     
     def setRoute(self, G, start_point, end_point, mid_points):
-        increment = 1.5
         self.avg_speed = 0
         self.route = self.findRoute(G, start_point, end_point, mid_points)
         for i in range(1,len(self.route)):
@@ -201,27 +202,6 @@ class Route:
             self.route_length += link_attributes['LINK_LENGTH']
             self.avg_speed += link_attributes['AVG_SPEED']
             self.driving_time += (0.001*link_attributes['LINK_LENGTH'])/link_attributes['AVG_SPEED']
-            if(link_attributes['N_ATTRIBUTES'] == 0):
-                link_attributes['WEIGHT'] *= increment
-            
-            #if(i > len(self.route) - 5):
-            #    coeff = 2000000
-            #else:
-            #coeff = 5
-            #if((self.route[i-1] in mid_points) or (self.route[i] in mid_points)):
-            #    print(list(link_data.keys())[0])
-            #    coeff = 10
-            link_data_r = G.get_edge_data(self.route[i],self.route[i-1])
-            if(link_data_r != None):
-                link_attributes_r = link_data_r[list(link_data_r.keys())[0]]
-                link_attributes_r['WEIGHT'] = 5000
-                
-        #for i in range(len(self.route)-1,0,-1):
-        #    link_data = G.get_edge_data(self.route[i],self.route[i-1])
-        #    if(link_data != None):
-        #        link_attributes = link_data[list(link_data.keys())[0]]
-        #        link_attributes['WEIGHT'] *= 500
-
         self.avg_speed /= len(self.route)
         self.route_length = self.route_length/1000
         return None
