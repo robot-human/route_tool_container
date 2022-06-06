@@ -122,6 +122,7 @@ class Route:
         self.setPathWeights(G, path)
         last_node = path.pop(len(path)-1)
         path_cont = nx.shortest_path(G, last_node, end_node, weight='WEIGHT')
+        self.setPathWeights(G, path_cont)
         path.extend(path_cont)
         return path  
         
@@ -153,9 +154,13 @@ class Route:
                 mid_node, _ = G.findNodeFromCoord(visit_point)
                 return self.midPointPath(G, start_node, end_node, mid_node)
             else:
-                return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+                path = nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+                self.setPathWeights(G, path)
+                return path
         else:
-            return nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+            path = nx.shortest_path(G, start_node, end_node, weight='WEIGHT')
+            self.setPathWeights(G, path)
+            return path
 
     def closedRoute(self, G, start_node, end_node):
         if(self.visit_charging_stationt):
