@@ -158,6 +158,9 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['SPEED_LIMIT'] = None
             setAttrWeight(links_dict[link_id], attr, query)
 
+            links_dict[link_id]['HPX'] = None
+            links_dict[link_id]['HPY'] = None
+
             links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
             links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
             links_dict[link_id]['TRAFFIC_SIGNS_F'] = []
@@ -515,3 +518,13 @@ def getChargingStationsList(tiles: tuple, session):
         except:
             continue
     return stations_dict
+
+#def requestAdasTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
+#    adas_attributes = checkTileFromCache(tile, f'ADAS_ATTRIB_FC{level_layerID_map[tile[2]]}', session)#
+#    if(str(adas_attributes) != "None"):
+#        for attr in adas_attributes:
+#            try:
+#                links_dict[link_id]['WIDTH'] = float(attr['WIDTH'])
+#            except:
+#                continue
+#    return links_dict

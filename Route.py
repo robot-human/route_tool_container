@@ -109,12 +109,12 @@ class Route:
         for i in range(1,len(path)):
             link_data = G.get_edge_data(path[i-1],path[i])
             link_attributes = link_data[list(link_data.keys())[0]]
-            link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
+            link_attributes['WEIGHT'] *= increment
         for i in range(len(path)-1,0,-1):
             link_data = G.get_edge_data(path[i],path[i-1])
             if(link_data != None):
                 link_attributes = link_data[list(link_data.keys())[0]]
-                link_attributes['WEIGHT'] *= increment*link_attributes['WEIGHT']
+                link_attributes['WEIGHT'] *= increment
         return None
 
     def midPointPath(self, G, start_node: int, end_node: int, mid_point: int):
@@ -293,7 +293,7 @@ class Route:
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
                 start = True
                 self.n_features += 1
-            elif((start==True) and (link_attributes in values) and (next_link_attributes not in values)):
+            if((start==True) and (link_attributes in values) and (next_link_attributes not in values)):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(next_loc[0],next_loc[1], name=f"End of {feat_name}"))
                 start = False
         return start
@@ -399,9 +399,9 @@ class Route:
                 self.addSignWayPoint(gpx,loc,link_attributes,26,edge_dir)
 
             if(cfg['query_features']['boolean_features']['tunnel']):
-                start[12] = self.displayFeature(gpx, loc, next_loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[14], "Tunnel")
+                start[12] = self.displayFeature(gpx, loc, next_loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[12], "Tunnel")
             if(cfg['query_features']['boolean_features']['bridge']):
-                start[13] = self.displayFeature(gpx, loc, next_loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[15], "Bridge")
+                start[13] = self.displayFeature(gpx, loc, next_loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[13], "Bridge")
 
             if((cfg['query_features']['boolean_features']['speed_bumps']) and (3 == int(link_attributes[f"SPEED_BUMPS"]))):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"Speed_bump")) 
@@ -471,7 +471,8 @@ class Route:
                 if(start[0] == False):
                     self.feat_count[feature_dict['ramp']] += 1
                     start[0] = True
-            elif(str(next_attributes['RAMP']) == 'N'):
+            else:
+            #elif(str(next_attributes['RAMP']) == 'N'):
                 start[0] = False
         #Manoeuvre
         if(str(attributes['INTERSECTION']) == '2'):
