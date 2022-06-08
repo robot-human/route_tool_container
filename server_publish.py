@@ -1,5 +1,6 @@
 import os
 import time
+from sys import getsizeof
 import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
@@ -61,12 +62,13 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=2)
-        time.sleep(1.5)
+        time.sleep(2)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
+        print(getsizeof(content))
         client.publish(topic, payload=content, qos=2)
-        time.sleep(1.5)
+        time.sleep(2)
         f.close()
         print(f"{name} closed")
         
