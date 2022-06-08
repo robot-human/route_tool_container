@@ -48,7 +48,7 @@ if __name__ == '__main__':
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         client.username_pw_set(userName, password)
-    client.connect(host, port, keepalive=90)
+    client.connect(host, port, keepalive=180)
     client.on_subscribe = on_subscribe
     client.subscribe(topic, qos=2)
     client.on_publish = on_publish
