@@ -42,7 +42,7 @@ def on_subscribe(client, userdata, mid, granted_qos, properties=None):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 def on_publish(client, userdata, mid, properties=None):
     print("mid: " + str(mid))
-    #time.sleep(KEEPALIVE)
+    time.sleep(KEEPALIVE)
 
 
 if __name__ == '__main__':
@@ -76,4 +76,4 @@ if __name__ == '__main__':
     
     client.on_disconnect = on_disconnect
     client.disconnect()
-    client.loop_forever()
+    #client.loop_forever()
