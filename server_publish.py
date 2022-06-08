@@ -45,6 +45,7 @@ def on_publish(client, userdata, mid, properties=None):
 
 
 if __name__ == '__main__':
+    count = 0
     print("start sending files")
     client = paho.Client(client_id=clientID, userdata=None, protocol=paho.MQTTv5)
     client.on_connect = on_connect
@@ -74,7 +75,10 @@ if __name__ == '__main__':
         time.sleep(1.5)
         f.close()
         print(f"{name} closed")
+        count += 1
+        if(count < n_files):
+            client.loop_forever()
+        else:
+            client.on_disconnect = on_disconnect
+            client.disconnect()
     
-    client.on_disconnect = on_disconnect
-    client.disconnect()
-    client.loop_forever()
