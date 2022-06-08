@@ -9,7 +9,7 @@ SERVER = 3
 topic = "fevvf/route_tool_private"
 clientID = "clientId-xMODDl314VwR-private-p"
 file_path = f'./config.ini'
-QOS = 1
+QOS = 2
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -73,6 +73,6 @@ if __name__ == '__main__':
         f.close()
         print(f"{name} closed")
         
+    client.loop_forever()
     client.on_disconnect = on_disconnect
     client.disconnect()
-    #client.loop_forever()
