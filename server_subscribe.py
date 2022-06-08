@@ -2,7 +2,7 @@ import time
 import paho.mqtt.client as paho
 from paho import mqtt
 
-SERVER = 3
+SERVER = 0
 topic = "fevvf/route_tool_private"
 clientID = "clientId-xLODDl314VwO-private-s"
 file_path = f"./request_input.txt"

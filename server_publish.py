@@ -5,11 +5,12 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 3
+SERVER = 0
 topic = "fevvf/route_tool_private"
 clientID = "clientId-xMODDl314VwR-private-p"
 file_path = f'./config.ini'
 QOS = 2
+KEEPALIVE=120
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -41,6 +42,8 @@ def on_subscribe(client, userdata, mid, granted_qos, properties=None):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 def on_publish(client, userdata, mid, properties=None):
     print("mid: " + str(mid))
+    time.sleep(KEEPALIVE)
+
 
 if __name__ == '__main__':
     print("start sending files")
@@ -49,7 +52,7 @@ if __name__ == '__main__':
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         client.username_pw_set(userName, password)
-    client.connect(host, port, keepalive=90)
+    client.connect(host, port, keepalive=KEEPALIVE)
     client.on_subscribe = on_subscribe
     client.subscribe(topic, qos=QOS)
     client.on_publish = on_publish
@@ -63,15 +66,14 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=QOS)
-        time.sleep(2)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
         client.publish(topic, payload=content, qos=QOS)
-        time.sleep(2)
         f.close()
         print(f"{name} closed")
-        client.loop_forever()
+    
     client.on_disconnect = on_disconnect
     client.disconnect()
+    client.loop_forever()
