@@ -50,7 +50,7 @@ if __name__ == '__main__':
         client.username_pw_set(userName, password)
     client.connect(host, port, keepalive=90)
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=2)
+    client.subscribe(topic, qos=1)
     client.on_publish = on_publish
     
     n_files = 0
@@ -58,16 +58,16 @@ if __name__ == '__main__':
         n_files += 1
     
     print(f"Number of files {n_files}")
-    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=2)
+    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=1)
     for name in output_files:
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=2)
+        client.publish(topic, payload=f"{name}", qos=1)
         time.sleep(2)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
-        client.publish(topic, payload=content, qos=2)
+        client.publish(topic, payload=content, qos=1)
         time.sleep(2)
         f.close()
         print(f"{name} closed")
