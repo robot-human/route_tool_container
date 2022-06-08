@@ -9,6 +9,7 @@ SERVER = 3
 topic = "fevvf/route_tool_private"
 clientID = "clientId-xMODDl314VwR-private-p"
 file_path = f'./config.ini'
+QOS = 1
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         client.username_pw_set(userName, password)
     client.connect(host, port, keepalive=90)
     client.on_subscribe = on_subscribe
-    client.subscribe(topic, qos=0)
+    client.subscribe(topic, qos=QOS)
     client.on_publish = on_publish
     
     n_files = 0
@@ -58,16 +59,16 @@ if __name__ == '__main__':
         n_files += 1
     
     print(f"Number of files {n_files}")
-    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=0)
+    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=QOS)
     for name in output_files:
         file_name_path = output_files_path+name
-        client.publish(topic, payload=f"{name}", qos=0)
+        client.publish(topic, payload=f"{name}", qos=QOS)
         time.sleep(2)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
-        client.publish(topic, payload=content, qos=0)
+        client.publish(topic, payload=content, qos=QOS)
         time.sleep(2)
         f.close()
         print(f"{name} closed")
