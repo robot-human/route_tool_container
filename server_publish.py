@@ -74,4 +74,4 @@ if __name__ == '__main__':
         
     client.on_disconnect = on_disconnect
     client.disconnect()
-    client.loop_forever()
+    #client.loop_forever()
