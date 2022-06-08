@@ -56,6 +56,7 @@ if __name__ == '__main__':
     client.on_subscribe = on_subscribe
     client.subscribe(topic, qos=QOS)
     client.on_publish = on_publish
+    client.on_disconnect = on_disconnect
     
     n_files = 0
     for file_path in output_files:
@@ -76,9 +77,7 @@ if __name__ == '__main__':
         f.close()
         print(f"{name} closed")
         count += 1
-        if(count < n_files):
-            client.loop_forever()
-        else:
-            client.on_disconnect = on_disconnect
+        client.loop_forever()
+        if(count > n_files):
             client.disconnect()
     
