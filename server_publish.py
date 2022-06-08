@@ -72,7 +72,7 @@ if __name__ == '__main__':
         time.sleep(2)
         f.close()
         print(f"{name} closed")
-        
-    client.loop_forever()
+    time.sleep(2)
+    #client.loop_forever()
     client.on_disconnect = on_disconnect
     client.disconnect()
