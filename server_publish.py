@@ -5,9 +5,9 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 3
-topic = "fevvf/route_tool_private"
-clientID = "clientId-xMODDl314VwR-private-p"
+SERVER = 0
+topic = "fevvf/route_tool_karthik"
+clientID = "clientId-xMODDl314VwR-karthik-p"
 file_path = f'./config.ini'
 QOS = 2
 KEEPALIVE=120
@@ -65,16 +65,16 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=QOS)
-        time.sleep(KEEPALIVE)
+        time.sleep(1.5)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
         client.publish(topic, payload=content, qos=QOS)
-        time.sleep(KEEPALIVE)
+        time.sleep(1.5)
         f.close()
         print(f"{name} closed")
     
     client.on_disconnect = on_disconnect
     client.disconnect()
-    #client.loop_forever()
+    client.loop_forever()
