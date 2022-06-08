@@ -5,8 +5,8 @@ from paho import mqtt
 import paho.mqtt.publish as publish
 
 SERVER = 0
-topic = "fevvf/route_tool_karthik"
-clientID = "clientId-xMODDl314VwR-karthik-p"
+topic = "fevvf/route_tool_tom"
+clientID = "clientId-xMODDl314VwR-tom-p"
 file_path = f'./config.ini'
 
 if(SERVER == 0):
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         client.username_pw_set(userName, password)
-    client.connect(host, port, keepalive=60)
+    client.connect(host, port, keepalive=90)
     client.on_subscribe = on_subscribe
     client.subscribe(topic, qos=2)
     client.on_publish = on_publish
@@ -61,12 +61,12 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=2)
-        time.sleep(2)
+        time.sleep(1.5)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         client.publish(topic, payload=content, qos=2)
-        time.sleep(2)
+        time.sleep(1.5)
         f.close()
         print(f"{name} closed")
         
