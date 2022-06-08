@@ -47,7 +47,7 @@ if __name__ == '__main__':
     
     g.saveEdgesToNumpy()
     g.saveNodesToNumpy()
-    end_time_02 = time.time()
+    end_time_02 = time.time()/3600.0
     print("Graph time: ",end_time_02)
     
     
