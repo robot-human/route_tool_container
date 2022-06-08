@@ -5,9 +5,9 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 0
-topic = "fevvf/route_tool_nicole"
-clientID = "clientId-xMODDl314VwR-nicole-p"
+SERVER = 3
+topic = "fevvf/route_tool_private"
+clientID = "clientId-xMODDl314VwR-private-p"
 file_path = f'./config.ini'
 
 if(SERVER == 0):
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     if(SERVER != 0):
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         client.username_pw_set(userName, password)
-    client.connect(host, port, keepalive=180)
+    client.connect(host, port, keepalive=90)
     client.on_subscribe = on_subscribe
     client.subscribe(topic, qos=2)
     client.on_publish = on_publish
@@ -66,8 +66,7 @@ if __name__ == '__main__':
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
-        print(getsizeof(content))
-        print(content)
+        print(getsizeof(content)/1000, " kbts")
         client.publish(topic, payload=content, qos=2)
         time.sleep(2)
         f.close()
@@ -75,4 +74,4 @@ if __name__ == '__main__':
         
     client.on_disconnect = on_disconnect
     client.disconnect()
-    #client.loop_forever()
+    client.loop_forever()
