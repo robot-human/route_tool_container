@@ -76,8 +76,7 @@ if __name__ == '__main__':
         time.sleep(1.5)
         f.close()
         print(f"{name} closed")
-        count += 1
-        client.loop_forever()
         if(count > n_files):
             client.disconnect()
-    
+        count += 1
+        client.loop_forever()
