@@ -78,7 +78,7 @@ if __name__ == '__main__':
         if(count < n_files+1):
             count += 1        
     
-    client.loop_forever()
+    #client.loop_forever()
     client.on_disconnect = on_disconnect
     client.disconnect()
     
