@@ -72,7 +72,7 @@ if __name__ == '__main__':
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
         client.publish(topic, payload=content, qos=QOS)
-        #time.sleep(1)
+        time.sleep(1)
         f.close()
         print(f"{name} closed")
         if(count < n_files+1):
