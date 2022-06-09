@@ -66,14 +66,14 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         #client.publish(topic, payload=f"{name}", qos=QOS)
-        publish.single(topic, payload=f"{name}", qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=mqtt.MQTTv311, transport="tcp")
+        publish.single(topic, payload=f"{name}", qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=paho.MQTTv5, transport="tcp")
         #time.sleep(1)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
         #client.publish(topic, payload=content, qos=QOS)
-        publish.single(topic, payload=content, qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=mqtt.MQTTv311, transport="tcp")
+        publish.single(topic, payload=content, qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=paho.MQTTv5, transport="tcp")
         #time.sleep(1)
         f.close()
         print(f"{name} closed")
