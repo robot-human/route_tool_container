@@ -6,8 +6,8 @@ from paho import mqtt
 import paho.mqtt.publish as publish
 
 SERVER = 0
-topic = "fevvf/route_tool_qusay"
-clientID = "clientId-xMODDl314VwR-qusay-p"
+topic = "fevvf/route_tool_nicole"
+clientID = "clientId-xMODDl314VwR-nicole-p"
 file_path = f'./config.ini'
 QOS = 2
 KEEPALIVE=180
@@ -61,7 +61,8 @@ if __name__ == '__main__':
         n_files += 1
     
     print(f"Number of files {n_files}")
-    client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=QOS)
+    #client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=QOS)
+    publish.single(topic, payload=f"Hello GUI am sending {n_files} files", qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=paho.MQTTv5, transport="tcp")
     for name in output_files:
         file_name_path = output_files_path+name
         #client.publish(topic, payload=f"{name}", qos=QOS)
