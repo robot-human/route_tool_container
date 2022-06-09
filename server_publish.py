@@ -10,7 +10,7 @@ topic = "fevvf/route_tool_karthik"
 clientID = "clientId-xMODDl314VwR-karthik-p"
 file_path = f'./config.ini'
 QOS = 2
-KEEPALIVE=120
+KEEPALIVE=180
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
@@ -66,18 +66,19 @@ if __name__ == '__main__':
     for name in output_files:
         file_name_path = output_files_path+name
         client.publish(topic, payload=f"{name}", qos=QOS)
-        time.sleep(1.5)
+        time.sleep(2)
         print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
         client.publish(topic, payload=content, qos=QOS)
-        time.sleep(1.5)
+        time.sleep(2)
         f.close()
         print(f"{name} closed")
-        if(count > n_files+1):
-            client.on_disconnect = on_disconnect
-            client.disconnect()
-        else:
-            count += 1
-            client.loop_forever()
+        if(count < n_files+1):
+            count += 1        
+
+    client.on_disconnect = on_disconnect
+    client.disconnect()
+    client.loop_forever()
+    
