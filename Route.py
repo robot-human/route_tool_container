@@ -1,5 +1,8 @@
 #from re import S
 from HEREgraph2 import HEREgraph
+import flexpolyline as fp
+import requests
+import json
 import numpy as np
 import networkx as nx
 import gpxpy
@@ -10,6 +13,8 @@ import datetime
 import time
 from resources import feature_dict,traffics_sign_dict,traffic_condition_dict,lane_divider_dict,lane_type
 
+APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
+url = 'https://router.hereapi.com/v8/routes'
 
 def getSigns(G, cfg):
     gpx = gpxpy.gpx.GPX()
@@ -331,7 +336,10 @@ class Route:
         gpx_segment = gpxpy.gpx.GPXTrackSegment()
         gpx_track.segments.append(gpx_segment)
         start = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+        new_street = True
+        street=""
         ref_speed_limit = None
+        gps_loc_path= []
         
         for i in range(1,len(self.route)):
             loc = G.nodes[self.route[i-1]]['LOC']
@@ -419,7 +427,39 @@ class Route:
             if(cfg['query_features']['boolean_features']['parking_lot']):
                 start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['PARKING_LOT_ROAD'], next_link_attributes['PARKING_LOT_ROAD'], ['Y'], start[14], "Parking lot")            
 
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+            #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+
+            if(link_attributes['STREET_NAME'] == street):
+                new_street = False
+            else: 
+                new_street = True
+            if(new_street):
+                street = link_attributes['STREET_NAME']
+                print(street)
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+                gps_loc_path.append(str(loc[0])+','+str(loc[1]))
+        
+        params = {
+            'apiKey':APP_CODE,
+            'transportMode': 'car',
+            'origin':gps_loc_path[0],
+            'destination' : gps_loc_path[-1],
+            'via':gps_loc_path[1:-2],
+            'return':'polyline,summary,actions,instructions,routeHandle'
+        }
+        session: session = requests.Session()
+        res = session.get(url , params=params)
+        json_string = json.loads(res.content)
+        sections = json_string['routes'][0]['sections']
+        print("sections")
+        locations = []
+        for section in sections:
+            fragment = fp.decode(section['polyline'])
+            #for gps_loc in fragment:
+                #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
+                #print(float(gps_loc[0]),float(gps_loc[1]))
+
+
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
             if(self.c_station != None):
                 lat = int(self.charging_stations[self.c_station]['LAT'])/100000

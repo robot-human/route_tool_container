@@ -158,9 +158,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['SPEED_LIMIT'] = None
             setAttrWeight(links_dict[link_id], attr, query)
 
-            links_dict[link_id]['HPX'] = None
-            links_dict[link_id]['HPY'] = None
-
+            links_dict[link_id]['STREET_NAME'] = None
+            
             links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
             links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
             links_dict[link_id]['TRAFFIC_SIGNS_F'] = []
@@ -355,6 +354,7 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, se
         for geom in road_geom:
             try:
                 link_id = geom['LINK_ID']   
+                links_dict[link_id]['STREET_NAME'] = geom['NAME']
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
                 setRoadGeomWeight(links_dict[link_id], geom, features_query)
