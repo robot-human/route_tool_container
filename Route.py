@@ -613,7 +613,7 @@ class Route:
             feat_list[feature_dict['express_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 128):
             self.feat_count[feature_dict['slow_lane']] += attributes['LINK_LENGTH']*unit_coef
-            feat_list[feature_dict['slow_lane_lane']] = 'Present'
+            feat_list[feature_dict['slow_lane']] = 'Present'
         if(attributes[f'LANE_TYPE'] == 64):
             self.feat_count[feature_dict['auxiliary_lane']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['auxiliary_lane']] = 'Present'
