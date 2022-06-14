@@ -456,25 +456,26 @@ class Route:
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
 
-        q = int(len(gps_loc_path)/150)
-        residual = len(gps_loc_path)%150
+        q = int(len(gps_loc_path)/100)
+        residual = len(gps_loc_path)%100
         print("residual",residual)
         session: session = requests.Session()
 
-        for i in range(q):
-            gps_aux_list = gps_loc_path[150*i:150*(i+1)]
+        for i in range(q-1):
+            gps_aux_list = gps_loc_path[100*i:100*(i+1)]
             sections =  self.requestRoutingAPI(gps_aux_list, session)
             for section in sections:
                 fragment = fp.decode(section['polyline'])
                 for gps_loc in fragment:
                     gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
 
-        gps_aux_list = gps_loc_path[150*(q):150*(q) + residual]
+        gps_aux_list = gps_loc_path[100*(q-1):100*(q) + residual]
         sections =  self.requestRoutingAPI(gps_aux_list, session)
         for section in sections:
             fragment = fp.decode(section['polyline'])
             for gps_loc in fragment:
                 gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
+
 
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
             if(self.c_station != None):
@@ -503,11 +504,6 @@ class Route:
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
         return sections
-        #for section in sections:
-        #    fragment = fp.decode(section['polyline'])
-        #    for gps_loc in fragment:
-        #        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
-        #return None
 
     def addGPSPoint(self, path, point):
         if(point not in path):

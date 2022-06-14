@@ -520,12 +520,12 @@ def getChargingStationsList(tiles: tuple, session):
             continue
     return stations_dict
 
-#def requestAdasTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
-#    adas_attributes = checkTileFromCache(tile, f'ADAS_ATTRIB_FC{level_layerID_map[tile[2]]}', session)#
-#    if(str(adas_attributes) != "None"):
-#        for attr in adas_attributes:
-#            try:
-#                links_dict[link_id]['WIDTH'] = float(attr['WIDTH'])
-#            except:
-#                continue
-#    return links_dict
+def requestAdasTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
+    adas_attributes = checkTileFromCache(tile, f'ADAS_ATTRIB_FC{level_layerID_map[tile[2]]}', session)#
+    if(str(adas_attributes) != "None"):
+        for attr in adas_attributes:
+            try:
+                links_dict[link_id]['WIDTH'] = float(attr['WIDTH'])
+            except:
+                continue
+    return links_dict
