@@ -458,6 +458,8 @@ class Route:
 
         q = int(len(gps_loc_path)/100)
         residual = len(gps_loc_path)%100
+        print("Total: ",len(gps_loc_path))
+        print("q: ",q)
         print("residual",residual)
         session: session = requests.Session()
 
