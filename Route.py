@@ -460,17 +460,16 @@ class Route:
         mod = 150
         q = int(len(gps_loc_path)/mod)
         residual = len(gps_loc_path)%mod
-        session: session = requests.Session()
 
         for i in range(q-1):
             gps_aux_list = gps_loc_path[mod*i:mod*(i+1)]
-            sections =  self.requestRoutingAPI(gps_aux_list, session)
+            sections =  self.requestRoutingAPI(gps_aux_list)
             for section in sections:
                 fragment = fp.decode(section['polyline'])
                 for gps_loc in fragment:
                     gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
         gps_aux_list = gps_loc_path[100*(q-1):len(gps_loc_path)]
-        sections =  self.requestRoutingAPI(gps_aux_list, session)
+        sections =  self.requestRoutingAPI(gps_aux_list)
         for section in sections:
             fragment = fp.decode(section['polyline'])
             for gps_loc in fragment:
@@ -491,7 +490,7 @@ class Route:
         del gpx
         return None
     
-    def requestRoutingAPI(self, gps_list, session):
+    def requestRoutingAPI(self, gps_list):
         params = {
             'apiKey':APP_CODE,
             'transportMode': 'car',
@@ -500,6 +499,7 @@ class Route:
             'via':gps_list[1:-2],
             'return':'polyline,summary,actions,instructions,routeHandle'
         }
+        session: session = requests.Session()
         res = session.get(url, params=params)
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
