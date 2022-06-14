@@ -458,18 +458,19 @@ class Route:
 
         q = int(len(gps_loc_path)/150)
         residual = len(gps_loc_path)%150
+        print("residual",residual)
         session: session = requests.Session()
 
         for i in range(q):
             gps_aux_list = gps_loc_path[150*i:150*(i+1)]
-            sections =  self.requestRouting(gps_aux_list, session)
+            sections =  self.requestRoutingAPI(gps_aux_list, session)
             for section in sections:
                 fragment = fp.decode(section['polyline'])
                 for gps_loc in fragment:
                     gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
 
         gps_aux_list = gps_loc_path[150*(q):150*(q) + residual]
-        sections =  self.requestRouting(gps_aux_list, session)
+        sections =  self.requestRoutingAPI(gps_aux_list, session)
         for section in sections:
             fragment = fp.decode(section['polyline'])
             for gps_loc in fragment:
@@ -489,7 +490,7 @@ class Route:
         del gpx
         return None
     
-    def requestRouting(self, gps_list, session):
+    def requestRoutingAPI(self, gps_list, session):
         params = {
             'apiKey':APP_CODE,
             'transportMode': 'car',
