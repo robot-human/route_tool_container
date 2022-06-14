@@ -456,7 +456,8 @@ class Route:
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
 
-        print(len(gps_loc_path[1:-2]))  
+
+        print(len(gps_loc_path)%150)  
         params = {
             'apiKey':APP_CODE,
             'transportMode': 'car',
