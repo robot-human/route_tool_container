@@ -469,7 +469,7 @@ class Route:
                 for gps_loc in fragment:
                     gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
 
-        gps_aux_list = gps_loc_path[100*(q-1):100*(q) + residual]
+        gps_aux_list = gps_loc_path[100*(q-1):len(gps_loc_path)]
         sections =  self.requestRoutingAPI(gps_aux_list, session)
         for section in sections:
             fragment = fp.decode(section['polyline'])
