@@ -12,7 +12,8 @@ import datetime
 import time
 from resources import feature_dict,traffics_sign_dict,traffic_condition_dict,lane_divider_dict,lane_type
 
-APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
+#APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
+APP_CODE ='vGeMc2D8lMqb5OY39enKrjNjrEMWlOabRS2olRxc2a0'
 url = 'https://router.hereapi.com/v8/routes'
 
 def getSigns(G, cfg):
@@ -504,12 +505,9 @@ class Route:
             'via':gps_list[1:-2],
             'return':'polyline,summary,actions,instructions,routeHandle'
         }
-        res = session.get(url , params=params)
+        res = session.get(url, params=params)
         json_string = json.loads(res.content)
-        try:
-            sections = json_string['routes'][0]['sections']
-        except:
-            json_string
+        sections = json_string['routes'][0]['sections']
         return sections
 
     def addGPSPoint(self, path, point):
