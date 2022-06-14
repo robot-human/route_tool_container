@@ -456,8 +456,9 @@ class Route:
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
 
-        q = int(len(gps_loc_path)/100)
-        residual = len(gps_loc_path)%100
+        mod = 150
+        q = int(len(gps_loc_path)/mod)
+        residual = len(gps_loc_path)%mod
         print("Total: ",len(gps_loc_path))
         print("q: ",q)
         print("residual",residual)
@@ -465,7 +466,7 @@ class Route:
 
         for i in range(q-1):
             print("loop",i)
-            gps_aux_list = gps_loc_path[100*i:100*(i+1)]
+            gps_aux_list = gps_loc_path[mod*i:mod*(i+1)]
             sections =  self.requestRoutingAPI(gps_aux_list, session)
             for section in sections:
                 fragment = fp.decode(section['polyline'])
@@ -505,7 +506,10 @@ class Route:
         }
         res = session.get(url , params=params)
         json_string = json.loads(res.content)
-        sections = json_string['routes'][0]['sections']
+        try:
+            sections = json_string['routes'][0]['sections']
+        except:
+            json_string
         return sections
 
     def addGPSPoint(self, path, point):
