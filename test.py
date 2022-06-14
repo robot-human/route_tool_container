@@ -1,7 +1,8 @@
+from cgitb import reset
 import datetime
 import time
 
-print(datetime.datetime(2022, 1, 1))
+#print(datetime.datetime(2022, 1, 1))
 """
 from Config import cfg
 import requests
@@ -30,6 +31,22 @@ for k in links_dict.keys():
     printDict(links_dict[k])
 
 """
+n = 486
+l = []
+for i in range(n):
+    l.append(i)
+
+q = int(486/150)
+res = 486%150
+print(q,res, 150*q +res)
+
+sum = 0
+for i in range(q):
+    print(l[150*i:150*(i+1)])
+    sum += 150
+print(l[150*(q):150*(q) + res])
+sum += res
+print(sum)
 
 
 
