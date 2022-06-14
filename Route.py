@@ -455,7 +455,8 @@ class Route:
                 #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
-            
+
+        print(len(gps_loc_path[1:-2]))  
         params = {
             'apiKey':APP_CODE,
             'transportMode': 'car',
