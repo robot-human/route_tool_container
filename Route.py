@@ -1,4 +1,3 @@
-#from re import S
 from HEREgraph2 import HEREgraph
 import flexpolyline as fp
 import requests
@@ -287,16 +286,6 @@ class Route:
         features_count_file.close()
         features_file.close()
 
-    # def displayFeature(self, gpx, loc, link_attributes, next_link_attributes, values, start, feat_name):
-    #     if(link_attributes != None):
-    #         if((start==False) and (link_attributes in values) and (next_link_attributes in values)):
-    #             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"Start of {feat_name}"))
-    #             start = True
-    #             self.n_features += 1
-    #         elif((start==True) and (link_attributes not in values) and (next_link_attributes not in values)):
-    #             gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0],loc[1], name=f"End of {feat_name}"))
-    #             start = False
-    #     return start
     def displayFeature(self, gpx, loc, next_loc, link_attributes, next_link_attributes, values, start, feat_name):
         if(link_attributes != None):
             if((start==False) and (link_attributes in values)):
@@ -463,7 +452,6 @@ class Route:
                 new_street = True
                 street = link_attributes['STREET_NAME']
             if((new_street) or (link_attributes['STREET_NAME'] != next_link_attributes['STREET_NAME']) or (node_distance >= 500)):
-                print(street)
                 #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
@@ -478,6 +466,7 @@ class Route:
         }
         session: session = requests.Session()
         res = session.get(url , params=params)
+        print(res.content)
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
         print("sections")
