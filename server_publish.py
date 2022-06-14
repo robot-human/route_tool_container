@@ -5,9 +5,9 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import paho.mqtt.publish as publish
 
-SERVER = 0
-topic = "fevvf/route_tool_qusay"
-clientID = "clientId-xMODDl314VwR-qusay-p"
+SERVER = 3
+topic = "fevvf/route_tool_private"
+clientID = "clientId-xMODDl314VwR-private-p"
 file_path = f'./config.ini'
 QOS = 2
 KEEPALIVE=180
