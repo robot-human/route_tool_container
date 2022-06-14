@@ -498,9 +498,9 @@ class Route:
             'via':gps_list[1:-2],
             'return':'polyline,summary,actions,instructions,routeHandle'
         }
-        #session: session = requests.Session()
         res = session.get(url , params=params)
         json_string = json.loads(res.content)
+        print(json_string['routes'])
         sections = json_string['routes'][0]['sections']
         return sections
         #for section in sections:
