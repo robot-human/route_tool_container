@@ -5,3 +5,4 @@ gpxpy==1.5.0
 networkx==2.7.1
 pandas==1.3.0
 paho-mqtt==1.6.1
+flexpolyline==0.1.0
