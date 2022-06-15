@@ -16,6 +16,7 @@ from resources import feature_dict,traffics_sign_dict,traffic_condition_dict,lan
 #APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
 APP_CODE ='vGeMc2D8lMqb5OY39enKrjNjrEMWlOabRS2olRxc2a0'
 url = 'https://router.hereapi.com/v8/routes'
+ACTIVATE_ROUTING = True
 
 def getSigns(G, cfg):
     gpx = gpxpy.gpx.GPX()
@@ -332,7 +333,8 @@ class Route:
         node_distance = 0
         ref_speed_limit = None
         gps_loc_path= []
-        
+        count = 0
+        link_n = 0
         for i in range(1,len(self.route)):
             loc = G.nodes[self.route[i-1]]['LOC']
             next_loc = G.nodes[self.route[i]]['LOC']
@@ -447,35 +449,57 @@ class Route:
                 start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['PARKING_LOT_ROAD'], next_link_attributes['PARKING_LOT_ROAD'], ['Y'], start[14], "Parking lot")            
                 #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             
-            #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
-            node_distance += link_attributes['LINK_LENGTH']
-            if(link_attributes['STREET_NAME'] == street):
-                new_street = False
-            else: 
-                new_street = True
-                street = link_attributes['STREET_NAME']
-            if((new_street) or (link_attributes['STREET_NAME'] != next_link_attributes['STREET_NAME']) or (node_distance >= 50)):
-                #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
-                gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
-                node_distance = 0
+            lon = float(link_attributes['HPX'][0])/10000000.0
+            lat = float(link_attributes['HPY'][0])/10000000.0
+            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=f"Point: {count} from link: {link_n}"))
+            count =0
+            link_n+=1
+            for i in range(1, len(link_attributes['HPX'])):   
+                lon = (float(link_attributes['HPX'][i])/10000000.0)+lon
+                lat = (float(link_attributes['HPY'][i])/10000000.0)+lat
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=f"Point: {count} from link: {link_n}"))
+                count +=1
 
-        mod =100
-        q = int(len(gps_loc_path)/mod)
-        residual = len(gps_loc_path)%mod
+            if(ACTIVATE_ROUTING == False):
+                lon = float(link_attributes['HPX'][0])/10000000.0
+                lat = float(link_attributes['HPY'][0])/10000000.0
+                #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elevation=1,time=datetime.datetime(2022, 1, 1)))
+                #for i in range(1, len(link_attributes['HPX'])):   
+                #    lon = (float(link_attributes['HPX'][i])/10000000.0)+lon
+                #    lat = (float(link_attributes['HPY'][i])/10000000.0)+lat
+                #    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elevation=0,time=datetime.datetime(2022, 1, 1)))
+                #print("gps check")
+                #except:
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+            else:
+                node_distance += link_attributes['LINK_LENGTH']
+                if(link_attributes['STREET_NAME'] == street):
+                    new_street = False
+                else: 
+                    new_street = True
+                    street = link_attributes['STREET_NAME']
+                if((new_street) or (link_attributes['STREET_NAME'] != next_link_attributes['STREET_NAME']) or (node_distance >= 50)):
+                    #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+                    gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
+                    node_distance = 0
 
-        for i in range(q-1):
-            gps_aux_list = gps_loc_path[mod*i:mod*(i+1)]
+        if(ACTIVATE_ROUTING):
+            mod =100
+            q = int(len(gps_loc_path)/mod)
+            residual = len(gps_loc_path)%mod
+            for i in range(q-1):
+                gps_aux_list = gps_loc_path[mod*i:mod*(i+1)]
+                sections =  self.requestRoutingAPI(gps_aux_list)
+                for section in sections:
+                    fragment = fp.decode(section['polyline'])
+                    for gps_loc in fragment:
+                        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
+            gps_aux_list = gps_loc_path[100*(q-1):len(gps_loc_path)]
             sections =  self.requestRoutingAPI(gps_aux_list)
             for section in sections:
                 fragment = fp.decode(section['polyline'])
                 for gps_loc in fragment:
                     gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
-        gps_aux_list = gps_loc_path[100*(q-1):len(gps_loc_path)]
-        sections =  self.requestRoutingAPI(gps_aux_list)
-        for section in sections:
-            fragment = fp.decode(section['polyline'])
-            for gps_loc in fragment:
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
 
 
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):

@@ -180,6 +180,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             links_dict[link_id]['LANE_TYPE'] = None
             links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
             links_dict[link_id]['WIDTH'] = None
+            links_dict[link_id]['HPX'] = []
+            links_dict[link_id]['HPY'] = []
 
     links_dict,not_navigable = requestAttributesTile(links_dict, tile, query, not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
@@ -190,6 +192,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestSpeedBumpsTile(links_dict, tile, query, session)
     links_dict = requestTollBoothTile(links_dict, tile, query, session)
     links_dict = requestLaneTile(links_dict, tile, query, session)
+    links_dict = requestAdasTile(links_dict, tile, session)
      
     for link in not_navigable:
         try:
@@ -520,12 +523,15 @@ def getChargingStationsList(tiles: tuple, session):
             continue
     return stations_dict
 
-def requestAdasTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
+def requestAdasTile(links_dict: dict, tile: tuple, session: requests.Session=None):
     adas_attributes = checkTileFromCache(tile, f'ADAS_ATTRIB_FC{level_layerID_map[tile[2]]}', session)#
     if(str(adas_attributes) != "None"):
         for attr in adas_attributes:
+            print(attr)
             try:
-                links_dict[link_id]['WIDTH'] = float(attr['WIDTH'])
+                link_id = attr['LINK_ID']
+                links_dict[link_id]['HPX'] = attr['HPX'].split(",")
+                links_dict[link_id]['HPY'] = attr['HPY'].split(",")
             except:
                 continue
     return links_dict
