@@ -446,7 +446,8 @@ class Route:
             if(cfg['query_features']['boolean_features']['parking_lot']):
                 start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['PARKING_LOT_ROAD'], next_link_attributes['PARKING_LOT_ROAD'], ['Y'], start[14], "Parking lot")            
                 #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+            
+            #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
             node_distance += link_attributes['LINK_LENGTH']
             if(link_attributes['STREET_NAME'] == street):
                 new_street = False
@@ -473,8 +474,8 @@ class Route:
         sections =  self.requestRoutingAPI(gps_aux_list)
         for section in sections:
             fragment = fp.decode(section['polyline'])
-            #for gps_loc in fragment:
-            #    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
+            for gps_loc in fragment:
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(gps_loc[0]),float(gps_loc[1]),elevation=0,time=datetime.datetime(2022, 1, 1)))
 
 
         if((int(cfg['visit_charge_station']) == 1) or (cfg['route_type'] == "point_to_charge_station")):
