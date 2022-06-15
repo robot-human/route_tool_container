@@ -17,7 +17,7 @@ session = requests.Session()
 
 N_ROUTES = cfg.get('routes_number')
 s_tiles = getTiles(cfg.get('gps_locations'),13, 13)
-chargingStations = getChargingStationsList(s_tiles, session)
+#chargingStations = getChargingStationsList(s_tiles, session)
 
 def createCSVFile():
     features_file_name = f"./temp/summary.csv"

@@ -5,6 +5,7 @@ import json
 import numpy as np
 import networkx as nx
 import gpxpy
+from time import sleep
 import os
 from Tools import Haversine, getRandomLocation, distance
 import pandas as pd
@@ -501,6 +502,7 @@ class Route:
         }
         session: session = requests.Session()
         res = session.get(url, params=params)
+        sleep(0.5)
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
         return sections
