@@ -64,10 +64,10 @@ if __name__ == '__main__':
     #client.publish(topic, payload=f"Hello GUI am sending {n_files} files", qos=QOS)
     publish.single(topic, payload=f"Hello GUI am sending {n_files} files", qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=paho.MQTTv5, transport="tcp")
     for name in output_files:
+        print(name)
         file_name_path = output_files_path+name
         #client.publish(topic, payload=f"{name}", qos=QOS)
         publish.single(topic, payload=f"{name}", qos=QOS, retain=False, hostname=host,port=port, client_id=clientID, keepalive=KEEPALIVE, will=None, auth=None, tls=None,protocol=paho.MQTTv5, transport="tcp")
-        print(name)
         f = open(file_name_path, "r")
         content = f.read()
         print(getsizeof(content)/1000, " kbts")
