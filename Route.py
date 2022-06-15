@@ -502,6 +502,7 @@ class Route:
         }
         session: session = requests.Session()
         res = session.get(url, params=params)
+        print(res)
         sleep(0.5)
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
