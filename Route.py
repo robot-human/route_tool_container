@@ -458,7 +458,7 @@ class Route:
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
 
-        mod = 150
+        mod =100
         q = int(len(gps_loc_path)/mod)
         residual = len(gps_loc_path)%mod
 
@@ -503,7 +503,7 @@ class Route:
         session: session = requests.Session()
         res = session.get(url, params=params)
         print(res)
-        sleep(0.5)
+        sleep(1)
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
         return sections
