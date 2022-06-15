@@ -454,7 +454,7 @@ class Route:
             else: 
                 new_street = True
                 street = link_attributes['STREET_NAME']
-            if((new_street) or (link_attributes['STREET_NAME'] != next_link_attributes['STREET_NAME']) or (node_distance >= 200)):
+            if((new_street) or (link_attributes['STREET_NAME'] != next_link_attributes['STREET_NAME']) or (node_distance >= 100)):
                 #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
                 gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 node_distance = 0
@@ -503,8 +503,7 @@ class Route:
         }
         session: session = requests.Session()
         res = session.get(url, params=params)
-        print(res)
-        sleep(1)
+        sleep(0.5)
         json_string = json.loads(res.content)
         sections = json_string['routes'][0]['sections']
         return sections
