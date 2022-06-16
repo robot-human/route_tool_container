@@ -31,11 +31,18 @@ for k in links_dict.keys():
     printDict(links_dict[k])
 
 """
-n = 486
+prev = ('9','90')
+n = 10
 l = []
 for i in range(n):
-    l.append(i)
+    l.append((str(i),str(i*10)))
 
+print(l)
+l = l[::-1]
+print(l)
+
+print(prev == l[0])
+"""
 q = int(486/150)
 res = 486%150
 print(q,res, 150*q +res)
@@ -48,5 +55,5 @@ print(l[150*(q):150*(q) + res])
 sum += res
 print(sum)
 
-
+"""
 

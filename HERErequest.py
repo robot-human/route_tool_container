@@ -527,11 +527,10 @@ def requestAdasTile(links_dict: dict, tile: tuple, session: requests.Session=Non
     adas_attributes = checkTileFromCache(tile, f'ADAS_ATTRIB_FC{level_layerID_map[tile[2]]}', session)#
     if(str(adas_attributes) != "None"):
         for attr in adas_attributes:
-            print(attr)
             try:
                 link_id = attr['LINK_ID']
                 links_dict[link_id]['HPX'] = attr['HPX'].split(",")
-                links_dict[link_id]['HPY'] = attr['HPY'].split(",")
+                links_dict[link_id]['HPY'] = attr['HPY'].split(",")   
             except:
                 continue
     return links_dict

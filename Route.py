@@ -16,7 +16,7 @@ from resources import feature_dict,traffics_sign_dict,traffic_condition_dict,lan
 #APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
 APP_CODE ='vGeMc2D8lMqb5OY39enKrjNjrEMWlOabRS2olRxc2a0'
 url = 'https://router.hereapi.com/v8/routes'
-ACTIVATE_ROUTING = True
+ACTIVATE_ROUTING = False
 
 def getSigns(G, cfg):
     gpx = gpxpy.gpx.GPX()
@@ -335,6 +335,7 @@ class Route:
         gps_loc_path= []
         count = 0
         link_n = 0
+        previous_location = G.nodes[self.route[0]]['LOC']
         for i in range(1,len(self.route)):
             loc = G.nodes[self.route[i-1]]['LOC']
             next_loc = G.nodes[self.route[i]]['LOC']
@@ -349,129 +350,74 @@ class Route:
             
             if(cfg['query_features']['boolean_features']['highway']):
                 start[0] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
-                ##gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['avoid_highway']):
                 start[1] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['urban']):
                 start[2] = self.displayFeature(gpx, loc, next_loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[2], "Urban")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['oneway']):
                 start[3] = self.displayFeature(gpx, loc, next_loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[3], "One way")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['both_ways']):
                 start[4] = self.displayFeature(gpx, loc, next_loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['B'], start[4], "Bothways")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['limited_access']):
                 start[5] = self.displayFeature(gpx, loc, next_loc, link_attributes['LIMITED_ACCESS_ROAD'], next_link_attributes['LIMITED_ACCESS_ROAD'], ['Y'], start[5], "Limited access")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['not_paved']):
                 start[6] = self.displayFeature(gpx, loc, next_loc, link_attributes['PAVED'], next_link_attributes['PAVED'], ['Y'], start[6], "Not Paved")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['ramp']):
                 start[7] = self.displayFeature(gpx, loc, next_loc, link_attributes['RAMP'], next_link_attributes['RAMP'], ['Y'], start[7], "Ramp")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['manoeuvre']):
                 start[8] = self.displayIntersection(gpx, loc, next_loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [2], start[8], "Manoeuvre")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['roundabout']):
                 start[9] = self.displayIntersection(gpx, loc, next_loc, link_attributes['INTERSECTION'], next_link_attributes['INTERSECTION'], [4], start[9], "Roundabout")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['one_lane']):
                 start[10] = self.displayFeature(gpx, loc, next_loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [1], start[10], "One lane")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['multiple_lanes']):
                 start[11] = self.displayFeature(gpx, loc, next_loc, link_attributes['LANE_CATEGORY'], next_link_attributes['LANE_CATEGORY'], [2,3,4], start[11], "Multi lane")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
-           
-            
             if((cfg['query_features']['boolean_features']['traffic_light']) and (16 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[16]}")) 
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
+                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[16]}"))
                 self.n_features += 1
             if((cfg['query_features']['boolean_features']['railway_crossing']) and (18 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[18]}")) 
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 self.n_features += 1
             if((cfg['query_features']['boolean_features']['no_overtaking']) and (19 in link_attributes[f"TRAFFIC_CONDITION_{link_attributes['EDGE_DIRECTION']}"])):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"{traffic_condition_dict[19]}")) 
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                 self.n_features += 1
 
             if(cfg['query_features']['boolean_features']['stop_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,20,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['school_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,31,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['icy_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,28,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['crosswalk_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,41,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['falling_rocks_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,30,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['animal_crossing_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,27,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['merge_r_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,6,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['merge_l_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,7,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['hills_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,18,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['hills_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,19,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['hills_sign']):
                 self.addSignWayPoint(gpx,loc,link_attributes,26,edge_dir)
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['tunnel']):
                 start[12] = self.displayFeature(gpx, loc, next_loc, link_attributes['TUNNEL'], next_link_attributes['TUNNEL'], ['Y'], start[12], "Tunnel")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['bridge']):
                 start[13] = self.displayFeature(gpx, loc, next_loc, link_attributes['BRIDGE'], next_link_attributes['BRIDGE'], ['Y'], start[13], "Bridge")
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if((cfg['query_features']['boolean_features']['speed_bumps']) and (3 == int(link_attributes[f"SPEED_BUMPS"]))):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"Speed_bump")) 
                 self.n_features += 1
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if((cfg['query_features']['boolean_features']['toll_booth']) and (link_attributes[f"TOLL_BOOTH"] != None)):
                 gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(loc[0], loc[1], name=f"Toll_booth")) 
                 self.n_features += 1
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
             if(cfg['query_features']['boolean_features']['parking_lot']):
                 start[14] = self.displayFeature(gpx, loc, next_loc, link_attributes['PARKING_LOT_ROAD'], next_link_attributes['PARKING_LOT_ROAD'], ['Y'], start[14], "Parking lot")            
-                #gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
-            
-            lon = float(link_attributes['HPX'][0])/10000000.0
-            lat = float(link_attributes['HPY'][0])/10000000.0
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=f"Point: {count} from link: {link_n}"))
-            count =0
-            link_n+=1
-            for i in range(1, len(link_attributes['HPX'])):   
-                lon = (float(link_attributes['HPX'][i])/10000000.0)+lon
-                lat = (float(link_attributes['HPY'][i])/10000000.0)+lat
-                gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(lat,lon, name=f"Point: {count} from link: {link_n}"))
-                count +=1
 
-            if(ACTIVATE_ROUTING == False):
-                lon = float(link_attributes['HPX'][0])/10000000.0
-                lat = float(link_attributes['HPY'][0])/10000000.0
-                #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elevation=1,time=datetime.datetime(2022, 1, 1)))
-                #for i in range(1, len(link_attributes['HPX'])):   
-                #    lon = (float(link_attributes['HPX'][i])/10000000.0)+lon
-                #    lat = (float(link_attributes['HPY'][i])/10000000.0)+lat
-                #    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elevation=0,time=datetime.datetime(2022, 1, 1)))
-                #print("gps check")
-                #except:
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
-            else:
+            if(ACTIVATE_ROUTING):
                 node_distance += link_attributes['LINK_LENGTH']
                 if(link_attributes['STREET_NAME'] == street):
                     new_street = False
@@ -482,6 +428,13 @@ class Route:
                     #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=0,time=datetime.datetime(2022, 1, 1)))
                     gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                     node_distance = 0
+            else:
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=1,time=datetime.datetime(2022, 1, 1)))
+                #path_fragment, previous_location = self.addGPSSetToPathList(link_attributes['HPY'], link_attributes['HPX'], previous_location, loc)
+                #for i in range(len(path_fragment)):
+                #    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(path_fragment[i][0],path_fragment[i][1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+
+            
 
         if(ACTIVATE_ROUTING):
             mod =100
@@ -516,6 +469,30 @@ class Route:
         del gpx
         return None
     
+    def addGPSSetToPathList(self, lat_location_set, lon_location_set, previous_location, loc):
+        path = []
+        if(len(lat_location_set)>=1):
+            lat = float(lat_location_set[0])/10000000.0
+            lon = float(lon_location_set[0])/10000000.0
+            path.append((lat,lon))
+            if(len(lat_location_set)>1):
+                for i in range(1,len(lat_location_set)):
+                    lat = (float(lat_location_set[i])/10000000.0)+lat 
+                    lon = (float(lon_location_set[i])/10000000.0)+lon
+                    path.append((lat,lon))
+                dist1 = Haversine(previous_location, path[0])
+                dist2 = Haversine(previous_location, path[len(path)-1])
+                if(dist1 < dist2):
+                    return path, path[len(path)-1]
+                elif(dist2 < dist1):
+                    reverse_path = path[::-1]
+                    return reverse_path, path[0]
+            else:
+                return path, path[0]
+        else:
+            return [loc], loc
+
+
     def requestRoutingAPI(self, gps_list):
         params = {
             'apiKey':APP_CODE,
