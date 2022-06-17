@@ -429,10 +429,10 @@ class Route:
                     gps_loc_path = self.addGPSPoint(gps_loc_path, str(loc[0])+','+str(loc[1]))
                     node_distance = 0
             else:
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=1,time=datetime.datetime(2022, 1, 1)))
-                #path_fragment, previous_location = self.addGPSSetToPathList(link_attributes['HPY'], link_attributes['HPX'], previous_location, loc)
-                #for i in range(len(path_fragment)):
-                #    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(path_fragment[i][0],path_fragment[i][1],elevation=0,time=datetime.datetime(2022, 1, 1)))
+                #gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(loc[0],loc[1],elevation=1,time=datetime.datetime(2022, 1, 1)))
+                path_fragment, previous_location = self.addGPSSetToPathList(link_attributes['HPY'], link_attributes['HPX'], previous_location, loc)
+                for i in range(len(path_fragment)):
+                    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(path_fragment[i][0],path_fragment[i][1],elevation=0,time=datetime.datetime(2022, 1, 1)))
 
             
 
