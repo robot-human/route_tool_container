@@ -11,7 +11,7 @@ topic = "fevvf/route_tool_pedro"
 clientID = "clientId-xMODDl314VwR-pedro-p"
 file_path = f'./config.ini'
 QOS = 2
-KEEPALIVE=120
+KEEPALIVE=60
 
 if(SERVER == 0):
     host ="broker.mqttdashboard.com"
