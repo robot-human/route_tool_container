@@ -135,11 +135,12 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                                            'N_ATTRIBUTES': 0}
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
-            try:
-                links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
-            except:
-                links_basic_attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)              
-                links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
+            links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
+            #try:
+            #    links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
+            #except:
+            #    links_basic_attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)              
+            #    links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
 
     links_dict,not_navigable = requestAttributesTile(links_dict, tile, query, not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
@@ -152,67 +153,70 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestLaneTile(links_dict, tile, query, session)
     links_dict = requestAdasTile(links_dict, tile, session)
      
-    #for link in not_navigable:
-    #    try:
-    #        del links_dict[link]
-    #    except:
-    #        continue
+    for link in not_navigable:
+        try:
+            del links_dict[link]
+        except:
+            continue
     return links_dict
 
 def fillDictionary(links_dict, attr, query, not_navigable):
     link_id = attr['LINK_ID']
-    links_dict[link_id]['ATTR_COUNT'] = 0
-    links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
-    links_dict[link_id]['VEHICLE_TYPES'] = attr['VEHICLE_TYPES']
-    if((int(links_dict[link_id]['VEHICLE_TYPES'])%2 != 1) or (attr['PUBLIC_ACCESS'] == 'N') or (attr['PRIVATE'] == 'Y')):
-        not_navigable.append(link_id)
-    links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
-    links_dict[link_id]['URBAN'] = attr['URBAN']
-    links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']
-    links_dict[link_id]['PAVED'] = attr['PAVED']
-    links_dict[link_id]['RAMP'] = attr['RAMP']
-    links_dict[link_id]['INTERSECTION'] = None
-    if(attr['INTERSECTION_CATEGORY'] != None): 
-        if(int(attr['INTERSECTION_CATEGORY']) == 2): 
-            links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
-        if(int(attr['INTERSECTION_CATEGORY']) == 4): 
-            links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
-    links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
-    links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
-    if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
-        links_dict[link_id]['WEIGHT'] *= 1.1
-    if((str(query['boolean_features']['not_paved']) == '0') and (attr['PAVED'] == 'N')):
-        links_dict[link_id]['WEIGHT'] *= 10
-    links_dict[link_id]['PARKING_LOT_ROAD'] = None
-    links_dict[link_id]['SURFACE_TYPE'] = None
+    if(link_id in links_dict):
+        links_dict[link_id]['ATTR_COUNT'] = 0
+        links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
+        links_dict[link_id]['VEHICLE_TYPES'] = attr['VEHICLE_TYPES']
+        if((int(links_dict[link_id]['VEHICLE_TYPES'])%2 != 1) or (attr['PUBLIC_ACCESS'] == 'N') or (attr['PRIVATE'] == 'Y')):
+            not_navigable.append(link_id)
+        links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
+        links_dict[link_id]['URBAN'] = attr['URBAN']
+        links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']
+        links_dict[link_id]['PAVED'] = attr['PAVED']
+        links_dict[link_id]['RAMP'] = attr['RAMP']
+        links_dict[link_id]['INTERSECTION'] = None
+        if(attr['INTERSECTION_CATEGORY'] != None): 
+            if(int(attr['INTERSECTION_CATEGORY']) == 2): 
+                links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
+            if(int(attr['INTERSECTION_CATEGORY']) == 4): 
+                links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
+        links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
+        links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
+        if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
+            links_dict[link_id]['WEIGHT'] *= 1.1
+        if((str(query['boolean_features']['not_paved']) == '0') and (attr['PAVED'] == 'N')):
+            links_dict[link_id]['WEIGHT'] *= 10
+        links_dict[link_id]['PARKING_LOT_ROAD'] = None
+        links_dict[link_id]['SURFACE_TYPE'] = None
 
-    links_dict[link_id]['AVG_SPEED'] = 80
-    links_dict[link_id]['SPEED_LIMIT'] = None
-    setAttrWeight(links_dict[link_id], attr, query)
+        links_dict[link_id]['AVG_SPEED'] = 80
+        links_dict[link_id]['SPEED_LIMIT'] = None
+        setAttrWeight(links_dict[link_id], attr, query)
 
-    links_dict[link_id]['STREET_NAME'] = None
+        links_dict[link_id]['STREET_NAME'] = None
             
-    links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
-    links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
-    links_dict[link_id]['TRAFFIC_SIGNS_F'] = []
-    links_dict[link_id]['TRAFFIC_SIGNS_T'] = []
+        links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
+        links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
+        links_dict[link_id]['TRAFFIC_SIGNS_F'] = []
+        links_dict[link_id]['TRAFFIC_SIGNS_T'] = []
 
-    links_dict[link_id]['TUNNEL'] = None
-    links_dict[link_id]['BRIDGE'] = None
+        links_dict[link_id]['TUNNEL'] = None
+        links_dict[link_id]['BRIDGE'] = None
 
-    links_dict[link_id]['ROAD_ROUGHNESS_F'] = "Unkown"
-    links_dict[link_id]['ROAD_ROUGHNESS_T'] = "Unkown"
+        links_dict[link_id]['ROAD_ROUGHNESS_F'] = "Unkown"
+        links_dict[link_id]['ROAD_ROUGHNESS_T'] = "Unkown"
 
-    links_dict[link_id]['SPEED_BUMPS'] = 0
+        links_dict[link_id]['SPEED_BUMPS'] = 0
 
-    links_dict[link_id]['TOLL_BOOTH'] = None
-    links_dict[link_id]['TOLL_LOC'] = None
+        links_dict[link_id]['TOLL_BOOTH'] = None
+        links_dict[link_id]['TOLL_LOC'] = None
 
-    links_dict[link_id]['LANE_TYPE'] = None
-    links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
-    links_dict[link_id]['WIDTH'] = None
-    links_dict[link_id]['HPX'] = []
-    links_dict[link_id]['HPY'] = []
+        links_dict[link_id]['LANE_TYPE'] = None
+        links_dict[link_id]['LANE_DIVIDER_MARKER'] = 14
+        links_dict[link_id]['WIDTH'] = None
+        links_dict[link_id]['HPX'] = []
+        links_dict[link_id]['HPY'] = []
+    else:
+        links_dict.pop(link_id)
     return links_dict, not_navigable
 
 def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
