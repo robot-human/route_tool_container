@@ -19,6 +19,7 @@ from functools import partial
 
 def graphFromDict(links_dict: dict):
     g = HEREgraph()
+    drop_ids = []
     for link_id in links_dict:
         attr = links_dict[link_id]
         try:
@@ -44,7 +45,7 @@ def graphFromDict(links_dict: dict):
             #for i in range(1,len(lat)):
             g.add_node(nonref_node_id, LOC=((int(lat[0])+int(lat[1]))/(10.0**5), (int(lon[0])+int(lon[1]))/(10.0**5))) 
         except:
-            links_dict.pop(link_id)                          
+            drop_ids.append(link_id)                          
     return g
     
 def getGraphFromTile(tile: tuple, query: dict, session: requests.Session=None):
