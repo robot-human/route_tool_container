@@ -47,6 +47,7 @@ def tileToCache(tile:tuple, layer:str, path: str, session:requests.Session=None)
             with open(cache_file_path) as json_file:
                 tile_data = json.load(json_file)
         else:
+            print("empty layer file")
             os.remove(cache_file_path)
             print(f"request data from {layer}")
             tile_data = getTileRequest(tile, layer, session)['Rows']
