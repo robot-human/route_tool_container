@@ -158,7 +158,7 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             continue
     return links_dict
 
-def fillDictionary(self,links_dict, attr, query, not_navigable):
+def fillDictionary(links_dict, attr, query, not_navigable):
     link_id = attr['LINK_ID']
     links_dict[link_id]['ATTR_COUNT'] = 0
     links_dict[link_id]['TRAVEL_DIRECTION'] = attr['TRAVEL_DIRECTION']
