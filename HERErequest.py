@@ -215,8 +215,6 @@ def fillDictionary(links_dict, attr, query, not_navigable):
         links_dict[link_id]['WIDTH'] = None
         links_dict[link_id]['HPX'] = []
         links_dict[link_id]['HPY'] = []
-    else:
-        links_dict.pop(link_id)
     return links_dict, not_navigable
 
 def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
