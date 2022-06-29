@@ -43,8 +43,14 @@ def fillCache(tiles: list, session):
 def tileToCache(tile:tuple, layer:str, path: str, session:requests.Session=None):
     try:
         cache_file_path = f'{tiles_cache_path}/{layer}-{tile[2]}-{tile[0]}-{tile[1]}.json'           
-        with open(cache_file_path) as json_file:
-            tile_data = json.load(json_file)
+        if(os.stat(cache_file_path).st_size > 0):
+            with open(cache_file_path) as json_file:
+                tile_data = json.load(json_file)
+        else:
+            os.remove(cache_file_path)
+            print(f"request data from {layer}")
+            tile_data = getTileRequest(tile, layer, session)['Rows']
+            tileToFile(tile_data, tile, layer, path)
     except:
         print(f"request data from {layer}")
         tile_data = getTileRequest(tile, layer, session)['Rows']
@@ -131,7 +137,8 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
             try:
                 links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
             except:
-                continue
+                links_basic_attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)              
+                links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
 
     links_dict,not_navigable = requestAttributesTile(links_dict, tile, query, not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
