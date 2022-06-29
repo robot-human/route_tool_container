@@ -40,7 +40,7 @@ if __name__ == '__main__':
     start_time_01 = time.time()
     tiles = getTiles(cfg.get('gps_locations'),9, 13)
     end_time_01 = time.time()
-    print("Get tiles time: ",end_time_01)
+    print("Get tiles time: ",end_time_01/3600)
 
     start_time_02 = time.time()
     g = graphFromTileList(tiles, cfg['query_features'], session) 

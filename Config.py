@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from Tools import Haversine, getRandomLocation
 
 sample_separation = 0.0005
-margin = 0.1
+margin = 0.01
 maximum_gps_coordinates = 500
 cfg = None
                          
