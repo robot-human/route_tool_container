@@ -151,11 +151,11 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
     links_dict = requestLaneTile(links_dict, tile, query, session)
     links_dict = requestAdasTile(links_dict, tile, session)
      
-    for link in not_navigable:
-        try:
-            del links_dict[link]
-        except:
-            continue
+    #for link in not_navigable:
+    #    try:
+    #        del links_dict[link]
+    #    except:
+    #        continue
     return links_dict
 
 def fillDictionary(links_dict, attr, query, not_navigable):
