@@ -83,6 +83,13 @@ else:
         lat_min = lat_min - margin
         lon_min = lon_min - margin
 
+        if((lon_min > -170) and (lon_max < -45)):
+            region = "us"
+        elif((lon_min > -18) and (lon_max < 49)):
+            region = "eu"
+        else:
+            region = "un"
+
         distance = Haversine(start_gps,end_gps)
         if((distance < 0.05) and (len(mid_gps) == 0)):
             mid_gps.append(getRandomLocation(start_gps, desired_route_length/3.0))
@@ -275,6 +282,7 @@ else:
                 'end_location': end_gps,
                 'mid_locations':mid_gps,
                 'units':units,
+                'region':region,
                 'desired_route_length':desired_route_length,
                 'visit_charge_station':visit_cs,
                 'min_boundaries':(lat_min,lon_min),

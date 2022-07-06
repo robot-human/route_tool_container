@@ -48,9 +48,9 @@ def graphFromDict(links_dict: dict):
             drop_ids.append(link_id)                          
     return g
     
-def getGraphFromTile(tile: tuple, query: dict, session: requests.Session=None):
+def getGraphFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     if not session: session = requests.Session() 
-    links_dict = getLinksFromTile(tile, query, session)
+    links_dict = getLinksFromTile(tile, cfg, session)
     graph = graphFromDict(links_dict)
     return graph 
 

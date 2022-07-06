@@ -43,7 +43,7 @@ if __name__ == '__main__':
     print("Get tiles time: ",end_time_01/3600)
 
     start_time_02 = time.time()
-    g = graphFromTileList(tiles, cfg['query_features'], session) 
+    g = graphFromTileList(tiles, cfg, session) 
     
     g.saveEdgesToNumpy()
     g.saveNodesToNumpy()

@@ -116,7 +116,7 @@ def checkTileFromCache(tile:tuple, layer:str, session:requests.Session=None):
             print("Empty layer")
             return None
 
-def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None): 
+def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None): 
     not_navigable = []
     if not session: session = requests.Session() 
     links = checkTileFromCache(tile, f'LINK_FC{level_layerID_map[tile[2]]}', session)
@@ -135,23 +135,24 @@ def getLinksFromTile(tile: tuple, query: dict, session: requests.Session=None):
                                            'N_ATTRIBUTES': 0}
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
-            links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
+            links_dict,not_navigable = fillDictionary(links_dict, attr, cfg['query_features'], not_navigable)
             #try:
-            #    links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
+            #    links_dict,not_navigable = fillDictionary(links_dict, attr, cfg['query_features'], not_navigable)
             #except:
             #    links_basic_attributes = checkTileFromCache(tile, f'LINK_ATTRIBUTE_FC{level_layerID_map[tile[2]]}', session)              
-            #    links_dict,not_navigable = fillDictionary(links_dict, attr, query, not_navigable)
+            #    links_dict,not_navigable = fillDictionary(links_dict, attr, cfg['query_features'], not_navigable)
 
-    links_dict,not_navigable = requestAttributesTile(links_dict, tile, query, not_navigable, session)
+    links_dict,not_navigable = requestAttributesTile(links_dict, tile, cfg['query_features'], not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
     links_dict = requestSpeedLimitTile(links_dict, tile, session)
-    links_dict = requestSignsTile(links_dict, tile, query['sign_features'], session)
-    links_dict = requestRoadGeomTile(links_dict, tile, query, session)
-    links_dict = requestRoadRoughnessTile(links_dict, tile, query, session)
-    links_dict = requestSpeedBumpsTile(links_dict, tile, query, session)
-    links_dict = requestTollBoothTile(links_dict, tile, query, session)
-    links_dict = requestLaneTile(links_dict, tile, query, session)
+    links_dict = requestSignsTile(links_dict, tile, cfg['query_features']['sign_features'], session)
+    links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
+    links_dict = requestRoadRoughnessTile(links_dict, tile, cfg['query_features'], session)
+    links_dict = requestSpeedBumpsTile(links_dict, tile, cfg['query_features'], session)
+    links_dict = requestTollBoothTile(links_dict, tile, cfg['query_features'], session)
+    links_dict = requestLaneTile(links_dict, tile, cfg['query_features'], session)
     links_dict = requestAdasTile(links_dict, tile, session)
+    #links_dict = requestRoadAdminTile(links_dict, tile, session)
      
     for link in not_navigable:
         try:
@@ -193,7 +194,10 @@ def fillDictionary(links_dict, attr, query, not_navigable):
         setAttrWeight(links_dict[link_id], attr, query)
 
         links_dict[link_id]['STREET_NAME'] = None
-            
+        links_dict[link_id]['HIGHWAY'] = None
+        links_dict[link_id]['CITY'] = None
+        links_dict[link_id]['COUNTRY'] = None
+
         links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
         links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
         links_dict[link_id]['TRAFFIC_SIGNS_F'] = []
@@ -368,7 +372,7 @@ def setSignsWeight(links_dict, attributes: dict, features_query: dict, percentag
             links_dict['N_ATTRIBUTES'] += 1
     return None
 
-def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
+def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requests.Session=None):
     road_geom = checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_geom) != "None"):
         for geom in road_geom:
@@ -377,9 +381,27 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, features_query: dict, se
                 links_dict[link_id]['STREET_NAME'] = geom['NAME']
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
-                setRoadGeomWeight(links_dict[link_id], geom, features_query)
+                if(geom['NAME'] != None):
+                    if(cfg['region'] == 'us'):
+                        if(geom['NAME'].find(" / ") > 0):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                    elif(cfg['region'] == 'eu'):
+                        if(geom['NAME'].find(" / ") > 0):
+                            print(geom['NAME'])
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                setRoadGeomWeight(links_dict[link_id], geom, cfg['query_features'])
             except:
                 continue
+    return links_dict
+
+def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Session=None):
+    road_geom = checkTileFromCache(tile, f'ROAD_ADMIN_NAMES_FC{level_layerID_map[tile[2]]}', session)
+    if(str(road_geom) != "None"):
+        print(road_geom)
     return links_dict
 
 def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
@@ -484,7 +506,7 @@ def setTollBoothWeight(links_dict, attributes: dict, features_query: dict, perce
         if(attributes['NAME'] != None):
             links_dict['WEIGHT'] *= percentage
             links_dict['N_ATTRIBUTES'] += 1
-    return weight
+    return None
 
 def requestLaneTile(links_dict: dict, tile: tuple, features_query: dict, session: requests.Session=None):
     lane_attributes = checkTileFromCache(tile, f'LANE_FC{level_layerID_map[tile[2]]}', session)

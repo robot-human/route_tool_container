@@ -321,6 +321,8 @@ class Route:
         return None
            
     def setGPXFile(self, G, route_num: int, path_directory: str, cfg: dict):
+        print("")
+        print("Start Route info")
         gpx_file_name = f'./{path_directory}/route{route_num}_staticfeaturesfile.gpx'
         gpx = gpxpy.gpx.GPX()
         gpx_track = gpxpy.gpx.GPXTrack(name=gpx_file_name)
@@ -341,6 +343,12 @@ class Route:
             next_loc = G.nodes[self.route[i]]['LOC']
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
+
+            #print(link_attributes['STREET_NAME'])
+            #if(link_attributes['STREET_NAME'] != None):
+            #    if(link_attributes['STREET_NAME'].find(" / ") > 0):
+            #        print(link_attributes['STREET_NAME'][:link_attributes['STREET_NAME'].find(" / ")])
+
             if(i < len(self.route)-1):
                 next_link_data = G.get_edge_data(self.route[i],self.route[i+1])
                 next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
@@ -524,11 +532,11 @@ class Route:
         feat_list = ['Not present' for i in range(len(feature_dict))]
         edge_dir = attributes['EDGE_DIRECTION']
         #highway
-        if(int(attributes[f'FUNCTIONAL_CLASS']) <= 3):
+        if(attributes['HIGHWAY'] == 'Y'):
             self.feat_count[feature_dict['highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['highway']] = 'Present'
         #avoid highway
-        if(int(attributes[f'FUNCTIONAL_CLASS']) >= 4):
+        if(attributes['HIGHWAY'] == 'N'):
             self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['avoid_highway']] = 'Present'
         if(attributes['URBAN'] == 'Y'):
