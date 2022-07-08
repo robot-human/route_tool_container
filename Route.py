@@ -344,11 +344,6 @@ class Route:
             link_data = G.get_edge_data(self.route[i-1],self.route[i])
             link_attributes = link_data[list(link_data.keys())[0]]
 
-            #print(link_attributes['STREET_NAME'])
-            #if(link_attributes['STREET_NAME'] != None):
-            #    if(link_attributes['STREET_NAME'].find(" / ") > 0):
-            #        print(link_attributes['STREET_NAME'][:link_attributes['STREET_NAME'].find(" / ")])
-
             if(i < len(self.route)-1):
                 next_link_data = G.get_edge_data(self.route[i],self.route[i+1])
                 next_link_attributes = next_link_data[list(next_link_data.keys())[0]]
@@ -357,9 +352,9 @@ class Route:
             edge_dir = link_attributes['EDGE_DIRECTION']
             
             if(cfg['query_features']['boolean_features']['highway']):
-                start[0] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [1,2,3], start[0], "highway")
+                start[0] = self.displayFeature(gpx, loc, next_loc, link_attributes['HIGHWAY'], next_link_attributes['HIGHWAY'], ['Y'], start[0], "highway")
             if(cfg['query_features']['boolean_features']['avoid_highway']):
-                start[1] = self.displayFeature(gpx, loc, next_loc, link_attributes['FUNCTIONAL_CLASS'], next_link_attributes['FUNCTIONAL_CLASS'], [4,5], start[1], "avoid_highway")
+                start[1] = self.displayFeature(gpx, loc, next_loc, link_attributes['HIGHWAY'], next_link_attributes['HIGHWAY'], ['N'], start[1], "avoid_highway")
             if(cfg['query_features']['boolean_features']['urban']):
                 start[2] = self.displayFeature(gpx, loc, next_loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[2], "Urban")
             if(cfg['query_features']['boolean_features']['oneway']):
