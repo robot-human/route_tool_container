@@ -141,13 +141,13 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
     links_dict = requestSpeedLimitTile(links_dict, tile, session)
     links_dict = requestSignsTile(links_dict, tile, cfg['query_features']['sign_features'], session)
-    links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
     links_dict = requestRoadRoughnessTile(links_dict, tile, cfg['query_features'], session)
     links_dict = requestSpeedBumpsTile(links_dict, tile, cfg['query_features'], session)
     links_dict = requestTollBoothTile(links_dict, tile, cfg['query_features'], session)
     links_dict = requestLaneTile(links_dict, tile, cfg['query_features'], session)
     links_dict = requestAdasTile(links_dict, tile, session)
     links_dict = requestRoadAdminTile(links_dict, tile, session)
+    links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
      
     for link in not_navigable:
         try:
@@ -220,14 +220,6 @@ def fillDictionary(links_dict, attr, query, not_navigable):
     return links_dict, not_navigable
 
 def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    #if(features_query['boolean_features']['highway']):
-    #    if(attributes['HIGHWAY'] == 'Y'):
-    #        links_dict['WEIGHT'] *= percentage
-    #        links_dict['N_ATTRIBUTES'] += 1
-    #if(features_query['boolean_features']['avoid_highway']):
-    #    if(attributes['HIGHWAY'] == 'N'):
-    #        links_dict['WEIGHT'] *= percentage
-    #        links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['urban']):
         if(attributes['URBAN'] == 'Y'):
             links_dict['WEIGHT'] *= percentage
@@ -380,12 +372,13 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
                 if(geom['NAME'] != None):
-                    if(cfg['region'] == 'us'):
+                    #print(links_dict[link_id]['COUNTRY'])
+                    if(links_dict[link_id]['COUNTRY'] == 'United States'):
                         if(geom['NAME'].find(" / ") > 0):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         else:
                             links_dict[link_id]['HIGHWAY'] = 'N'
-                    elif(cfg['region'] == 'eu'):
+                    elif(links_dict[link_id]['COUNTRY'] == 'Deutschland'):
                         if(geom['NAME'].find(" / ") > 0):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         else:
@@ -418,12 +411,13 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
     road_geom = checkTileFromCache(tile, f'ROAD_ADMIN_NAMES_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_geom) != "None"):
         for layer in road_geom:
+            print(layer['COUNTRY_NAMES'])
             link_id = layer['LINK_ID']
             country = layer['COUNTRY_NAMES'][5:]
             if(country.find("BN") > 0):
                 country = country[:country.find("BN")-3]
             links_dict[link_id]['COUNTRY'] = country
-            
+            #print(country)
             if(layer['BUILTUP_NAMES'] != None):
                 builtup = layer['BUILTUP_NAMES'][5:]
                 if(builtup.find("BN") > 0):
