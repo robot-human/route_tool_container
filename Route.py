@@ -356,7 +356,7 @@ class Route:
             if(cfg['query_features']['boolean_features']['avoid_highway']):
                 start[1] = self.displayFeature(gpx, loc, next_loc, link_attributes['HIGHWAY'], next_link_attributes['HIGHWAY'], ['N'], start[1], "avoid_highway")
             if(cfg['query_features']['boolean_features']['urban']):
-                start[2] = self.displayFeature(gpx, loc, next_loc, link_attributes['URBAN'], next_link_attributes['URBAN'], ['Y'], start[2], "Urban")
+                start[2] = self.displayFeature(gpx, loc, next_loc, link_attributes['CITY'], next_link_attributes['CITY'], ['Y'], start[2], "Urban")
             if(cfg['query_features']['boolean_features']['oneway']):
                 start[3] = self.displayFeature(gpx, loc, next_loc, link_attributes['TRAVEL_DIRECTION'], next_link_attributes['TRAVEL_DIRECTION'], ['F','T'], start[3], "One way")
             if(cfg['query_features']['boolean_features']['both_ways']):
@@ -534,7 +534,7 @@ class Route:
         if(attributes['HIGHWAY'] == 'N'):
             self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['avoid_highway']] = 'Present'
-        if(attributes['URBAN'] == 'Y'):
+        if(attributes['CITY'] == 'Y'):
             self.feat_count[feature_dict['urban']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['urban']] = 'Present'
         #One way

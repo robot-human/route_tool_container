@@ -189,7 +189,7 @@ def fillDictionary(links_dict, attr, query, not_navigable):
         setAttrWeight(links_dict[link_id], attr, query)
 
         links_dict[link_id]['STREET_NAME'] = None
-        links_dict[link_id]['HIGHWAY'] = None
+        links_dict[link_id]['HIGHWAY'] = 'N'
         links_dict[link_id]['RURAL'] = None
         links_dict[link_id]['CITY'] = None
         
@@ -372,14 +372,18 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
                 if(geom['NAME'] != None):
-                    #print(links_dict[link_id]['COUNTRY'])
-                    if(links_dict[link_id]['COUNTRY'] == 'United States'):
+                    if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):
                         if(geom['NAME'].find(" / ") > 0):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         else:
                             links_dict[link_id]['HIGHWAY'] = 'N'
-                    elif(links_dict[link_id]['COUNTRY'] == 'Deutschland'):
-                        if(geom['NAME'].find(" / ") > 0):
+                    elif(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
+                        if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                    elif(links_dict[link_id]['COUNTRY'].find('Nederland') >= 0):
+                        if((geom['NAME'][0] in ['A','E', 'N']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         else:
                             links_dict[link_id]['HIGHWAY'] = 'N'
@@ -411,12 +415,12 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
     road_geom = checkTileFromCache(tile, f'ROAD_ADMIN_NAMES_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_geom) != "None"):
         for layer in road_geom:
-            print(layer['COUNTRY_NAMES'])
             link_id = layer['LINK_ID']
-            country = layer['COUNTRY_NAMES'][5:]
-            if(country.find("BN") > 0):
-                country = country[:country.find("BN")-3]
-            links_dict[link_id]['COUNTRY'] = country
+            links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
+            #country = layer['COUNTRY_NAMES'][5:]
+            #if(country.find("BN") > 0):
+            #    country = country[:country.find("BN")-3]
+            #links_dict[link_id]['COUNTRY'] = country
             #print(country)
             if(layer['BUILTUP_NAMES'] != None):
                 builtup = layer['BUILTUP_NAMES'][5:]
