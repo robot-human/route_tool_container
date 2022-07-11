@@ -366,24 +366,27 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
     road_geom = checkTileFromCache(tile, f'ROAD_ADMIN_NAMES_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_geom) != "None"):
         for layer in road_geom:
-            link_id = layer['LINK_ID']
-            links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
-            #country = layer['COUNTRY_NAMES'][5:]
-            #if(country.find("BN") > 0):
-            #    country = country[:country.find("BN")-3]
-            #links_dict[link_id]['COUNTRY'] = country
-            #print(country)
-            if(layer['BUILTUP_NAMES'] != None):
-                builtup = layer['BUILTUP_NAMES'][5:]
-                if(builtup.find("BN") > 0):
-                    builtup = builtup[:builtup.find("BN")-3]
-                links_dict[link_id]['CITY'] = 'Y'
-                links_dict[link_id]['RURAL'] = 'N'
-            else:
-                builtup = None
-                links_dict[link_id]['CITY'] = 'N'
-                links_dict[link_id]['RURAL'] = 'Y'
-            links_dict[link_id]['BUILTUP'] = builtup
+            try:
+                link_id = layer['LINK_ID']
+                links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
+                #country = layer['COUNTRY_NAMES'][5:]
+                #if(country.find("BN") > 0):
+                #    country = country[:country.find("BN")-3]
+                #links_dict[link_id]['COUNTRY'] = country
+                #print(country)
+                if(layer['BUILTUP_NAMES'] != None):
+                    builtup = layer['BUILTUP_NAMES'][5:]
+                    if(builtup.find("BN") > 0):
+                        builtup = builtup[:builtup.find("BN")-3]
+                    links_dict[link_id]['CITY'] = 'Y'
+                    links_dict[link_id]['RURAL'] = 'N'
+                else:
+                    builtup = None
+                    links_dict[link_id]['CITY'] = 'N'
+                    links_dict[link_id]['RURAL'] = 'Y'
+                links_dict[link_id]['BUILTUP'] = builtup
+            except:
+                continue
     return links_dict
 
 def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requests.Session=None):
