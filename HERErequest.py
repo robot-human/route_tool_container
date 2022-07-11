@@ -220,10 +220,10 @@ def fillDictionary(links_dict, attr, query, not_navigable):
     return links_dict, not_navigable
 
 def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    if(features_query['boolean_features']['urban']):
-        if(attributes['URBAN'] == 'Y'):
-            links_dict['WEIGHT'] *= percentage
-            links_dict['N_ATTRIBUTES'] += 1
+    #if(features_query['boolean_features']['urban']):
+    #    if(attributes['URBAN'] == 'Y'):
+    #        links_dict['WEIGHT'] *= percentage
+    #        links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['oneway']):
         if((str(attributes['TRAVEL_DIRECTION']) == 'F') or (str(attributes['TRAVEL_DIRECTION']) == 'T')):
             links_dict['WEIGHT'] *= percentage
@@ -362,6 +362,30 @@ def setSignsWeight(links_dict, attributes: dict, features_query: dict, percentag
             links_dict['N_ATTRIBUTES'] += 1
     return None
 
+def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Session=None):
+    road_geom = checkTileFromCache(tile, f'ROAD_ADMIN_NAMES_FC{level_layerID_map[tile[2]]}', session)
+    if(str(road_geom) != "None"):
+        for layer in road_geom:
+            link_id = layer['LINK_ID']
+            links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
+            #country = layer['COUNTRY_NAMES'][5:]
+            #if(country.find("BN") > 0):
+            #    country = country[:country.find("BN")-3]
+            #links_dict[link_id]['COUNTRY'] = country
+            #print(country)
+            if(layer['BUILTUP_NAMES'] != None):
+                builtup = layer['BUILTUP_NAMES'][5:]
+                if(builtup.find("BN") > 0):
+                    builtup = builtup[:builtup.find("BN")-3]
+                links_dict[link_id]['CITY'] = 'Y'
+                links_dict[link_id]['RURAL'] = 'N'
+            else:
+                builtup = None
+                links_dict[link_id]['CITY'] = 'N'
+                links_dict[link_id]['RURAL'] = 'Y'
+            links_dict[link_id]['BUILTUP'] = builtup
+    return links_dict
+
 def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requests.Session=None):
     road_geom = checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_geom) != "None"):
@@ -401,6 +425,10 @@ def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percen
         if(links_dict['HIGHWAY'] == 'N'):
             links_dict['WEIGHT'] *= percentage
             links_dict['N_ATTRIBUTES'] += 1
+    if(features_query['boolean_features']['urban']):  
+        if(str(attributes['CITY']) == 'Y'):
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['tunnel']):  
         if(str(attributes['TUNNEL']) == 'Y'):
             links_dict['WEIGHT'] *= percentage
@@ -411,30 +439,6 @@ def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percen
             links_dict['N_ATTRIBUTES'] += 1
     return None
     
-def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Session=None):
-    road_geom = checkTileFromCache(tile, f'ROAD_ADMIN_NAMES_FC{level_layerID_map[tile[2]]}', session)
-    if(str(road_geom) != "None"):
-        for layer in road_geom:
-            link_id = layer['LINK_ID']
-            links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
-            #country = layer['COUNTRY_NAMES'][5:]
-            #if(country.find("BN") > 0):
-            #    country = country[:country.find("BN")-3]
-            #links_dict[link_id]['COUNTRY'] = country
-            #print(country)
-            if(layer['BUILTUP_NAMES'] != None):
-                builtup = layer['BUILTUP_NAMES'][5:]
-                if(builtup.find("BN") > 0):
-                    builtup = builtup[:builtup.find("BN")-3]
-                links_dict[link_id]['CITY'] = 'Y'
-                links_dict[link_id]['RURAL'] = 'N'
-            else:
-                builtup = None
-                links_dict[link_id]['CITY'] = 'N'
-                links_dict[link_id]['RURAL'] = 'Y'
-            links_dict[link_id]['BUILTUP'] = builtup
-    return links_dict
-
 def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     road_layer = checkTileFromCache(tile, f'ROAD_ROUGHNESS_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_layer) != "None"):
