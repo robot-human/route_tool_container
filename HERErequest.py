@@ -220,10 +220,6 @@ def fillDictionary(links_dict, attr, query, not_navigable):
     return links_dict, not_navigable
 
 def setAttrWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    #if(features_query['boolean_features']['urban']):
-    #    if(attributes['URBAN'] == 'Y'):
-    #        links_dict['WEIGHT'] *= percentage
-    #        links_dict['N_ATTRIBUTES'] += 1
     if(features_query['boolean_features']['oneway']):
         if((str(attributes['TRAVEL_DIRECTION']) == 'F') or (str(attributes['TRAVEL_DIRECTION']) == 'T')):
             links_dict['WEIGHT'] *= percentage
@@ -369,11 +365,6 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
             try:
                 link_id = layer['LINK_ID']
                 links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
-                #country = layer['COUNTRY_NAMES'][5:]
-                #if(country.find("BN") > 0):
-                #    country = country[:country.find("BN")-3]
-                #links_dict[link_id]['COUNTRY'] = country
-                #print(country)
                 if(layer['BUILTUP_NAMES'] != None):
                     builtup = layer['BUILTUP_NAMES'][5:]
                     if(builtup.find("BN") > 0):
@@ -389,59 +380,6 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
                 continue
     return links_dict
 
-def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requests.Session=None):
-    road_geom = checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
-    if(str(road_geom) != "None"):
-        for geom in road_geom:
-            try:
-                link_id = geom['LINK_ID']   
-                links_dict[link_id]['STREET_NAME'] = geom['NAME']
-                links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
-                links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
-                if(geom['NAME'] != None):
-                    if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):
-                        if(geom['NAME'].find(" / ") > 0):
-                            links_dict[link_id]['HIGHWAY'] = 'Y'
-                        else:
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                    elif(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
-                        if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
-                            links_dict[link_id]['HIGHWAY'] = 'Y'
-                        else:
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                    elif(links_dict[link_id]['COUNTRY'].find('Nederland') >= 0):
-                        if((geom['NAME'][0] in ['A','E', 'N']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
-                            links_dict[link_id]['HIGHWAY'] = 'Y'
-                        else:
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                setRoadGeomWeight(links_dict[link_id], geom, cfg['query_features'])
-            except:
-                continue
-    return links_dict
-
-def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
-    if(features_query['boolean_features']['highway']):
-        if(links_dict['HIGHWAY'] == 'Y'):
-            links_dict['WEIGHT'] *= percentage
-            links_dict['N_ATTRIBUTES'] += 1
-    if(features_query['boolean_features']['avoid_highway']):
-        if(links_dict['HIGHWAY'] == 'N'):
-            links_dict['WEIGHT'] *= percentage
-            links_dict['N_ATTRIBUTES'] += 1
-    if(features_query['boolean_features']['urban']):  
-        if(str(attributes['CITY']) == 'Y'):
-            links_dict['WEIGHT'] *= percentage
-            links_dict['N_ATTRIBUTES'] += 1
-    if(features_query['boolean_features']['tunnel']):  
-        if(str(attributes['TUNNEL']) == 'Y'):
-            links_dict['WEIGHT'] *= percentage
-            links_dict['N_ATTRIBUTES'] += 1
-    if(features_query['boolean_features']['bridge']): 
-        if(str(attributes['BRIDGE']) == 'Y'):
-            links_dict['WEIGHT'] *= percentage
-            links_dict['N_ATTRIBUTES'] += 1
-    return None
-    
 def requestRoadRoughnessTile(links_dict: dict,  tile: tuple, features_query: dict, session: requests.Session=None):
     road_layer = checkTileFromCache(tile, f'ROAD_ROUGHNESS_FC{level_layerID_map[tile[2]]}', session)
     if(str(road_layer) != "None"):
@@ -598,3 +536,60 @@ def requestAdasTile(links_dict: dict, tile: tuple, session: requests.Session=Non
             except:
                 continue
     return links_dict
+
+def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requests.Session=None):
+    road_geom = checkTileFromCache(tile, f'ROAD_GEOM_FC{level_layerID_map[tile[2]]}', session)
+    if(str(road_geom) != "None"):
+        for geom in road_geom:
+            try:
+                link_id = geom['LINK_ID']   
+                links_dict[link_id]['STREET_NAME'] = geom['NAME']
+                links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
+                links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
+                if(geom['NAME'] != None):
+                    if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):
+                        if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                            if((links_dict[link_id]['URBAN'] == 'Y') and (links_dict[link_id]['SPEED_CATEGORY'] in [4,5,6,7,8])):
+                                links_dict[link_id]['CITY'] = 'Y'
+                            else:
+                                links_dict[link_id]['CITY'] = 'N'   
+                    elif(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
+                        if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                    elif(links_dict[link_id]['COUNTRY'].find('Nederland') >= 0):
+                        if((geom['NAME'][0] in ['A','E', 'N']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                setRoadGeomWeight(links_dict[link_id], geom, cfg['query_features'])
+            except:
+                continue
+    return links_dict
+
+def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percentage = PERCENTAGE_):
+    if(features_query['boolean_features']['highway']):
+        if(links_dict['HIGHWAY'] == 'Y'):
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    if(features_query['boolean_features']['avoid_highway']):
+        if(links_dict['HIGHWAY'] == 'N'):
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    if(features_query['boolean_features']['urban']):  
+        if(str(attributes['CITY']) == 'Y'):
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    if(features_query['boolean_features']['tunnel']):  
+        if(str(attributes['TUNNEL']) == 'Y'):
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    if(features_query['boolean_features']['bridge']): 
+        if(str(attributes['BRIDGE']) == 'Y'):
+            links_dict['WEIGHT'] *= percentage
+            links_dict['N_ATTRIBUTES'] += 1
+    return None
