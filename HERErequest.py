@@ -550,15 +550,15 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                     if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):
                         if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
-                        elif(links_dict[link_id]['FUNCTIONAL_CLASS'] in [3,4]):
+                        elif(links_dict[link_id]['FUNCTIONAL_CLASS'] in [3,4,5]):
                             links_dict[link_id]['HIGHWAY'] = 'N'
                             if(((links_dict[link_id]['SPEED_CATEGORY'] in [1,2,3,4]) and (links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1)) or (links_dict[link_id]['URBAN'] == 'N')):
                                 links_dict[link_id]['CITY'] = 'N'
                             else:
                                 links_dict[link_id]['CITY'] = 'Y'
-                        else:
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                            links_dict[link_id]['CITY'] = 'Y'
+                        #else:
+                        #    links_dict[link_id]['HIGHWAY'] = 'N'
+                        #    links_dict[link_id]['CITY'] = 'Y'
                         
                     elif(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
                         if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
