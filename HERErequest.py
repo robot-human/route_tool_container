@@ -166,6 +166,7 @@ def fillDictionary(links_dict, attr, query, not_navigable):
             not_navigable.append(link_id)
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
         links_dict[link_id]['URBAN'] = attr['URBAN']
+        links_dict[link_id]['LOW_MOBILITY'] = int(attr['LOW_MOBILITY'])
         links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']
         links_dict[link_id]['PAVED'] = attr['PAVED']
         links_dict[link_id]['RAMP'] = attr['RAMP']
@@ -552,7 +553,7 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         elif(links_dict[link_id]['FUNCTIONAL_CLASS'] in [3,4,5]):
                             links_dict[link_id]['HIGHWAY'] = 'N'
-                            if(((links_dict[link_id]['SPEED_CATEGORY'] in [1,2,3,4]) and (links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1)) or (links_dict[link_id]['URBAN'] == 'N')):
+                            if((links_dict[link_id]['SPEED_CATEGORY'] in [1,2,3,4]) and (links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and (links_dict[link_id]['URBAN'] != 'Y') and (links_dict[link_id]['LOW_MOBILITY'] in [1,3])):
                                 links_dict[link_id]['CITY'] = 'N'
                             else:
                                 links_dict[link_id]['CITY'] = 'Y'
