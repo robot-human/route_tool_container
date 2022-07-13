@@ -552,7 +552,7 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         elif(links_dict[link_id]['FUNCTIONAL_CLASS'] in [3,4]):
                             links_dict[link_id]['HIGHWAY'] = 'N'
-                            if((links_dict[link_id]['SPEED_CATEGORY'] in [1,2,3,4]) and (links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1)):
+                            if((links_dict[link_id]['SPEED_CATEGORY'] in [1,2,3,4]) and (links_dict[link_id]['URBAN'] == 'N') and (links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1)):
                                 links_dict[link_id]['CITY'] = 'N'
                             else:
                                 links_dict[link_id]['CITY'] = 'Y'
