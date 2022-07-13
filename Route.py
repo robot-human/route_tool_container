@@ -581,7 +581,7 @@ class Route:
             self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['one_lane']] = 'Present'
         #Multiple lanes
-        feat_list[feature_dict['multiple_lanes']] = attributes['LANE_WIDTH']
+        feat_list[feature_dict['multiple_lanes']] = attributes['WIDTH']
         #if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
         #    self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
         #    feat_list[feature_dict['multiple_lanes']] = 'Present'
