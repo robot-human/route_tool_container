@@ -565,7 +565,8 @@ class Route:
                 start[0] = False
         #Manoeuvre
         if(str(attributes['INTERSECTION']) == '2'):
-            feat_list[feature_dict['manoeuvre']] = 'Present'
+            #feat_list[feature_dict['manoeuvre']] = 'Present'
+            feat_list[feature_dict['manoeuvre']] = attributes['LOW_MOBILITY']
             if(str(next_attributes['INTERSECTION']) != '2'):
                 self.feat_count[feature_dict['manoeuvre']] += 1
             
@@ -580,9 +581,10 @@ class Route:
             self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['one_lane']] = 'Present'
         #Multiple lanes
-        if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
-            self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
-            feat_list[feature_dict['multiple_lanes']] = 'Present'
+        feat_list[feature_dict['multiple_lanes']] = attributes['LANE_WIDTH']
+        #if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
+        #    self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
+        #    feat_list[feature_dict['multiple_lanes']] = 'Present'
         
         #Traffic conditions
         if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
