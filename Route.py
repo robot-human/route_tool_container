@@ -564,11 +564,11 @@ class Route:
             #elif(str(next_attributes['RAMP']) == 'N'):
                 start[0] = False
         #Manoeuvre
-        if(str(attributes['INTERSECTION']) == '2'):
+        feat_list[feature_dict['manoeuvre']] = attributes['LOW_MOBILITY']
+        #if(str(attributes['INTERSECTION']) == '2'):
             #feat_list[feature_dict['manoeuvre']] = 'Present'
-            feat_list[feature_dict['manoeuvre']] = attributes['LOW_MOBILITY']
-            if(str(next_attributes['INTERSECTION']) != '2'):
-                self.feat_count[feature_dict['manoeuvre']] += 1
+        #    if(str(next_attributes['INTERSECTION']) != '2'):
+        #        self.feat_count[feature_dict['manoeuvre']] += 1
             
         #Roundabout
         if(str(attributes['INTERSECTION']) == '4'):
