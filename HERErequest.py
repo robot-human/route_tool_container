@@ -370,12 +370,8 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
                     builtup = layer['BUILTUP_NAMES'][5:]
                     if(builtup.find("BN") > 0):
                         builtup = builtup[:builtup.find("BN")-3]
-                    links_dict[link_id]['CITY'] = 'Y'
-                    links_dict[link_id]['RURAL'] = 'N'
                 else:
                     builtup = None
-                    links_dict[link_id]['CITY'] = 'N'
-                    links_dict[link_id]['RURAL'] = 'Y'
                 links_dict[link_id]['BUILTUP'] = builtup
             except:
                 continue
@@ -552,21 +548,27 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                         if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                             links_dict[link_id]['CITY'] = 'N'
+                            links_dict[link_id]['RURAL'] = 'N'
                         elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 3):
                             links_dict[link_id]['HIGHWAY'] = 'N'
                             if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 70) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
                                 links_dict[link_id]['CITY'] = 'N'
+                                links_dict[link_id]['RURAL'] = 'Y'
                             else:
                                 links_dict[link_id]['CITY'] = 'Y'
+                                links_dict[link_id]['RURAL'] = 'N'
                         elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 4):
                             links_dict[link_id]['HIGHWAY'] = 'N'
                             if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 64) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
                                 links_dict[link_id]['CITY'] = 'N'
+                                links_dict[link_id]['RURAL'] = 'Y'
                             else:
                                 links_dict[link_id]['CITY'] = 'Y'
+                                links_dict[link_id]['RURAL'] = 'N'
                         else:
                             links_dict[link_id]['HIGHWAY'] = 'N'
                             links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
                         
                     elif(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
                         if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
