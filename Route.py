@@ -534,7 +534,14 @@ class Route:
         if(attributes['HIGHWAY'] == 'N'):
             self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['avoid_highway']] = 'Present'
-        if(attributes['CITY'] == 'Y'):
+            if(attributes['CITY'] == 'Y'):
+                self.feat_count[feature_dict['city']] += attributes['LINK_LENGTH']*unit_coef
+                feat_list[feature_dict['city']] = 'Present'
+            if(attributes['RURAL'] == 'Y'):
+                self.feat_count[feature_dict['rural']] += attributes['LINK_LENGTH']*unit_coef
+                feat_list[feature_dict['rural']] = 'Present'
+        #Urban
+        if(attributes['URBAN'] == 'Y'):
             self.feat_count[feature_dict['urban']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['urban']] = 'Present'
         #One way
@@ -564,11 +571,10 @@ class Route:
             #elif(str(next_attributes['RAMP']) == 'N'):
                 start[0] = False
         #Manoeuvre
-        feat_list[feature_dict['manoeuvre']] = attributes['LOW_MOBILITY']
-        #if(str(attributes['INTERSECTION']) == '2'):
-            #feat_list[feature_dict['manoeuvre']] = 'Present'
-        #    if(str(next_attributes['INTERSECTION']) != '2'):
-        #        self.feat_count[feature_dict['manoeuvre']] += 1
+        if(str(attributes['INTERSECTION']) == '2'):
+            feat_list[feature_dict['manoeuvre']] = 'Present'
+            if(str(next_attributes['INTERSECTION']) != '2'):
+                self.feat_count[feature_dict['manoeuvre']] += 1
             
         #Roundabout
         if(str(attributes['INTERSECTION']) == '4'):
@@ -581,10 +587,9 @@ class Route:
             self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['one_lane']] = 'Present'
         #Multiple lanes
-        feat_list[feature_dict['multiple_lanes']] = attributes['WIDTH']
-        #if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
-        #    self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
-        #    feat_list[feature_dict['multiple_lanes']] = 'Present'
+        if((str(attributes['LANE_CATEGORY']) == '2') or (str(attributes['LANE_CATEGORY']) == '3')):
+            self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['multiple_lanes']] = 'Present'
         
         #Traffic conditions
         if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
