@@ -534,12 +534,14 @@ class Route:
         if(attributes['HIGHWAY'] == 'N'):
             self.feat_count[feature_dict['avoid_highway']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['avoid_highway']] = 'Present'
-            if(attributes['CITY'] == 'Y'):
-                self.feat_count[feature_dict['city']] += attributes['LINK_LENGTH']*unit_coef
-                feat_list[feature_dict['city']] = 'Present'
-            if(attributes['RURAL'] == 'Y'):
-                self.feat_count[feature_dict['rural']] += attributes['LINK_LENGTH']*unit_coef
-                feat_list[feature_dict['rural']] = 'Present'
+        #City
+        if(attributes['CITY'] == 'Y'):
+            self.feat_count[feature_dict['city']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['city']] = 'Present'
+        #Rural
+        if(attributes['RURAL'] == 'Y'):
+            self.feat_count[feature_dict['rural']] += attributes['LINK_LENGTH']*unit_coef
+            feat_list[feature_dict['rural']] = 'Present'
         #Urban
         if(attributes['URBAN'] == 'Y'):
             self.feat_count[feature_dict['urban']] += attributes['LINK_LENGTH']*unit_coef
