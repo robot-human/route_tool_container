@@ -135,7 +135,7 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
                                            'N_ATTRIBUTES': 0}
     if(str(links_basic_attributes) != "None"):   
         for attr in links_basic_attributes:
-            links_dict,not_navigable = fillDictionary(links_dict, attr, cfg['query_features'], not_navigable)
+            links_dict,not_navigable = fillDictionary(links_dict, attr, cfg, not_navigable)
             
     links_dict,not_navigable = requestAttributesTile(links_dict, tile, cfg['query_features'], not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
@@ -165,6 +165,32 @@ def fillDictionary(links_dict, attr, query, not_navigable):
         if((int(links_dict[link_id]['VEHICLE_TYPES'])%2 != 1) or (attr['PUBLIC_ACCESS'] == 'N') or (attr['PRIVATE'] == 'Y')):
             not_navigable.append(link_id)
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
+        if(query['region'] == 'us'):
+            if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
+                links_dict[link_id]['HIGHWAY'] = 'Y'
+                links_dict[link_id]['CITY'] = 'N'
+                links_dict[link_id]['RURAL'] = 'N'
+            elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 3):
+                links_dict[link_id]['HIGHWAY'] = 'N'
+                if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 70) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
+                    links_dict[link_id]['CITY'] = 'N'
+                    links_dict[link_id]['RURAL'] = 'Y'
+                else:
+                    links_dict[link_id]['CITY'] = 'Y'
+                    links_dict[link_id]['RURAL'] = 'N'
+            elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 4):
+                links_dict[link_id]['HIGHWAY'] = 'N'
+                if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 64) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
+                    links_dict[link_id]['CITY'] = 'N'
+                    links_dict[link_id]['RURAL'] = 'Y'
+                else:
+                    links_dict[link_id]['CITY'] = 'Y'
+                    links_dict[link_id]['RURAL'] = 'N'
+            else:
+                links_dict[link_id]['HIGHWAY'] = 'N'
+                links_dict[link_id]['CITY'] = 'Y'
+                links_dict[link_id]['RURAL'] = 'N'
+
         links_dict[link_id]['URBAN'] = attr['URBAN']
         links_dict[link_id]['LOW_MOBILITY'] = int(attr['LOW_MOBILITY'])
         links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']
@@ -178,21 +204,18 @@ def fillDictionary(links_dict, attr, query, not_navigable):
                 links_dict[link_id]['INTERSECTION'] = int(attr['INTERSECTION_CATEGORY'])
         links_dict[link_id]['LANE_CATEGORY'] = int(attr['LANE_CATEGORY'])
         links_dict[link_id]['SPEED_CATEGORY'] = int(attr['SPEED_CATEGORY'])
-        if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
+        if((int(attr['FUNCTIONAL_CLASS']) == 5) or ((str(query['query_features']['boolean_features']['ramp']) == '0') and (attr['RAMP'] == 'Y')) or ((str(query['query_features']['boolean_features']['urban']) == '0') and (attr['URBAN'] == 'Y'))):
             links_dict[link_id]['WEIGHT'] *= 1.1
-        if((str(query['boolean_features']['not_paved']) == '0') and (attr['PAVED'] == 'N')):
+        if((str(query['query_features']['boolean_features']['not_paved']) == '0') and (attr['PAVED'] == 'N')):
             links_dict[link_id]['WEIGHT'] *= 10
         links_dict[link_id]['PARKING_LOT_ROAD'] = None
         links_dict[link_id]['SURFACE_TYPE'] = None
 
         links_dict[link_id]['AVG_SPEED'] = 80
         links_dict[link_id]['SPEED_LIMIT'] = None
-        setAttrWeight(links_dict[link_id], attr, query)
+        setAttrWeight(links_dict[link_id], attr, query['query_features'])
 
         links_dict[link_id]['STREET_NAME'] = None
-        links_dict[link_id]['HIGHWAY'] = 'N'
-        links_dict[link_id]['RURAL'] = None
-        links_dict[link_id]['CITY'] = None
         
         links_dict[link_id]['COUNTRY'] = None
         links_dict[link_id]['BUILTUP'] = None
@@ -544,33 +567,8 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
                 if(geom['NAME'] != None):
-                    if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):
-                        if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
-                            links_dict[link_id]['HIGHWAY'] = 'Y'
-                            links_dict[link_id]['CITY'] = 'N'
-                            links_dict[link_id]['RURAL'] = 'N'
-                        elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 3):
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                            if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 70) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
-                                links_dict[link_id]['CITY'] = 'N'
-                                links_dict[link_id]['RURAL'] = 'Y'
-                            else:
-                                links_dict[link_id]['CITY'] = 'Y'
-                                links_dict[link_id]['RURAL'] = 'N'
-                        elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 4):
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                            if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 64) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
-                                links_dict[link_id]['CITY'] = 'N'
-                                links_dict[link_id]['RURAL'] = 'Y'
-                            else:
-                                links_dict[link_id]['CITY'] = 'Y'
-                                links_dict[link_id]['RURAL'] = 'N'
-                        else:
-                            links_dict[link_id]['HIGHWAY'] = 'N'
-                            links_dict[link_id]['CITY'] = 'Y'
-                            links_dict[link_id]['RURAL'] = 'N'
-                        
-                    elif(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
+                    #if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):   
+                    if(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
                         if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
                         else:
