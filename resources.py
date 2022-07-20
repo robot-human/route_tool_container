@@ -1,14 +1,14 @@
 feature_dict = {"highway":0,"avoid_highway":1,"city":2,"rural":3,"urban":4,"oneway":5,"both_ways":6,"limited_access":7,"not_paved":8,"ramp":9,"manoeuvre":10,
                 "roundabout":11,"one_lane":12,"multiple_lanes":13,"traffic_lights":14,"railway_crossing":15,"no_overtaking":16,
-                "traffic_signs":17,"stop_signs":18,"school_zone":19,"icy_road":18,"crosswalk":20,
-                "animal_crossing":21,"lane_merge_right":22,"lane_merge_left":23,"falling_rocks":24,
-                "hills":25,"tunnel":26,"bridge":27,'road_roughness_good':28,'road_roughness_fair':29,'road_roughness_poor':30,
-                "speed_bump":31,"toll_station":32,'lane_marker_long_dashed':33,'lane_marker_short_dashed':34,'lane_marker_double_dashed':35,
-                'lane_marker_double_solid':36,'lane_marker_single_solid':37,'lane_marker_inner_solid_outter_dashed':38,
-                'lane_marker_inner_dashed_outter_solid':39,'lane_marker_no_divider':40,'lane_marker_physical_divider':41,
-                'hov_lane':42,'reversible_lane':43,'express_lane':44,'slow_lane':45,'auxiliary_lane':46,'shoulder_lane':47,
-                'passing_lane':48,'turn_lane':49,'parking_lane':50,'center_turn_lane':51,'parking_lot':52,'functional_class_1':53,
-                'functional_class_2':54,'functional_class_3':55,'functional_class_4':56,'functional_class_5':57}
+                "traffic_signs":17,"stop_signs":18,"school_zone":19,"icy_road":20,"crosswalk":21,
+                "animal_crossing":22,"lane_merge_right":23,"lane_merge_left":24,"falling_rocks":25,
+                "hills":26,"tunnel":27,"bridge":28,'road_roughness_good':29,'road_roughness_fair':30,'road_roughness_poor':31,
+                "speed_bump":32,"toll_station":33,'lane_marker_long_dashed':34,'lane_marker_short_dashed':35,'lane_marker_double_dashed':36,
+                'lane_marker_double_solid':37,'lane_marker_single_solid':38,'lane_marker_inner_solid_outter_dashed':39,
+                'lane_marker_inner_dashed_outter_solid':40,'lane_marker_no_divider':41,'lane_marker_physical_divider':42,
+                'hov_lane':43,'reversible_lane':44,'express_lane':45,'slow_lane':46,'auxiliary_lane':47,'shoulder_lane':48,
+                'passing_lane':49,'turn_lane':50,'parking_lane':51,'center_turn_lane':52,'parking_lot':53,'functional_class_1':54,
+                'functional_class_2':55,'functional_class_3':56,'functional_class_4':57,'functional_class_5':58}
 
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 
