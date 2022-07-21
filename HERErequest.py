@@ -148,6 +148,7 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestAdasTile(links_dict, tile, session)
     links_dict = requestRoadAdminTile(links_dict, tile, session)
     links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
+    setRoadTypes(links_dict, cfg)
      
     for link in not_navigable:
         try:
@@ -165,31 +166,6 @@ def fillDictionary(links_dict, attr, query, not_navigable):
         if((int(links_dict[link_id]['VEHICLE_TYPES'])%2 != 1) or (attr['PUBLIC_ACCESS'] == 'N') or (attr['PRIVATE'] == 'Y')):
             not_navigable.append(link_id)
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
-        if(query['region'] == 'us'):
-            if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
-                links_dict[link_id]['HIGHWAY'] = 'Y'
-                links_dict[link_id]['CITY'] = 'N'
-                links_dict[link_id]['RURAL'] = 'N'
-            elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 3):
-                links_dict[link_id]['HIGHWAY'] = 'N'
-                if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 70) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
-                    links_dict[link_id]['CITY'] = 'N'
-                    links_dict[link_id]['RURAL'] = 'Y'
-                else:
-                    links_dict[link_id]['CITY'] = 'Y'
-                    links_dict[link_id]['RURAL'] = 'N'
-            elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 4):
-                links_dict[link_id]['HIGHWAY'] = 'N'
-                if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] >= 64) or (links_dict[link_id]['SPEED_LIMIT'] == None))):
-                    links_dict[link_id]['CITY'] = 'N'
-                    links_dict[link_id]['RURAL'] = 'Y'
-                else:
-                    links_dict[link_id]['CITY'] = 'Y'
-                    links_dict[link_id]['RURAL'] = 'N'
-            else:
-                links_dict[link_id]['HIGHWAY'] = 'N'
-                links_dict[link_id]['CITY'] = 'Y'
-                links_dict[link_id]['RURAL'] = 'N'
 
         links_dict[link_id]['URBAN'] = attr['URBAN']
         links_dict[link_id]['LOW_MOBILITY'] = int(attr['LOW_MOBILITY'])
@@ -605,3 +581,31 @@ def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percen
             links_dict['WEIGHT'] *= percentage
             links_dict['N_ATTRIBUTES'] += 1
     return None
+
+def setRoadTypes(links_dict,cfg):
+    if(cfg['region'] == 'us'):
+        for link_id in links_dict:
+            if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
+                links_dict[link_id]['HIGHWAY'] = 'Y'
+                links_dict[link_id]['CITY'] = 'N'
+                links_dict[link_id]['RURAL'] = 'N'
+            elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 3):
+                links_dict[link_id]['HIGHWAY'] = 'N'
+                if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] == None) or (links_dict[link_id]['SPEED_LIMIT'] >= 70))):
+                    links_dict[link_id]['CITY'] = 'N'
+                    links_dict[link_id]['RURAL'] = 'Y'
+                else:
+                    links_dict[link_id]['CITY'] = 'Y'
+                    links_dict[link_id]['RURAL'] = 'N'
+            elif(links_dict[link_id]['FUNCTIONAL_CLASS'] == 4):
+                links_dict[link_id]['HIGHWAY'] = 'N'
+                if((links_dict[link_id]['TRAVEL_DIRECTION'] == 'B') and (links_dict[link_id]['LANE_CATEGORY'] == 1) and ((links_dict[link_id]['SPEED_LIMIT'] == None) or (links_dict[link_id]['SPEED_LIMIT'] >= 64))):
+                    links_dict[link_id]['CITY'] = 'N'
+                    links_dict[link_id]['RURAL'] = 'Y'
+                else:
+                    links_dict[link_id]['CITY'] = 'Y'
+                    links_dict[link_id]['RURAL'] = 'N'
+            else:
+                links_dict[link_id]['HIGHWAY'] = 'N'
+                links_dict[link_id]['CITY'] = 'Y'
+                links_dict[link_id]['RURAL'] = 'N'
