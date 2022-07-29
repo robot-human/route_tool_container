@@ -196,6 +196,10 @@ def fillDictionary(links_dict, attr, query, not_navigable):
         links_dict[link_id]['COUNTRY'] = None
         links_dict[link_id]['BUILTUP'] = None
 
+        links_dict[link_id]['HIGHWAY'] = None
+        links_dict[link_id]['CITY'] = None
+        links_dict[link_id]['RURAL'] = None
+
         links_dict[link_id]['TRAFFIC_CONDITION_F'] = []
         links_dict[link_id]['TRAFFIC_CONDITION_T'] = []
         links_dict[link_id]['TRAFFIC_SIGNS_F'] = []
