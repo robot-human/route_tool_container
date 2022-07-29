@@ -148,7 +148,7 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestAdasTile(links_dict, tile, session)
     links_dict = requestRoadAdminTile(links_dict, tile, session)
     links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
-    setRoadTypes(links_dict, cfg)
+    #setRoadTypes(links_dict, cfg)
      
     for link in not_navigable:
         try:
