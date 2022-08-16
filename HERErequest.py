@@ -148,7 +148,7 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestAdasTile(links_dict, tile, session)
     links_dict = requestRoadAdminTile(links_dict, tile, session)
     links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
-    #setRoadTypes(links_dict, cfg)
+    setRoadTypes(links_dict, cfg)
      
     for link in not_navigable:
         try:
@@ -368,6 +368,8 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
         for layer in road_geom:
             try:
                 link_id = layer['LINK_ID']
+                if((layer['COUNTRY_NAMES'].find('Deutschland') < 0) and (layer['COUNTRY_NAMES'].find('Nederland') < 0) and (layer['COUNTRY_NAMES'].find('Belgique') < 0)):
+                    print(layer['COUNTRY_NAMES'], layer['COUNTRY_NAMES'].find('Deutschland'))
                 links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
                 if(layer['BUILTUP_NAMES'] != None):
                     builtup = layer['BUILTUP_NAMES'][5:]
@@ -547,17 +549,59 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                 links_dict[link_id]['TUNNEL'] = geom['TUNNEL']
                 links_dict[link_id]['BRIDGE'] = geom['BRIDGE']
                 if(geom['NAME'] != None):
-                    #if(links_dict[link_id]['COUNTRY'].find('United States') >= 0):   
                     if(links_dict[link_id]['COUNTRY'].find('Deutschland') >= 0):
                         if((geom['NAME'].find("A") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
+                            links_dict[link_id]['CITY'] = 'N'
+                            links_dict[link_id]['RURAL'] = 'N'
+                        elif((geom['NAME'].find("B") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                            links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
+                        elif((geom['NAME'].find("L") == 0) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                            links_dict[link_id]['CITY'] = 'N'
+                            links_dict[link_id]['RURAL'] = 'Y'
                         else:
                             links_dict[link_id]['HIGHWAY'] = 'N'
-                    elif(links_dict[link_id]['COUNTRY'].find('Nederland') >= 0):
-                        if((geom['NAME'][0] in ['A','E', 'N']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
+
+                    elif((links_dict[link_id]['COUNTRY'].find('Nederland') >= 0) or (links_dict[link_id]['COUNTRY'].find('Belgique') >= 0)):
+                        if((geom['NAME'][0] in ['A','E']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
                             links_dict[link_id]['HIGHWAY'] = 'Y'
+                            links_dict[link_id]['CITY'] = 'N'
+                            links_dict[link_id]['RURAL'] = 'N'
+                        elif((geom['NAME'][0] in ['N']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                            links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
                         else:
                             links_dict[link_id]['HIGHWAY'] = 'N'
+                            links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
+                    
+                    elif(links_dict[link_id]['COUNTRY'].find('Luxemburg') >= 0):
+                        if((geom['NAME'][0] in ['A','E']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                            links_dict[link_id]['CITY'] = 'N'
+                            links_dict[link_id]['RURAL'] = 'N'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                            links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
+                    
+                    elif(links_dict[link_id]['COUNTRY'].find('France') >= 0):
+                        if((geom['NAME'][0] in ['A','E']) and (int(geom['NAME'][1]) in [0,1,2,3,4,5,6,7,8,9])):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                            links_dict[link_id]['CITY'] = 'N'
+                            links_dict[link_id]['RURAL'] = 'N'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
+                            links_dict[link_id]['CITY'] = 'Y'
+                            links_dict[link_id]['RURAL'] = 'N'
+                    
+
                 setRoadGeomWeight(links_dict[link_id], geom, cfg['query_features'])
             except:
                 continue
