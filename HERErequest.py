@@ -368,8 +368,6 @@ def requestRoadAdminTile(links_dict: dict,  tile: tuple, session: requests.Sessi
         for layer in road_geom:
             try:
                 link_id = layer['LINK_ID']
-                if((layer['COUNTRY_NAMES'].find('Deutschland') < 0) and (layer['COUNTRY_NAMES'].find('Nederland') < 0) and (layer['COUNTRY_NAMES'].find('Belgique') < 0)):
-                    print(layer['COUNTRY_NAMES'], layer['COUNTRY_NAMES'].find('Deutschland'))
                 links_dict[link_id]['COUNTRY'] = layer['COUNTRY_NAMES']
                 if(layer['BUILTUP_NAMES'] != None):
                     builtup = layer['BUILTUP_NAMES'][5:]
