@@ -630,16 +630,7 @@ def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percen
 
 def setRoadTypes(links_dict,cfg):
     if(cfg['region'] == 'us'):
-        for link_id in links_dict:
-            try:
-                print(links_dict[link_id]['FUNCTIONAL_CLASS'])
-            except:
-                print("empty layer file")
-                os.remove(cache_file_path)
-                print(f"request data from {layer}")
-                tile_data = getTileRequest(tile, layer, session)['Rows']
-                tileToFile(tile_data, tile, layer, path)
-                
+        for link_id in links_dict:                
             if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
                 links_dict[link_id]['HIGHWAY'] = 'Y'
                 links_dict[link_id]['CITY'] = 'N'
