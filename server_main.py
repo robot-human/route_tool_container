@@ -3,7 +3,7 @@ import time
 import subprocess
 
 LOOP = True
-DOWNLOAD = True
+DOWNLOAD = False
 
 subscribe_file_path = f'./server_subscribe.py'
 publish_file_path = f'./server_publish.py'
