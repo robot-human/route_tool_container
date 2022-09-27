@@ -102,20 +102,20 @@ def tileToFile(tileDict:dict, tile:tuple, layer:str, path = tiles_cache_path):
     return None
 
 def checkTileFromCache(tile:tuple, layer:str, session:requests.Session=None):
-    #try:
-    #    cache_file_path = f'{tiles_cache_path}{layer}-{tile[2]}-{tile[0]}-{tile[1]}.json'           
-    #    with open(cache_file_path) as json_file:
-    #        tile_data = json.load(json_file)
-    #    return tile_data
-    #except:
-    print(f"request data from {layer}-{tile[2]}-{tile[0]}-{tile[1]}.json")
     try:
-        tile_data = getTileRequest(tile, layer, session)['Rows']
-        tileToFile(tile_data, tile, layer)
+        cache_file_path = f'{tiles_cache_path}{layer}-{tile[2]}-{tile[0]}-{tile[1]}.json'           
+        with open(cache_file_path) as json_file:
+            tile_data = json.load(json_file)
         return tile_data
     except:
-        print("Empty layer")
-        return None
+        print(f"request data from {layer}-{tile[2]}-{tile[0]}-{tile[1]}.json")
+        try:
+            tile_data = getTileRequest(tile, layer, session)['Rows']
+            tileToFile(tile_data, tile, layer)
+            return tile_data
+        except:
+            print("Empty layer")
+            return None
 
 def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None): 
     not_navigable = []
