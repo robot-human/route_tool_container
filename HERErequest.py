@@ -150,7 +150,7 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestRoadAdminTile(links_dict, tile, session)
     links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
     #if(str(links_basic_attributes) != "None"):
-    setRoadTypes(links_dict, cfg)
+    setRoadTypes(links_dict, cfg, links_basic_attributes)
      
     for link in not_navigable:
         try:
@@ -630,8 +630,9 @@ def setRoadGeomWeight(links_dict, attributes: dict, features_query: dict, percen
             links_dict['N_ATTRIBUTES'] += 1
     return None
 
-def setRoadTypes(links_dict,cfg):
+def setRoadTypes(links_dict,cfg, links_basic_attributes):
     if(cfg['region'] == 'us'):
+        print(links_basic_attributes)
         for link_id in links_dict: 
             print(links_dict[link_id]['FUNCTIONAL_CLASS'])              
             if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
