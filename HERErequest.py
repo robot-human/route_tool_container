@@ -636,6 +636,9 @@ def setRoadTypes(links_dict,cfg):
             except:
                 print("empty layer file")
                 os.remove(cache_file_path)
+                print(f"request data from {layer}")
+                tile_data = getTileRequest(tile, layer, session)['Rows']
+                tileToFile(tile_data, tile, layer, path)
                 
             if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
                 links_dict[link_id]['HIGHWAY'] = 'Y'
