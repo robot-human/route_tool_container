@@ -42,12 +42,11 @@ def fillCache(tiles: list, session):
 
 def tileToCache(tile:tuple, layer:str, path: str, session:requests.Session=None):
     cache_file_path = f'{tiles_cache_path}/{layer}-{tile[2]}-{tile[0]}-{tile[1]}.json'  
-    try:  
-        os.remove(cache_file_path)
-    except: 
-        print("not found")
     try:
         if(os.stat(cache_file_path).st_size > 0):
+            os.remove(cache_file_path)
+            tile_data = getTileRequest(tile, layer, session)['Rows']
+            tileToFile(tile_data, tile, layer, path)
             with open(cache_file_path) as json_file:
                 tile_data = json.load(json_file)
         else:
