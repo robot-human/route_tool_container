@@ -134,9 +134,9 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
                                            'LON': link['LON'],
                                            'WEIGHT': 100*float(link['LINK_LENGTH']),
                                            'N_ATTRIBUTES': 0}
-    #if(str(links_basic_attributes) != "None"):   
-    for attr in links_basic_attributes:
-        links_dict,not_navigable = fillDictionary(links_dict, attr, cfg, not_navigable)
+    if(str(links_basic_attributes) != "None"):   
+        for attr in links_basic_attributes:
+            links_dict,not_navigable = fillDictionary(links_dict, attr, cfg, not_navigable)
             
     links_dict,not_navigable = requestAttributesTile(links_dict, tile, cfg['query_features'], not_navigable, session)
     links_dict = requestTrafficPatternTile(links_dict, tile, session)
@@ -149,7 +149,8 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestAdasTile(links_dict, tile, session)
     links_dict = requestRoadAdminTile(links_dict, tile, session)
     links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
-    setRoadTypes(links_dict, cfg)
+    if(str(links_basic_attributes) != "None"):
+        setRoadTypes(links_dict, cfg)
      
     for link in not_navigable:
         try:
