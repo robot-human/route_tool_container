@@ -94,6 +94,7 @@ class HEREgraph(nx.MultiDiGraph):
       
     def findNodeFromCoord(self, loc: tuple):
         node_coord = np.array(loc)
+        print(self.np_nodes_data[:, 1:])
         temp = self.np_nodes_data[:, 1:] - node_coord
         temp2 = temp * temp
         distance = temp2[:, 0] + temp2[:, 1]
