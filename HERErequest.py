@@ -106,15 +106,15 @@ def checkTileFromCache(tile:tuple, layer:str, session:requests.Session=None):
         cache_file_path = f'{tiles_cache_path}{layer}-{tile[2]}-{tile[0]}-{tile[1]}.json'    
 
         ### Add code
-        if(os.stat(cache_file_path).st_size > 0):
-            with open(cache_file_path) as json_file:
-                tile_data = json.load(json_file)
-        else:
-            print("empty layer file")
-            os.remove(cache_file_path)
-            print(f"request data from {layer}")
-            tile_data = getTileRequest(tile, layer, session)['Rows']
-            tileToFile(tile_data, tile, layer)
+        #if(os.stat(cache_file_path).st_size > 0):
+        #    with open(cache_file_path) as json_file:
+        #        tile_data = json.load(json_file)
+        #else:
+        print("empty layer file")
+        os.remove(cache_file_path)
+        print(f"request data from {layer}")
+        tile_data = getTileRequest(tile, layer, session)['Rows']
+        tileToFile(tile_data, tile, layer)
         ### Remove add code
 
         ### Uncoment follow code
