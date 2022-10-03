@@ -648,7 +648,7 @@ def setRoadTypes(links_dict,cfg, links_basic_attributes):
     if(cfg['region'] == 'us'):
         for link_id in links_dict:
             #print(link_id)
-            #print(links_basic_attributes[link_id])            
+            print(links_basic_attributes[link_id])            
             if(links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2]):
                 links_dict[link_id]['HIGHWAY'] = 'Y'
                 links_dict[link_id]['CITY'] = 'N'
