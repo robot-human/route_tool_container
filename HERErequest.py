@@ -14,8 +14,8 @@ resource_url = {'get_specific_layer_tile':'/1/tile.json',
                 'list_layer_attributes':'/1/doc/layer.json',
                 'list_available_layers':'/1/doc/layers.json'}
 
-#APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
-APP_CODE ='vGeMc2D8lMqb5OY39enKrjNjrEMWlOabRS2olRxc2a0'
+APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
+#APP_CODE ='vGeMc2D8lMqb5OY39enKrjNjrEMWlOabRS2olRxc2a0'
 
 level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 api_usage_count = 0
