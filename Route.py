@@ -593,6 +593,11 @@ class Route:
             self.feat_count[feature_dict['multiple_lanes']] += attributes['LINK_LENGTH']*unit_coef
             feat_list[feature_dict['multiple_lanes']] = 'Present'
         
+        #Speel limits
+        if(str(next_attributes['SPEED_LIMIT']) != str(attributes['SPEED_LIMIT'])):
+            feat_list[feature_dict['speed_limits_change_count']] = 'Present'
+            self.feat_count[feature_dict['speed_limits_change_count']] += 1
+        
         #Traffic conditions
         if(16 in attributes[f'TRAFFIC_CONDITION_{edge_dir}']):
             self.feat_count[feature_dict['traffic_lights']] += 1
@@ -611,6 +616,9 @@ class Route:
         if(20 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[feature_dict['stop_signs']] += 1
             feat_list[feature_dict['stop_signs']] = 'Present'
+        if(24 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
+            self.feat_count[feature_dict['curve_signs_count']] += 1
+            feat_list[feature_dict['curve_signs_count']] = 'Present'
         if(31 in attributes[f'TRAFFIC_SIGNS_{edge_dir}']):
             self.feat_count[feature_dict['school_zone']] += 1
             feat_list[feature_dict['school_zone']] = 'Present'
