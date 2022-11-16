@@ -8,8 +8,8 @@ feature_dict = {"highway":0,"avoid_highway":1,"city":2,"rural":3,"urban":4,"onew
                 'lane_marker_inner_dashed_outter_solid':41,'lane_marker_no_divider':42,'lane_marker_physical_divider':43,
                 'hov_lane':44,'reversible_lane':45,'express_lane':46,'slow_lane':47,'auxiliary_lane':48,'shoulder_lane':49,
                 'passing_lane':50,'turn_lane':51,'parking_lane':52,'center_turn_lane':53,'parking_lot':54,
-                'speed_limits_change_count':55,
-                'functional_class_1':56,'functional_class_2':57,'functional_class_3':58,'functional_class_4':59,'functional_class_5':60}
+                'speed_limits_change_count':55,'overpass_count':56,'underpass_count':57,
+                'functional_class_1':58,'functional_class_2':59,'functional_class_3':60,'functional_class_4':61,'functional_class_5':62}
 
 
 traffics_sign_dict = {1 : "START OF NO OVERTAKING", 10 : "RAILWAY CROSSING UNPROTECTED", 11 : "ROAD NARROWS", 

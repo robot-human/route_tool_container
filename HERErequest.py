@@ -183,6 +183,15 @@ def fillDictionary(links_dict, attr, query, not_navigable):
             not_navigable.append(link_id)
         links_dict[link_id]['FUNCTIONAL_CLASS'] = int(attr['FUNCTIONAL_CLASS'])
 
+        if(attr['OVERPASS_UNDERPASS'] != None): 
+            if(int(attr['OVERPASS_UNDERPASS'])==1):
+                links_dict[link_id]['OVERPASS'] = 'Y'
+            elif(int(attr['OVERPASS_UNDERPASS'])==2):
+                links_dict[link_id]['UNDERPASS'] = 'Y'
+        else:
+            links_dict[link_id]['OVERPASS'] = 'N'
+            links_dict[link_id]['UNDERPASS'] = 'N'
+        
         links_dict[link_id]['URBAN'] = attr['URBAN']
         links_dict[link_id]['LOW_MOBILITY'] = int(attr['LOW_MOBILITY'])
         links_dict[link_id]['LIMITED_ACCESS_ROAD'] = attr['LIMITED_ACCESS_ROAD']

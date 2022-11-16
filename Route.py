@@ -583,7 +583,15 @@ class Route:
             feat_list[feature_dict['roundabout']] = 'Present'
             if(str(next_attributes['INTERSECTION']) != '4'):
                 self.feat_count[feature_dict['roundabout']] += 1
-            
+        
+        #Overpass
+        if(attributes['OVERPASS'] == 'Y'):
+            self.feat_count[feature_dict['overpass_count']] += 1
+            feat_list[feature_dict['overpass_count']] = 'Present'
+        if(attributes['UNDERPASS'] == 'Y'):
+            self.feat_count[feature_dict['underpass_count']] += 1
+            feat_list[feature_dict['underpass_count']] = 'Present'
+
         #One lane
         if(str(attributes['LANE_CATEGORY']) == '1'):
             self.feat_count[feature_dict['one_lane']] += attributes['LINK_LENGTH']*unit_coef
