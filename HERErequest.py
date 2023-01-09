@@ -19,7 +19,7 @@ APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
 
 level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 api_usage_count = 0
-PERCENTAGE_ = 0.8
+PERCENTAGE_ = 0.3
 kms_to_miles=1
 mts_to_fts = 1
 road_roughn_cat = {1:"Good",2:"Fair",3:"Poor"}
@@ -164,7 +164,7 @@ def getLinksFromTile(tile: tuple, cfg: dict, session: requests.Session=None):
     links_dict = requestRoadAdminTile(links_dict, tile, session)
     links_dict = requestRoadGeomTile(links_dict, tile, cfg, session)
     #if(str(links_basic_attributes) != "None"):
-    setRoadTypes(links_dict, cfg, links_basic_attributes)
+    #setRoadTypes(links_dict, cfg, links_basic_attributes)
      
     for link in not_navigable:
         try:
@@ -623,8 +623,11 @@ def requestRoadGeomTile(links_dict: dict,  tile: tuple, cfg: dict, session: requ
                             links_dict[link_id]['HIGHWAY'] = 'N'
                             links_dict[link_id]['CITY'] = 'Y'
                             links_dict[link_id]['RURAL'] = 'N'
-                    
-
+                    elif(cfg['region'] == 'us'):
+                        if((links_dict[link_id]['FUNCTIONAL_CLASS'] in [1,2,3]) and (links_dict[link_id]['SPEED_CATEGORY'] in [1,2,3,4])):
+                            links_dict[link_id]['HIGHWAY'] = 'Y'
+                        else:
+                            links_dict[link_id]['HIGHWAY'] = 'N'
                 setRoadGeomWeight(links_dict[link_id], geom, cfg['query_features'])
             except:
                 continue
