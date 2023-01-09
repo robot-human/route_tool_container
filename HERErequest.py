@@ -19,7 +19,7 @@ APP_CODE = 'jKvhe5N2sdc8kPOU0Bqw_CBEgtX2LSjds5CCTCE67q4'
 
 level_layerID_map = {9:1, 10:2, 11:3, 12:4, 13:5}
 api_usage_count = 0
-PERCENTAGE_ = 0.3
+PERCENTAGE_ = 0.4
 kms_to_miles=1
 mts_to_fts = 1
 road_roughn_cat = {1:"Good",2:"Fair",3:"Poor"}
